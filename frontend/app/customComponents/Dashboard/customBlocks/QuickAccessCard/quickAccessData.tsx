@@ -25,7 +25,7 @@ export const quickAccess = [
   {
     title: "সকল পরীক্ষা",
     subtitle: "মডেল ও প্র্যাকটিস টেস্ট",
-    href: "/exams",
+    href: "/all-exams",
     icon: ClipboardList,
     color: "bg-blue-500",
   },

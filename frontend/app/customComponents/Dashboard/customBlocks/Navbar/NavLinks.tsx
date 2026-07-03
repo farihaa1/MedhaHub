@@ -6,9 +6,9 @@ export const NavLinks = [
     icon: "home",
   },
   {
-    id: "all_exams",
+    id: "all-exams",
     label_bn: "সকল পরীক্ষা",
-    url: "/exams",
+    url: "/all-exams",
     icon: "exams",
   },
   {
@@ -41,4 +41,10 @@ export const NavLinks = [
     url: "/help",
     icon: "help",
   },
-]
+  {
+    id: "add_question",
+    label_bn: "প্রশ্ন যোগ করুন",
+    url: "/questions/add",
+    icon: "add",
+  },
+] as const

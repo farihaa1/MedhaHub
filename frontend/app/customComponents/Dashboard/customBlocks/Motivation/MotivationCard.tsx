@@ -24,8 +24,8 @@ export default function MotivationCard() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Quote className="h-5 w-5 text-primary" />
           প্রেরণার বাণী
+          <Quote className="h-5 w-5 text-primary" />
         </CardTitle>
 
         <CardDescription>আজকের অনুপ্রেরণা</CardDescription>

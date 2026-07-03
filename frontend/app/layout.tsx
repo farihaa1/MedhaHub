@@ -1,7 +1,12 @@
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Anek_Bangla, Hind_Siliguri, Poppins } from "next/font/google"
 
-import { Hind_Siliguri, Poppins } from "next/font/google"
+const anekBangla = Anek_Bangla({
+  subsets: ["bengali"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-anek-bangla",
+})
 
 const hind = Hind_Siliguri({
   subsets: ["bengali", "latin"],
@@ -24,9 +29,9 @@ export default function RootLayout({
     <html
       lang="bn"
       suppressHydrationWarning
-      className={`${poppins.variable} ${hind.variable}`}
+      className={`${poppins.variable} ${hind.variable} ${anekBangla.variable}`}
     >
-      <body className="font-sans">
+      <body className="font-sans font-on">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

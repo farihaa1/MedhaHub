@@ -20,7 +20,7 @@ import { logo } from "@/app/customComponents/shared/Navbar/NavLinks"
 
 export default function DashboardSidebar() {
   return (
-    <Sidebar >
+    <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="pt-4">

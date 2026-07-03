@@ -6,6 +6,7 @@ import {
   Database,
   FileText,
   HelpCircle,
+  CirclePlus,
 } from "lucide-react"
 
 export const iconRegistry = {
@@ -16,4 +17,5 @@ export const iconRegistry = {
   question_bank: Database,
   notes: FileText,
   help: HelpCircle,
+  add: CirclePlus,
 } as const

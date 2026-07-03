@@ -12,8 +12,10 @@ import TwitterIcon from "@/public/svg/twitter-icon"
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
-        <DashboardSidebar />
+      <div className="flex min-h-screen w-full">
+        <div>
+          <DashboardSidebar />
+        </div>
 
         <div className="flex flex-1 flex-col">
           <Header />
