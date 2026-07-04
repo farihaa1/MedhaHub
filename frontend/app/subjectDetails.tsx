@@ -1,10 +1,3 @@
-import { notFound } from "next/navigation"
-import SubjectDetailsHero from "@/app/customComponents/SubjectDetails/SubjectDetailsHero"
-import { color, SubjectSlug } from "@/app/type"
-import ChapterAccordion from "@/app/customComponents/SubjectDetails/Chapters/ChapterAccordion"
-import { chapters } from "@/app/data/chaptersData"
-import {  getSubjectColorBySlug } from "@/app/data/colorPalete"
-
 export interface SubjectDetails {
   id: string
   title: string
@@ -59,38 +52,3 @@ export const subjectDetails: SubjectDetails[] = [
     examsCount: 170,
   },
 ]
-
-
-interface Props {
-  params: Promise<{
-    subjectSlug: SubjectSlug
-  }>
-}
-
-
-export default async function SubjectPage({ params }: Props) {
-  const { subjectSlug } = await params
-  console.log(subjectSlug)
-  const subject = subjectDetails.find((item) => item.slug === subjectSlug)
-
-const color:color = getSubjectColorBySlug(subjectSlug)
-  if (!subject) {
-    notFound()
-  }
-
-  return (
-    <main className="space-y-8">
-      <SubjectDetailsHero
-        title={subject.title}
-        description={subject?.description || ""}
-        totalQuestions={subject.totalQuestions || 10}
-        totalChapters={subject.totalChapters || 8}
-        totalTopics={subject.totalTopics || 4}
-        completedQuestions={false || 1}
-        estimatedHours={subject.estimatedHours || 2}
-        color={color}
-      />
-      <ChapterAccordion color={color} chapters={chapters}></ChapterAccordion>
-    </main>
-  )
-}

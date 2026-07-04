@@ -1,0 +1,88 @@
+export const questionOptions = [
+  {
+    id: "opt_0001",
+    questionId: "q_0001",
+    text: "মেঘনাদবধ কাব্য",
+    isCorrect: false,
+    order: 1,
+  },
+  {
+    id: "opt_0002",
+    questionId: "q_0001",
+    text: "তিলোত্তমাসম্ভব কাব্য",
+    isCorrect: true,
+    order: 2,
+  },
+  {
+    id: "opt_0003",
+    questionId: "q_0001",
+    text: "বীরাঙ্গনা",
+    isCorrect: false,
+    order: 3,
+  },
+  {
+    id: "opt_0004",
+    questionId: "q_0001",
+    text: "ব্রজাঙ্গনা",
+    isCorrect: false,
+    order: 4,
+  },
+
+  {
+    id: "opt_0005",
+    questionId: "q_0002",
+    text: "পয়ার",
+    isCorrect: false,
+    order: 1,
+  },
+  {
+    id: "opt_0006",
+    questionId: "q_0002",
+    text: "অমিত্রাক্ষর",
+    isCorrect: true,
+    order: 2,
+  },
+  {
+    id: "opt_0007",
+    questionId: "q_0002",
+    text: "মাত্রাবৃত্ত",
+    isCorrect: false,
+    order: 3,
+  },
+  {
+    id: "opt_0008",
+    questionId: "q_0002",
+    text: "স্বরবৃত্ত",
+    isCorrect: false,
+    order: 4,
+  },
+
+  {
+    id: "opt_0009",
+    questionId: "q_0003",
+    text: "১৯০৫",
+    isCorrect: false,
+    order: 1,
+  },
+  {
+    id: "opt_0010",
+    questionId: "q_0003",
+    text: "১৯১১",
+    isCorrect: false,
+    order: 2,
+  },
+  {
+    id: "opt_0011",
+    questionId: "q_0003",
+    text: "১৯১৩",
+    isCorrect: true,
+    order: 3,
+  },
+  {
+    id: "opt_0012",
+    questionId: "q_0003",
+    text: "১৯১৯",
+    isCorrect: false,
+    order: 4,
+  },
+]

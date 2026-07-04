@@ -51,9 +51,9 @@ export interface Exam {
 }
 
 export type SubjectSlug =
-| "current-affairs"
-| "bangla-grammar"
-| "english-language"
+  | "current-affairs"
+  | "bangla-grammar"
+  | "english-language"
   | "general-science"
   | "international-affairs"
   | "ethics-values"
@@ -67,12 +67,81 @@ export type SubjectSlug =
   | "ict"
   | "registration-college"
 
+// Subject (PURE BUSINESS ENTITY)
+export interface Subject {
+  id: string
+  title: string
+  slug: SubjectSlug
+  url: string
+  examsCount: number
+}
 
-  // Subject (PURE BUSINESS ENTITY)
-  export interface Subject {
-    id: string
-    title: string
-    slug: SubjectSlug
-    url: string
-    examsCount: number
-  }
+export interface Topic {
+  id: string
+  title: string
+  questions: number
+}
+
+export interface Chapter {
+  id: string
+  title: string
+  totalQuestions: number
+  progress: number
+  topics: Topic[]
+}
+
+export interface Chapter {
+  id: string
+  subjectId: string
+  title: string
+  slug: string
+  order: number
+  status: "draft" | "published" | "archived"
+  totalTopics: number
+  totalQuestions: number
+}
+export interface QuestionOption {
+  id: string
+  text: string
+}
+
+export type Difficulty = "easy" | "medium" | "hard"
+
+export interface Question {
+  id: string
+  topicId: string
+
+  question: string
+  options: QuestionOption[]
+
+  correctOptionId: string
+  explanation: string
+
+  difficulty: "easy" | "medium" | "hard"
+
+  source: string
+  year: number
+
+  tags: string[]
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Question {
+  id: string
+  topicId: string
+  question: string
+  options: QuestionOption[]
+  correctOptionId: string
+  explanation: string
+  difficulty: "easy" | "medium" | "hard"
+  source: string
+  year: number
+}
+export interface color {
+  name: string
+  bg: string
+  border: string
+  progress: string
+}

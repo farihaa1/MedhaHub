@@ -15,7 +15,7 @@ export default function SubjectCard({ subject }: Props) {
   const progress = getSubjectProgress(subject.slug)
 
   return (
-    <Link href={subject.url} className="block h-full">
+    <Link href={`/subjects${subject.url}`} className="block h-full">
       <div
         className={`group relative flex h-full flex-col overflow-hidden rounded-lg border p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${color.border} ${color.bg}`}
       >
