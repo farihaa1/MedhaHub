@@ -67,7 +67,7 @@ export type SubjectSlug =
   | "ict"
   | "registration-college"
 
-// Subject (PURE BUSINESS ENTITY)
+
 export interface Subject {
   id: string
   title: string
@@ -100,44 +100,23 @@ export interface Chapter {
   totalTopics: number
   totalQuestions: number
 }
-export interface QuestionOption {
-  id: string
-  text: string
-}
-
-export type Difficulty = "easy" | "medium" | "hard"
 
 export interface Question {
   id: string
+  subjectId: string
+  chapterId: string
   topicId: string
-
   question: string
-  options: QuestionOption[]
-
+  options: {
+    id: string
+    text: string
+  }[]
   correctOptionId: string
   explanation: string
-
-  difficulty: "easy" | "medium" | "hard"
-
   source: string
-  year: number
-
-  tags: string[]
   isActive: boolean
   createdAt: string
   updatedAt: string
-}
-
-export interface Question {
-  id: string
-  topicId: string
-  question: string
-  options: QuestionOption[]
-  correctOptionId: string
-  explanation: string
-  difficulty: "easy" | "medium" | "hard"
-  source: string
-  year: number
 }
 export interface color {
   name: string

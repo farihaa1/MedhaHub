@@ -1,9 +1,16 @@
+
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, BookOpen, FileQuestion, CheckCircle2 } from "lucide-react"
+import {
+  ChevronDown,
+  BookOpen,
+  FileQuestion,
+  CheckCircle2,
+} from "lucide-react"
 
 import ChapterCard from "./ChapterCard"
+
 import { Chapter, color } from "@/app/type"
 import { topics } from "@/app/data/topicsData"
 import { getTheme } from "@/app/data/colorPalete"
@@ -11,30 +18,37 @@ import { getTheme } from "@/app/data/colorPalete"
 interface Props {
   chapters: Chapter[]
   color: color
+  id: string
+
+  // NEW
+  selectedTopics: string[]
+  onToggleTopic: (id: string) => void
 }
 
-export default function ChapterAccordion({ chapters, color }: Props) {
+export default function ChapterAccordion({
+  chapters,
+  color,
+  id,
+  selectedTopics,
+  onToggleTopic,
+}: Props) {
   const theme = getTheme(color.name)
 
   const [openChapter, setOpenChapter] = useState<string | null>(
     chapters?.[0]?.id ?? null
   )
 
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([])
-
   const toggleChapter = (id: string) => {
     setOpenChapter((prev) => (prev === id ? null : id))
   }
 
-  const toggleTopic = (id: string) => {
-    setSelectedTopics((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    )
-  }
+  const chaptersFilter = chapters.filter(
+    (chapter) => chapter.subjectId === id
+  )
 
   return (
-    <div>
-      {chapters.map((chapter, index) => {
+    <div className="space-y-5">
+      {chaptersFilter.map((chapter, index) => {
         const opened = openChapter === chapter.id
 
         const chapterTopics = topics.filter(
@@ -48,7 +62,7 @@ export default function ChapterAccordion({ chapters, color }: Props) {
         return (
           <div
             key={chapter.id}
-            className={`overflow-hidden bg-[#141C2D] shadow-lg transition-all ${theme.border} ${theme.hover}`}
+            className={`overflow-hidden rounded-2xl bg-[#141C2D] shadow-lg transition-all ${theme.border} ${theme.hover}`}
           >
             {/* Header */}
             <button
@@ -56,7 +70,7 @@ export default function ChapterAccordion({ chapters, color }: Props) {
               className="flex w-full items-center justify-between p-6 transition hover:bg-white/5"
             >
               <div className="flex items-start gap-5">
-                {/* Chapter Number */}
+                {/* Number */}
                 <div
                   className={`flex h-12 w-12 items-center justify-center rounded-xl font-bold text-white ${theme.bg}`}
                 >
@@ -65,7 +79,7 @@ export default function ChapterAccordion({ chapters, color }: Props) {
 
                 {/* Info */}
                 <div className="text-left">
-                  <p className="text-xs tracking-widest text-gray-400 uppercase">
+                  <p className="text-xs uppercase tracking-widest text-gray-400">
                     Chapter {index + 1}
                   </p>
 
@@ -111,7 +125,6 @@ export default function ChapterAccordion({ chapters, color }: Props) {
                 </div>
               </div>
 
-              {/* Arrow */}
               <ChevronDown
                 size={24}
                 className={`transition-transform duration-300 ${
@@ -142,7 +155,7 @@ export default function ChapterAccordion({ chapters, color }: Props) {
                         key={topic.id}
                         topic={topic}
                         selected={selectedTopics.includes(topic.id)}
-                        onToggle={toggleTopic}
+                        onToggle={onToggleTopic}
                         color={color}
                       />
                     ))

@@ -25,7 +25,7 @@ export default function ChapterCard({
   return (
     <div
       onClick={() => onToggle(topic.id)}
-      className={`cursor-pointer rounded-xl border transition-all duration-700 ${
+      className={`cursor-pointer rounded-xl border transition-all duration-300 ${
         selected
           ? `${theme.border} ${theme.bg}`
           : `border-white/10 bg-[#182233] hover:bg-white/5 ${theme.hover}`
@@ -53,23 +53,35 @@ export default function ChapterCard({
               )}
             </div>
 
-            <StatusBadge status={topic.status} color={color} />
+            <StatusBadge
+              status={topic.status}
+              color={color}
+            />
           </div>
 
           {/* Meta */}
           <div className="mt-4 flex flex-wrap gap-5 text-sm text-gray-400">
             <span className="flex items-center gap-2">
-              <FileQuestion size={15} className={theme.icon} />
+              <FileQuestion
+                size={15}
+                className={theme.icon}
+              />
               {topic.totalQuestions} Questions
             </span>
 
             <span className="flex items-center gap-2">
-              <Layers size={15} className={theme.icon} />
+              <Layers
+                size={15}
+                className={theme.icon}
+              />
               {topic.questionIds.length} Linked IDs
             </span>
 
             <span className="flex items-center gap-2">
-              <Hash size={15} className={theme.icon} />
+              <Hash
+                size={15}
+                className={theme.icon}
+              />
               Topic {topic.order}
             </span>
           </div>
@@ -84,7 +96,10 @@ interface StatusBadgeProps {
   color: color
 }
 
-function StatusBadge({ status, color }: StatusBadgeProps) {
+function StatusBadge({
+  status,
+  color,
+}: StatusBadgeProps) {
   const theme = getTheme(color.name)
 
   const styles = {
@@ -101,3 +116,4 @@ function StatusBadge({ status, color }: StatusBadgeProps) {
     </span>
   )
 }
+

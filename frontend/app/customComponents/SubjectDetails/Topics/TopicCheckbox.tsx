@@ -19,7 +19,7 @@ export default function TopicCheckbox({
   color,
 }: TopicCheckboxProps) {
   const theme = getTheme(color.name)
-
+  console.log(checked)
   return (
     <button
       type="button"
