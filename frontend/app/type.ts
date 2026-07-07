@@ -67,6 +67,18 @@ export type SubjectSlug =
   | "ict"
   | "registration-college"
 
+export interface Chapter {
+  id: string
+  subjectId: string
+  title: string
+  slug: string
+  order: number
+  status: "draft" | "approved"
+  totalTopics: number
+  totalQuestions: number
+  progress: number
+  userId?:string
+}
 
 export interface Subject {
   id: string
@@ -74,31 +86,6 @@ export interface Subject {
   slug: SubjectSlug
   url: string
   examsCount: number
-}
-
-export interface Topic {
-  id: string
-  title: string
-  questions: number
-}
-
-export interface Chapter {
-  id: string
-  title: string
-  totalQuestions: number
-  progress: number
-  topics: Topic[]
-}
-
-export interface Chapter {
-  id: string
-  subjectId: string
-  title: string
-  slug: string
-  order: number
-  status: "draft" | "published" | "archived"
-  totalTopics: number
-  totalQuestions: number
 }
 
 export interface Question {

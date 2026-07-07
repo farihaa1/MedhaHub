@@ -3,6 +3,7 @@ export type TopicStatus = "draft" | "published" | "archived"
 export interface Topic {
   id: string
   chapterId: string
+  subjectId: string
   title: string
   description?: string
   order: number
@@ -20,6 +21,7 @@ export const topics: Topic[] = [
   {
     id: "tp_01",
     chapterId: "ch_01",
+    subjectId: "sub_02",
     title: "ভাষার সংজ্ঞা",
     description: "ভাষার ধারণা, বৈশিষ্ট্য ও প্রয়োজনীয়তা",
     order: 1,
@@ -32,6 +34,7 @@ export const topics: Topic[] = [
   {
     id: "tp_02",
     chapterId: "ch_01",
+    subjectId: "sub_02",
     title: "ভাষার উৎপত্তি",
     description: "ভাষার উৎপত্তি সম্পর্কিত বিভিন্ন মতবাদ",
     order: 2,
@@ -44,6 +47,7 @@ export const topics: Topic[] = [
   {
     id: "tp_03",
     chapterId: "ch_01",
+    subjectId: "sub_02",
     title: "বাংলা ভাষার বিকাশ",
     description: "প্রাচীন থেকে আধুনিক বাংলা ভাষার বিবর্তন",
     order: 3,
@@ -56,6 +60,7 @@ export const topics: Topic[] = [
   {
     id: "tp_04",
     chapterId: "ch_01",
+    subjectId: "sub_02",
     title: "প্রমিত ভাষা",
     description: "প্রমিত ভাষার ব্যবহার ও বৈশিষ্ট্য",
     order: 4,
@@ -68,6 +73,7 @@ export const topics: Topic[] = [
   {
     id: "tp_05",
     chapterId: "ch_01",
+    subjectId: "sub_02",
     title: "আঞ্চলিক ভাষা",
     description: "বাংলাদেশ ও পশ্চিমবঙ্গের আঞ্চলিক ভাষা",
     order: 5,
@@ -84,6 +90,7 @@ export const topics: Topic[] = [
   {
     id: "tp_06",
     chapterId: "ch_02",
+    subjectId: "sub_02",
     title: "ধ্বনি পরিচিতি",
     description: "ধ্বনি কী ও এর শ্রেণিবিভাগ",
     order: 1,
@@ -96,6 +103,7 @@ export const topics: Topic[] = [
   {
     id: "tp_07",
     chapterId: "ch_02",
+    subjectId: "sub_02",
     title: "স্বরধ্বনি",
     description: "বাংলা স্বরধ্বনির পরিচয়",
     order: 2,
@@ -108,6 +116,7 @@ export const topics: Topic[] = [
   {
     id: "tp_08",
     chapterId: "ch_02",
+    subjectId: "sub_02",
     title: "ব্যঞ্জনধ্বনি",
     description: "বাংলা ব্যঞ্জনধ্বনির শ্রেণিবিভাগ",
     order: 3,
@@ -120,6 +129,7 @@ export const topics: Topic[] = [
   {
     id: "tp_09",
     chapterId: "ch_02",
+    subjectId: "sub_02",
     title: "উচ্চারণ",
     description: "বাংলা উচ্চারণের নিয়ম",
     order: 4,
@@ -136,6 +146,7 @@ export const topics: Topic[] = [
   {
     id: "tp_10",
     chapterId: "ch_03",
+    subjectId: "sub_02",
     title: "শব্দের গঠন",
     description: "শব্দ গঠনের নিয়ম",
     order: 1,
@@ -148,6 +159,7 @@ export const topics: Topic[] = [
   {
     id: "tp_11",
     chapterId: "ch_03",
+    subjectId: "sub_02",
     title: "তৎসম শব্দ",
     description: "তৎসম শব্দের ব্যবহার",
     order: 2,
@@ -160,6 +172,7 @@ export const topics: Topic[] = [
   {
     id: "tp_12",
     chapterId: "ch_03",
+    subjectId: "sub_02",
     title: "তদ্ভব শব্দ",
     description: "তদ্ভব শব্দের বৈশিষ্ট্য",
     order: 3,
@@ -172,6 +185,7 @@ export const topics: Topic[] = [
   {
     id: "tp_13",
     chapterId: "ch_03",
+    subjectId: "sub_02",
     title: "দেশি ও বিদেশি শব্দ",
     description: "বাংলায় বিদেশি শব্দের ব্যবহার",
     order: 4,
@@ -184,6 +198,7 @@ export const topics: Topic[] = [
   {
     id: "tp_14",
     chapterId: "ch_03",
+    subjectId: "sub_02",
     title: "শব্দের অর্থ",
     description: "অর্থের ভিত্তিতে শব্দের শ্রেণিবিভাগ",
     order: 5,
@@ -196,6 +211,7 @@ export const topics: Topic[] = [
   {
     id: "tp_15",
     chapterId: "ch_03",
+    subjectId: "sub_02",
     title: "সমার্থক শব্দ",
     description: "সমার্থক ও প্রতিশব্দ",
     order: 6,

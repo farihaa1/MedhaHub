@@ -2,13 +2,14 @@ import express, { Application, NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import router from "./router/router";
+import AppError from "./error/AppError";
 
 const app: Application = express();
 
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", // Vite
+      "http://localhost:5173",
       "http://localhost:3000",
     ],
     credentials: true,
@@ -25,8 +26,10 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
-  void _next;
+
+app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
+  void req;
+  void next;
 
   if (error instanceof mongoose.Error.ValidationError) {
     return res.status(400).json({
@@ -39,15 +42,23 @@ app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
     });
   }
 
-  const err = error as {
-    statusCode?: number;
-    message?: string;
-  };
+  if (error instanceof AppError) {
+    return res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+    });
+  }
 
-  res.status(err.statusCode || 500).json({
+  if (error instanceof Error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
+  return res.status(500).json({
     success: false,
-    message: err.message || "Something went wrong",
-    error,
+    message: "Something went wrong",
   });
 });
 

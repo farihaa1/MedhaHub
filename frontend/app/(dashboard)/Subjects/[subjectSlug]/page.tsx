@@ -22,7 +22,7 @@ export default async function SubjectPage({ params }: Props) {
   }
 
   const color: color = getSubjectColorBySlug(subjectSlug)
-
+console.log(subjectSlug)
   return (
     <SubjectPracticeClient
       subject={subject}

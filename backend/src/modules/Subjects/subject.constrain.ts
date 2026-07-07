@@ -1,0 +1,17 @@
+export enum SubjectSlug {
+  CurrentAffairs = "current-affairs",
+  BanglaGrammar = "bangla-grammar",
+  EnglishLanguage = "english-language",
+  GeneralScience = "general-science",
+  InternationalAffairs = "international-affairs",
+  EthicsValues = "ethics-values",
+  MentalAbility = "mental-ability",
+  RegistrationSchool = "registration-school",
+  BanglaLiterature = "bangla-literature",
+  EnglishLiterature = "english-literature",
+  MathematicalReasoning = "mathematical-reasoning",
+  BangladeshAffairs = "bangladesh-affairs",
+  GeographyDisaster = "geography-disaster",
+  ICT = "ict",
+  RegistrationCollege = "registration-college",
+}

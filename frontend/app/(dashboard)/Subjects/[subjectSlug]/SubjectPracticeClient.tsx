@@ -35,6 +35,8 @@ export default function SubjectPracticeClient({
     )
   }
 
+  console.log(subjectSlug)
+
   // Total questions from selected topics
   const selectedQuestions = useMemo<number>(() => {
     return topics
@@ -70,7 +72,7 @@ export default function SubjectPracticeClient({
             selectedQuestions={selectedQuestions}
             onGenerate={() => {
               router.push(
-                `/practice/configure?topics=${selectedTopics.join(",")}`
+                `/subjects/${subjectSlug}/configure?topics=${selectedTopics.join(",")}`
               )
             }}
           />

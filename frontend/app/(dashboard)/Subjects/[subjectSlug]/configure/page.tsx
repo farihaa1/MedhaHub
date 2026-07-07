@@ -1,24 +1,24 @@
-
 "use client"
 
 import { useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { topics } from "@/app/data/topicsData"
+import { generateExam } from "@/lib/exam/generateExam"
 
 export default function ConfigureExamPage() {
   const router = useRouter()
- const searchParams = useSearchParams()
+  const searchParams = useSearchParams()
 
- const topicString = searchParams.get("topics") ?? ""
+  const topicString = searchParams.get("topics") ?? ""
 
- const topicIds = useMemo(
-   () => topicString.split(",").filter(Boolean),
-   [topicString]
- )
-const selectedTopics = useMemo(() => {
-  return topics.filter((topic) => topicIds.includes(topic.id))
-}, [topicIds])
+  const topicIds = useMemo(
+    () => topicString.split(",").filter(Boolean),
+    [topicString]
+  )
+  const selectedTopics = useMemo(() => {
+    return topics.filter((topic) => topicIds.includes(topic.id))
+  }, [topicIds])
 
   const totalAvailableQuestions = selectedTopics.reduce(
     (sum, topic) => sum + topic.totalQuestions,
@@ -26,17 +26,16 @@ const selectedTopics = useMemo(() => {
   )
 
   const [questionCount, setQuestionCount] = useState(20)
-  const [timeLimit, setTimeLimit] = useState(20)
 
-  const handleStart = () => {
-    router.push(
-      `/practice/exam?topics=${topicIds.join(",")}&count=${questionCount}`
-    )
-  }
+ const handleStart = () => {
+   if (!selectedTopics.length) return
 
+   router.push(
+     `/exam/sessionId?subjectId=${selectedTopics[0].subjectId}&topics=${topicIds.join(",")}&count=${questionCount}`
+   )
+ }
   return (
     <main className="mx-auto max-w-5xl space-y-8 p-8">
-
       <div>
         <h1 className="text-3xl font-bold text-white">
           Configure Practice Exam
@@ -50,13 +49,11 @@ const selectedTopics = useMemo(() => {
       {/* Selected Topics */}
 
       <section className="rounded-xl border border-white/10 bg-[#141C2D] p-6">
-
         <h2 className="mb-4 text-lg font-semibold text-white">
           Selected Topics
         </h2>
 
         <div className="flex flex-wrap gap-3">
-
           {selectedTopics.map((topic) => (
             <span
               key={topic.id}
@@ -65,21 +62,17 @@ const selectedTopics = useMemo(() => {
               {topic.title}
             </span>
           ))}
-
         </div>
-
       </section>
 
       {/* Question Count */}
 
       <section className="rounded-xl border border-white/10 bg-[#141C2D] p-6">
-
         <h2 className="mb-4 text-lg font-semibold text-white">
           Number of Questions
         </h2>
 
         <div className="flex gap-3">
-
           {[10, 20, 30, 50].map((count) => (
             <button
               key={count}
@@ -93,65 +86,35 @@ const selectedTopics = useMemo(() => {
               {count}
             </button>
           ))}
-
         </div>
-
-      </section>
-
-      {/* Difficulty */}
-
-      <section className="rounded-xl border border-white/10 bg-[#141C2D] p-6">
-
-        <h2 className="mb-4 text-lg font-semibold text-white">
-          Difficulty
-        </h2>
-
       </section>
 
       {/* Summary */}
 
       <section className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-6">
-
         <div className="flex items-center justify-between">
-
           <div>
-
-            <p className="text-zinc-400">
-              Topics Selected
-            </p>
+            <p className="text-zinc-400">Topics Selected</p>
 
             <h3 className="text-2xl font-bold text-white">
               {selectedTopics.length}
             </h3>
-
           </div>
 
           <div>
-
-            <p className="text-zinc-400">
-              Available Questions
-            </p>
+            <p className="text-zinc-400">Available Questions</p>
 
             <h3 className="text-2xl font-bold text-white">
               {totalAvailableQuestions}
             </h3>
-
           </div>
 
           <div>
+            <p className="text-zinc-400">Exam Size</p>
 
-            <p className="text-zinc-400">
-              Exam Size
-            </p>
-
-            <h3 className="text-2xl font-bold text-white">
-              {questionCount}
-            </h3>
-
+            <h3 className="text-2xl font-bold text-white">{questionCount}</h3>
           </div>
-
         </div>
-
       </section>
 
       <button
@@ -160,7 +123,6 @@ const selectedTopics = useMemo(() => {
       >
         Start Practice Exam
       </button>
-
     </main>
   )
 }
