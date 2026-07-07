@@ -5,7 +5,6 @@ const optionsSchema = z
   .array(
     z.object({
       label: z.enum(["A", "B", "C", "D"]),
-
       text: z.string().min(1, "Option text is required"),
     }),
   )
@@ -13,7 +12,6 @@ const optionsSchema = z
 
 const examInfoSchema = z.object({
   category: z.enum(["BCS", "Bank", "Primary", "NTRCA", "Other"]),
-
   examName: z.string().optional(),
 
   year: z.number().optional(),
@@ -22,23 +20,14 @@ const examInfoSchema = z.object({
 const createQuestionValidationSchema = z.object({
   body: z.object({
     subjectId: z.string(),
-
     chapterId: z.string(),
-
     topicId: z.string(),
-
     questionText: z.string().min(5, "Question must be at least 5 characters"),
-
     options: optionsSchema,
-
     correctAnswer: z.enum(["A", "B", "C", "D"]),
-
     explanation: z.string().optional(),
-
     examInfo: examInfoSchema.optional(),
-
     tags: z.array(z.string()).optional(),
-
     status: z.nativeEnum(QuestionStatus).optional(),
   }),
 });
@@ -46,17 +35,11 @@ const createQuestionValidationSchema = z.object({
 const updateQuestionValidationSchema = z.object({
   body: z.object({
     questionText: z.string().min(5).optional(),
-
     options: optionsSchema.optional(),
-
     correctAnswer: z.enum(["A", "B", "C", "D"]).optional(),
-
     explanation: z.string().optional(),
-
     examInfo: examInfoSchema.optional(),
-
     tags: z.array(z.string()).optional(),
-
     status: z.nativeEnum(QuestionStatus).optional(),
   }),
 });

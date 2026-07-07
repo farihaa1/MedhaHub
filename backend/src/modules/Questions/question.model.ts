@@ -32,6 +32,8 @@ const questionSchema = new Schema<IQuestion>(
     options: {
       type: [
         {
+          _id: false,
+
           label: {
             type: String,
             enum: ["A", "B", "C", "D"],
@@ -47,12 +49,10 @@ const questionSchema = new Schema<IQuestion>(
       ],
 
       required: true,
-
       validate: {
         validator: (value: { label: string; text: string }[]) => {
           return value.length === 4;
         },
-
         message: "MCQ must have exactly 4 options",
       },
     },
