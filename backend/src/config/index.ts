@@ -1,14 +1,29 @@
 import dotenv from "dotenv";
 import path from "path";
+import { SignOptions } from "jsonwebtoken";
 
-dotenv.config({ path: path.join(process.cwd(), ".env") });
+dotenv.config({
+  path: path.join(process.cwd(), ".env"),
+});
 
-export default {
-  NODE_ENV: process.env.NODE_ENV || "development",
-  PORT: Number(process.env.PORT) || 5000,
-  MONGO_URI: process.env.MONGO_URI as string,
-  JWT_SECRET: process.env.JWT_SECRET as string,
-  JWT_EXPIRES: process.env.JWT_EXPIRES || "7d",
-  REFRESH_SECRET: process.env.REFRESH_SECRET as string,
-  REFRESH_EXPIRES: process.env.REFRESH_EXPIRES || "30d",
+const config = {
+  nodeEnv: process.env.NODE_ENV || "development",
+
+  port: Number(process.env.PORT) || 5000,
+
+  mongoUri: process.env.MONGO_URI as string,
+
+  bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 12,
+
+  jwtAccessSecret: process.env.JWT_ACCESS_SECRET as string,
+
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET as string,
+
+  jwtAccessExpiresIn: (process.env.JWT_ACCESS_EXPIRES_IN ||
+    "15m") as SignOptions["expiresIn"],
+
+  jwtRefreshExpiresIn: (process.env.JWT_REFRESH_EXPIRES_IN ||
+    "7d") as SignOptions["expiresIn"],
 };
+
+export default config;
