@@ -68,24 +68,15 @@ const userSchema = new Schema<IUser, UserModel>(
   },
 );
 
-userSchema.pre("save", async function () {
-  if (!this.isModified("password") || !this.password) {
-    return;
-  }
-
-  this.password = await bcrypt.hash(this.password, config.bcryptSaltRounds);
-});
-
 // Remove password after saving
 userSchema.post("save", function (doc, next) {
   doc.password = "";
-
   next();
 });
 
 // Static method
-userSchema.statics.isUserExistsByEmail = async function (email: string) {
-  return await this.findOne({ email }).select("+password");
+userSchema.statics.isUserExistsByEmail = function (email: string) {
+  return this.findOne({ email }).select("+password");
 };
 
 export const User = model<IUser, UserModel>("User", userSchema);

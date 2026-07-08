@@ -55,3 +55,35 @@ export function calculateResult(
     percentage,
   }
 }
+
+/**
+ * Format a date into a readable string.
+ */
+export function formatDate(
+  date: Date | string,
+  locale = "en-US"
+) {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+  }).format(new Date(date));
+}
+
+/**
+ * Format date and time.
+ */
+export function formatDateTime(
+  date: Date | string,
+  locale = "en-US"
+) {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(date));
+}
+
+/**
+ * Sleep utility.
+ */
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

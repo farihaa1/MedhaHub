@@ -1,3 +1,4 @@
+import React from "react"
 import HeroSection from "@/app/customComponents/Dashboard/customBlocks/HeroSection/HeroSection"
 import StatsGrid from "@/app/customComponents/Dashboard/customBlocks/Stats/StatsGrid"
 import QuickAccessGrid from "@/app/customComponents/Dashboard/customBlocks/QuickAccessCard/QuickAccessGrid"

@@ -3,9 +3,11 @@ import mongoose from "mongoose";
 import cors from "cors";
 import router from "./router/router";
 import AppError from "./error/AppError";
+import cookieParser from "cookie-parser";
 
 const app: Application = express();
 
+app.use(cookieParser());
 app.use(
   cors({
     origin: [
@@ -14,12 +16,7 @@ app.use(
     ],
     credentials: true,
   }),
-);app.use((req, res, next) => {
-  console.log("METHOD:", req.method);
-  console.log("URL:", req.originalUrl);
-  console.log("BODY:", req.body);
-  next();
-});
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use("/api/v1", router);

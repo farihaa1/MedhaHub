@@ -1,16 +1,41 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-
-import config from "../../config";
 import { IUser } from "../users/user.interface";
 import { UserRole } from "../users/user.constants";
+import { Response } from "express";
+import config from "../../config";
 
 interface TokenPayloadUser {
   _id: IUser["_id"];
   email: string;
   role: UserRole;
 }
+
+export const setAuthCookies = (
+  res: Response,
+  accessToken: string,
+  refreshToken: string,
+) => {
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 15 * 60 * 1000,
+  });
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+};
+
+export const clearAuthCookies = (res: Response) => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+};
 
 export const generateAuthTokens = (user: TokenPayloadUser) => {
   const payload = {
@@ -36,28 +61,22 @@ export const generateAuthTokens = (user: TokenPayloadUser) => {
 /**
  * Hash password before saving
  */
-export const hashPassword = async (
-  password: string
-): Promise<string> => {
+export const hashPassword = async (password: string): Promise<string> => {
   const saltRounds = Number(config.bcryptSaltRounds) || 10;
 
   return await bcrypt.hash(password, saltRounds);
 };
-
 
 /**
  * Compare plain password with hashed password
  */
 export const comparePassword = async (
   plainPassword: string,
-  hashedPassword: string
+  hashedPassword: string,
 ): Promise<boolean> => {
-  return await bcrypt.compare(
-    plainPassword,
-    hashedPassword
-  );
+  console.log(hashedPassword);
+  return await bcrypt.compare(plainPassword, hashedPassword);
 };
-
 
 /**
  * Generate JWT Access Token
@@ -72,32 +91,17 @@ export const createToken = (
   });
 };
 
-
 /**
  * Verify JWT Token
  */
-export const verifyToken = (
-  token: string,
-  secret: string
-): JwtPayload => {
-
-  return jwt.verify(
-    token,
-    secret
-  ) as JwtPayload;
-
+export const verifyToken = (token: string, secret: string): JwtPayload => {
+  return jwt.verify(token, secret) as JwtPayload;
 };
-
 
 /**
  * Generate random token
  * Example: password reset token
  */
-export const generateRandomToken = (
-  length = 32
-): string => {
-
-  return crypto
-    .randomBytes(length)
-    .toString("hex");
+export const generateRandomToken = (length = 32): string => {
+  return crypto.randomBytes(length).toString("hex");
 };

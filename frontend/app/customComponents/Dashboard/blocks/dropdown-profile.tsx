@@ -18,6 +18,7 @@ import {
   CirclePlusIcon,
   LogOutIcon,
 } from "lucide-react"
+import LogoutButton from "../../LogoutButton/LogoutButton"
 
 type Props = {
   trigger: ReactNode
@@ -92,7 +93,7 @@ const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
           className="gap-2 px-4 py-2.5 text-base"
         >
           <LogOutIcon className="size-5" />
-          <span>Logout</span>
+          <LogoutButton></LogoutButton>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

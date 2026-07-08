@@ -1,28 +1,35 @@
 import { Request, Response } from "express";
-
+import httpStatus  from "http-status";
 import { AuthService } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
+import { clearAuthCookies, setAuthCookies } from "./auth.utils";
 
-const register = catchAsync(async (req: Request, res: Response) => {
+
+
+const register = catchAsync(async (req, res) => {
   const result = await AuthService.register(req.body);
 
+  setAuthCookies(res, result.accessToken, result.refreshToken);
+
   sendResponse(res, {
-    success: true,
     statusCode: 201,
-    message: "User registered successfully",
-    data: result,
+    success: true,
+    message: "Registration successful",
+    data: result.user,
   });
 });
 
-const login = catchAsync(async (req: Request, res: Response) => {
+const login = catchAsync(async (req, res) => {
   const result = await AuthService.login(req.body);
+console.log(result)
+  setAuthCookies(res, result.accessToken, result.refreshToken);
 
   sendResponse(res, {
-    success: true,
     statusCode: 200,
+    success: true,
     message: "Login successful",
-    data: result,
+    data: result.user,
   });
 });
 
@@ -61,10 +68,36 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const refreshToken = catchAsync(async (req, res) => {
+  const token = req.cookies.refreshToken;
+
+  const result = await AuthService.refreshToken(token);
+
+  setAuthCookies(res, result.accessToken, result.refreshToken);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Token refreshed",
+    data: result.user,
+  });
+});
+const logout = catchAsync(async (_req, res) => {
+  clearAuthCookies(res);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Logged out successfully",
+    data: null,
+  });
+});
+
 export const AuthController = {
   register,
   login,
   changePassword,
   getMe,
   updateProfile,
+  refreshToken,logout
 };

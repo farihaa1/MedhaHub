@@ -19,7 +19,8 @@ AuthRoutes.post(
   validateRequest(AuthValidation.loginValidationSchema),
   AuthController.login,
 );
-
+AuthRoutes.post("/refresh-token", AuthController.refreshToken);
+AuthRoutes.post("/logout",auth(UserRole.USER, UserRole.ADMIN), AuthController.logout);
 AuthRoutes.post(
   "/change-password",
   auth(UserRole.USER, UserRole.ADMIN),

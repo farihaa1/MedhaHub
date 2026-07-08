@@ -1,6 +1,8 @@
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Anek_Bangla, Hind_Siliguri, Poppins } from "next/font/google"
+import Providers from "./providers/providers"
+
 
 const anekBangla = Anek_Bangla({
   subsets: ["bengali"],
@@ -31,15 +33,17 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${poppins.variable} ${hind.variable} ${anekBangla.variable}`}
     >
-      <body className="font-sans font-on">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+      <body className="font-on font-sans">
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   )
