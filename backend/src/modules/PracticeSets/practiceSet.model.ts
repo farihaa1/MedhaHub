@@ -1,5 +1,4 @@
-import { HydratedDocument } from "mongoose";
-import { Schema, model } from "mongoose";
+import { HydratedDocument, Schema, model } from "mongoose";
 import { IPracticeSet } from "./practiceSet.interface";
 import {
   PracticeSetStatus,
@@ -32,13 +31,11 @@ const practiceSetSchema = new Schema<IPracticeSet>(
       type: Schema.Types.ObjectId,
       ref: "Subject",
       required: true,
-      index: true,
     },
 
     chapter: {
       type: Schema.Types.ObjectId,
       ref: "Chapter",
-      index: true,
     },
 
     topics: [
@@ -55,11 +52,11 @@ const practiceSetSchema = new Schema<IPracticeSet>(
           ref: "Question",
         },
       ],
+      required: true,
       validate: {
         validator: (value: Schema.Types.ObjectId[]) => value.length > 0,
         message: "Practice set must contain at least one question.",
       },
-      required: true,
     },
 
     settings: {
@@ -100,7 +97,6 @@ const practiceSetSchema = new Schema<IPracticeSet>(
       type: String,
       enum: Object.values(PracticeSetStatus),
       default: PracticeSetStatus.DRAFT,
-      index: true,
     },
 
     tags: [
@@ -127,9 +123,9 @@ const practiceSetSchema = new Schema<IPracticeSet>(
   },
 );
 
-/* -----------------------------
+/* ---------------------------------
    Indexes
------------------------------- */
+---------------------------------- */
 
 practiceSetSchema.index({ subject: 1 });
 practiceSetSchema.index({ chapter: 1 });
@@ -138,19 +134,16 @@ practiceSetSchema.index({ status: 1 });
 practiceSetSchema.index({ visibility: 1 });
 practiceSetSchema.index({ isPremium: 1 });
 
-/* -----------------------------
+/* ---------------------------------
    Middleware
------------------------------- */
-
+---------------------------------- */
 
 practiceSetSchema.pre(
   "validate",
-  function (this: HydratedDocument<IPracticeSet>, next) {
+  function (this: HydratedDocument<IPracticeSet>) {
     if (!this.slug && this.title) {
       this.slug = generateSlug(this.title);
     }
-
-    // next();
   },
 );
 
