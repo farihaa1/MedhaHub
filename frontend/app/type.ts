@@ -28,7 +28,7 @@ export interface SignupButton {
 
 export interface Auth {
   login: LoginButton
-  //   signup: SignupButton
+    signup: SignupButton
 }
 
 export interface NavbarProps {

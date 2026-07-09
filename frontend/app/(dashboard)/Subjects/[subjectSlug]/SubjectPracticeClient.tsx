@@ -2,15 +2,14 @@
 
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
-import SubjectDetailsHero from "@/app/customComponents/SubjectDetails/SubjectDetailsHero"
-import ChapterAccordion from "@/app/customComponents/SubjectDetails/Chapters/ChapterAccordion"
-
 import { chapters } from "@/app/data/chaptersData"
 import { topics } from "@/app/data/topicsData"
 
 import { color } from "@/app/type"
 import { SubjectDetails } from "@/app/subjectDetails"
-import SelectedTopicsSummary from "@/app/customComponents/SubjectDetails/Topics/SelectedTopicsSummary"
+import SubjectDetailsHero from "../subjectComponents/SubjectDetails/SubjectDetailsHero"
+import ChapterAccordion from "../subjectComponents/SubjectDetails/Chapters/ChapterAccordion"
+import SelectedTopicsSummary from "../subjectComponents/SubjectDetails/Topics/SelectedTopicsSummary"
 
 interface Props {
   subject: SubjectDetails

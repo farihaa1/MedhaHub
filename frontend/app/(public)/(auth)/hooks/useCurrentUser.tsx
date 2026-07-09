@@ -1,11 +1,20 @@
 import { useMeQuery } from "@/app/redux/api/authApi"
+import { usePathname } from "next/navigation"
 
 export const useCurrentUser = () => {
-  const query = useMeQuery()
+  
+  const pathname = usePathname()
+  const publicRoutes = ["/", "/login", "/register", "/forgot-password"]
+  const skip = publicRoutes.includes(pathname)
+  const { data, error, isLoading, refetch } = useMeQuery(undefined, {
+    skip,
+  })
 
   return {
-    ...query,
-    user: query.data?.data ?? null,
-    isAuthenticated: !!query.data?.data,
+    user: data?.data ?? null,
+    isAuthenticated: !!data?.data,
+    isLoading,
+    error,
+    refetch,
   }
 }

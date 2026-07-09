@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { Subject } from "@/app/type"
 
 import { getSubjectColorBySlug } from "@/app/data/colorPalete"
 import { getSubjectProgress } from "@/app/data/userData"
+import { ISubject } from "../../subjects.type"
 
 interface Props {
-  subject: Subject
+  subject: ISubject
 }
 
 export default function SubjectCard({ subject }: Props) {
@@ -15,7 +15,7 @@ export default function SubjectCard({ subject }: Props) {
   const progress = getSubjectProgress(subject.slug)
 
   return (
-    <Link href={`/subjects${subject.url}`} className="block h-full">
+    <Link href={subject.url} className="block h-full">
       <div
         className={`group relative flex h-full flex-col overflow-hidden rounded-lg border p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${color.border} ${color.bg}`}
       >

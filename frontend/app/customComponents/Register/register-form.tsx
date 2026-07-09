@@ -45,11 +45,10 @@ const RegisterForm = () => {
           email: values.email,
           password: values.password,
         }
-
         await registerUser(payload).unwrap()
 
         router.replace("/dashboard")
-        // router.refresh()
+        router.refresh()
     } catch (error) {
       console.error(error)
     }

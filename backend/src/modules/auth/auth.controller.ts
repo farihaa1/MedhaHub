@@ -22,7 +22,7 @@ const register = catchAsync(async (req, res) => {
 
 const login = catchAsync(async (req, res) => {
   const result = await AuthService.login(req.body);
-console.log(result)
+
   setAuthCookies(res, result.accessToken, result.refreshToken);
 
   sendResponse(res, {
@@ -72,7 +72,7 @@ const refreshToken = catchAsync(async (req, res) => {
   const token = req.cookies.refreshToken;
 
   const result = await AuthService.refreshToken(token);
-
+console.log(result)
   setAuthCookies(res, result.accessToken, result.refreshToken);
 
   sendResponse(res, {

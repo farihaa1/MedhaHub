@@ -29,8 +29,9 @@ const LoginForm = () => {
       await login(values).unwrap()
 
       router.replace("/dashboard")
-    } catch (error) {
-      console.error(error)
+      router.refresh()
+    } catch (err) {
+      console.log(err)
     }
   }
 

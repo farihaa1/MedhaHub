@@ -16,11 +16,11 @@ AuthRoutes.post(
 
 AuthRoutes.post(
   "/login",
-  validateRequest(AuthValidation.loginValidationSchema),
+  
   AuthController.login,
 );
 AuthRoutes.post("/refresh-token", AuthController.refreshToken);
-AuthRoutes.post("/logout",auth(UserRole.USER, UserRole.ADMIN), AuthController.logout);
+AuthRoutes.post("/logout", AuthController.logout);
 AuthRoutes.post(
   "/change-password",
   auth(UserRole.USER, UserRole.ADMIN),

@@ -27,6 +27,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/login",
         method: "POST",
         body,
+        credentials: "include",
       }),
       invalidatesTags: ["Auth", "User"],
     }),
@@ -44,7 +45,11 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/me",
         method: "GET",
       }),
-      providesTags: ["Auth", "User"],
+      providesTags: ["User"],
+    }),
+
+    isAdmin: builder.query({
+      query: () => "/users/is-admin",
     }),
 
     // Update Profile
@@ -61,7 +66,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/logout",
         method: "POST",
       }),
-      invalidatesTags: ["User","Auth"],
+      invalidatesTags: ["User", "Auth"],
     }),
 
     // Change Password
@@ -82,6 +87,7 @@ export const {
   useRegisterMutation,
   useLoginMutation,
   useMeQuery,
+  useIsAdminQuery,
   useUpdateProfileMutation,
   useChangePasswordMutation,
   useLogoutMutation,

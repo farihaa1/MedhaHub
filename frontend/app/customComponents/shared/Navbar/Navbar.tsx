@@ -1,6 +1,6 @@
 "use client"
 
-import { Book, Menu, Sunset, Trees, Zap } from "lucide-react"
+import { Menu } from "lucide-react"
 
 import {
   Accordion,
@@ -49,7 +49,7 @@ const Navbar = ({ className }: NavbarProps) => {
                 alt={logo.title}
                 width={100}
                 height={100}
-                className="h-auto  w-auto"
+                className="h-auto w-auto"
               />
             </Link>
             <div className="flex items-center">
@@ -62,8 +62,13 @@ const Navbar = ({ className }: NavbarProps) => {
           </div>
           <div className="flex gap-2">
             <ThemeToggle></ThemeToggle>
-           
-              <Link className="flex justify-center items-center px-2 py-2" href={auth.login.url}>{auth.login.title}</Link>
+
+            <Link
+              className="flex items-center justify-center px-2 py-2"
+              href={auth.login.url}
+            >
+              {auth.login.title}
+            </Link>
 
             {/* <Button asChild size="sm">
               <a href={auth.signup.url}>{auth.signup.title}</a>
@@ -109,6 +114,7 @@ const Navbar = ({ className }: NavbarProps) => {
                           width={40}
                           height={40}
                           className="h-10 w-auto"
+                          priority
                         />
                       </Link>
                     </SheetTitle>

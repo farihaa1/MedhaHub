@@ -3,15 +3,15 @@ import { useCurrentUser } from "./useCurrentUser"
 
 
 export const useAuth = () => {
-  const currentUser = useCurrentUser()
+  const{ user,isAuthenticated ,refetch,isLoading}= useCurrentUser()
 
   const [login, loginState] = useLoginMutation()
   const [register, registerState] = useRegisterMutation()
   const [logout, logoutState] = useLogoutMutation()
 
   return {
-    user: currentUser.user,
-    isAuthenticated: currentUser.isAuthenticated,
+    user:user ,
+    isAuthenticated: isAuthenticated,
 
     login,
     register,
@@ -21,6 +21,6 @@ export const useAuth = () => {
     registerState,
     logoutState,
 
-    refetchUser: currentUser.refetch,
+    refetchUser:refetch,
   }
 }

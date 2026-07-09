@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 import { useCurrentUser } from "../hooks/useCurrentUser"
 
@@ -11,14 +11,24 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useCurrentUser()
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (isLoading) return
+
+    if (isAuthenticated) {
       router.replace("/dashboard")
     }
   }, [isAuthenticated, isLoading, router])
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
+      </div>
+    )
+  }
 
-  if (isAuthenticated) return null
+  if (isAuthenticated) {
+    return null
+  }
 
   return <>{children}</>
 }
