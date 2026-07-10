@@ -12,7 +12,7 @@ import ProtectedRoute from "../(public)/(auth)/components/ProtectedRoute"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <ProtectedRoute>
+    // <ProtectedRoute>
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
           <div>
@@ -50,6 +50,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </SidebarProvider>
-    </ProtectedRoute>
+    // </ProtectedRoute>
   )
 }

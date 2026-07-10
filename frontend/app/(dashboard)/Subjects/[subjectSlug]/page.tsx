@@ -15,17 +15,17 @@ interface Props {
 export default async function SubjectPage({ params }: Props) {
   const { subjectSlug } = await params
 
-  const subject = subjectDetails.find((item) => item.slug === subjectSlug)
+  // const subject = subjectDetails.find((item) => item.slug === subjectSlug)
 
-  if (!subject) {
-    notFound()
-  }
+  // if (!subject) {
+  //   notFound()
+  // }
 
   const color: color = getSubjectColorBySlug(subjectSlug)
 console.log(subjectSlug)
   return (
     <SubjectPracticeClient
-      subject={subject}
+    
       subjectSlug={subjectSlug}
       color={color}
     />

@@ -1,13 +1,24 @@
 import { Router } from "express";
 import { ChapterController } from "./chapter.controller";
+import { TopicController } from "../Topics/topic.controller";
 
-const router = Router();
+const ChapterRoutes = Router();
 
-router.post("/", ChapterController.createChapter);
-router.get("/", ChapterController.getAllChapters);
-router.get("/:id", ChapterController.getSingleChapter);
-router.patch("/:id", ChapterController.updateChapter);
-router.delete("/:id", ChapterController.deleteChapter);
-router.get("/subject/:subjectId", ChapterController.getChaptersBySubject);
+// Create
+ChapterRoutes.post("/", ChapterController.createChapter);
 
-export const ChapterRoutes = router;
+// Read
+ChapterRoutes.get("/", ChapterController.getAllChapters);
+
+
+
+// Single chapter
+ChapterRoutes.get("/:id", ChapterController.getSingleChapter);
+
+// Update
+ChapterRoutes.patch("/:id", ChapterController.updateChapter);
+
+// Delete
+ChapterRoutes.delete("/:id", ChapterController.deleteChapter);
+ChapterRoutes.get("/:chapterId/topics", TopicController.getTopicsByChapter);
+export default ChapterRoutes;

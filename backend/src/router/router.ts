@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ChapterRoutes } from "../modules/Chapters/chapter.route";
+import ChapterRoutes from "../modules/Chapters/chapter.route";
 import SubjectRoutes from "../modules/Subjects/subject.route";
 import TopicRoutes from "../modules/Topics/topic.route";
 import AuthRoutes from "../modules/auth/auth.route";

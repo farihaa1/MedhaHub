@@ -9,9 +9,12 @@ export const subjectsApi = baseApi.injectEndpoints({
       providesTags: ["Subject"],
     }),
 
-    getSubject: builder.query<ISubject, string>({
-      query: (slug) => `/subjects/${slug}`,
-      providesTags: (_r, _e, slug) => [{ type: "Subject", id: slug }],
+    getSubject: builder.query<IApiResponse<ISubject>, string>({
+      query: (slug) => ({
+        url: `/subjects/${slug}`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, slug) => [{ type: "Subject", id: slug }],
     }),
   }),
 
