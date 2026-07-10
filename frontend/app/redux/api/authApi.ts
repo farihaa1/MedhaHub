@@ -22,7 +22,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    login: builder.mutation<IApiResponse<LoginData>, LoginInput>({
+    login: builder.mutation<IApiResponse<IUser>, LoginInput>({
       query: (body) => ({
         url: "/auth/login",
         method: "POST",
@@ -44,6 +44,7 @@ export const authApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/auth/me",
         method: "GET",
+        credentials: "include",
       }),
       providesTags: ["User"],
     }),
@@ -66,7 +67,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/logout",
         method: "POST",
       }),
-      invalidatesTags: ["User", "Auth"],
+      
     }),
 
     // Change Password

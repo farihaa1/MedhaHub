@@ -18,7 +18,7 @@ import {
   CirclePlusIcon,
   LogOutIcon,
 } from "lucide-react"
-import LogoutButton from "../../LogoutButton/LogoutButton"
+import LogoutButton from "../../shared/Navbar/LogoutButton"
 
 type Props = {
   trigger: ReactNode

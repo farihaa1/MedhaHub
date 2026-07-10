@@ -16,9 +16,12 @@ import { EyeOffIcon, EyeIcon } from "lucide-react"
 import { useLoginMutation } from "@/app/redux/api/authApi"
 import { ILoginInput } from "@/app/features/auth/auth.type"
 import { useRouter } from "next/navigation"
+import { useAppDispatch } from "@/app/redux/hooks"
+import { setCredentials } from "@/app/redux/slices/authSlice"
 
 const LoginForm = () => {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [isVisible, setIsVisible] = useState(false)
   const [login, { isLoading }] = useLoginMutation()
 
@@ -26,10 +29,11 @@ const LoginForm = () => {
 
   const onSubmit = async (values: ILoginInput) => {
     try {
-      await login(values).unwrap()
+     const result = await login(values).unwrap()
 
-      router.replace("/dashboard")
-      router.refresh()
+     dispatch(setCredentials(result.data))
+
+     router.replace("/dashboard")
     } catch (err) {
       console.log(err)
     }

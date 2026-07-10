@@ -2,7 +2,6 @@
 
 import { ReactNode, useEffect } from "react"
 import { usePathname } from "next/navigation"
-
 import { useMeQuery } from "@/app/redux/api/authApi"
 import { useAppDispatch } from "@/app/redux/hooks"
 import {
@@ -25,12 +24,12 @@ export default function AuthProvider({ children }: Props) {
 
   const { data, isLoading, isSuccess, isError } = useMeQuery(undefined, {
     skip: isPublicRoute,
-    refetchOnMountOrArgChange: true,
+  
   })
 
   useEffect(() => {
     if (isPublicRoute) {
-      dispatch(setLoading(false))
+      dispatch(clearCredentials())
       return
     }
 

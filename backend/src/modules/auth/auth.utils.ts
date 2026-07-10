@@ -5,35 +5,42 @@ import { IUser } from "../users/user.interface";
 import { UserRole } from "../users/user.constants";
 import { Response } from "express";
 import config from "../../config";
+import AppError from "../../error/AppError";
+import httpStatus from "http-status";
 
 interface TokenPayloadUser {
   _id: IUser["_id"];
   email: string;
   role: UserRole;
 }
+const FIFTEEN_MINUTES = 15 * 60 * 1000;
+const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: config.nodeEnv === "production",
+  sameSite: config.nodeEnv === "production" ? "none" : "lax",
+  path: "/",
+} as const;
 export const setAuthCookies = (
   res: Response,
   accessToken: string,
   refreshToken: string,
 ) => {
+  res.cookie("accessToken", accessToken, {
+    ...cookieOptions,
+    maxAge: FIFTEEN_MINUTES,
+  });
 
-res.cookie("accessToken", accessToken, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
-});
-
-res.cookie("refreshToken", refreshToken, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
-});
+  res.cookie("refreshToken", refreshToken, {
+    ...cookieOptions,
+    maxAge: SEVEN_DAYS,
+  });
 };
 
 export const clearAuthCookies = (res: Response) => {
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("refreshToken", cookieOptions);
 };
 
 export const generateAuthTokens = (user: TokenPayloadUser) => {
@@ -73,7 +80,6 @@ export const comparePassword = async (
   plainPassword: string,
   hashedPassword: string,
 ): Promise<boolean> => {
-  console.log(hashedPassword);
   return await bcrypt.compare(plainPassword, hashedPassword);
 };
 
@@ -81,7 +87,7 @@ export const comparePassword = async (
  * Generate JWT Access Token
  */
 export const createToken = (
-  payload: object,
+  payload: JwtPayload | Record<string, unknown>,
   secret: string,
   expiresIn: SignOptions["expiresIn"],
 ): string => {
@@ -94,7 +100,11 @@ export const createToken = (
  * Verify JWT Token
  */
 export const verifyToken = (token: string, secret: string): JwtPayload => {
-  return jwt.verify(token, secret) as JwtPayload;
+  try {
+    return jwt.verify(token, secret) as JwtPayload;
+  } catch {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid token");
+  }
 };
 
 /**

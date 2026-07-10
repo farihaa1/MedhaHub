@@ -80,7 +80,7 @@ export default function SubjectDetailsHero({
             <StatCard
               icon={<FileQuestion size={20} />}
               title="Questions"
-              value={totalQuestions.toLocaleString()}
+              value={totalQuestions?.toLocaleString() ?? 0}
               color={color}
             />
 
