@@ -18,6 +18,6 @@ router.use("/topics", TopicRoutes);
 router.use("/questions", QuestionRoutes);
 
 router.use("/exam-engine", ExamEngineRoutes);
-router.use("/exam-sessions", ExamSessionRoutes);
+router.use("/exam", ExamSessionRoutes);
 
 export default router;

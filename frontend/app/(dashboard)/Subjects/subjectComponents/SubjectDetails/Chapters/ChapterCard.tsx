@@ -1,12 +1,9 @@
 "use client"
 
 import { FileQuestion, Hash } from "lucide-react"
-
 import TopicCheckbox from "../Topics/TopicCheckbox"
-
 import { color } from "@/app/type"
 import { getTheme } from "@/app/data/colorPalete"
-
 import { ITopic } from "@/app/redux/api/topicsApi"
 
 interface Props {
@@ -23,6 +20,7 @@ export default function ChapterCard({
   color,
 }: Props) {
   const theme = getTheme(color.name)
+  console.log(topic)
 
   return (
     <div

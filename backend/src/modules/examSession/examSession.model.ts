@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-
 import {
   IExamSession,
   IExamSessionQuestion,
@@ -9,7 +8,6 @@ import {
 import { ExamSessionStatus } from "./examSession.constant";
 import { ExamType } from "../ExamEngine/examEngine.constant";
 
-// Question schema inside session
 const examSessionQuestionSchema = new Schema<IExamSessionQuestion>(
   {
     questionId: {
@@ -17,18 +15,14 @@ const examSessionQuestionSchema = new Schema<IExamSessionQuestion>(
       ref: "Question",
       required: true,
     },
-
     order: {
       type: Number,
       required: true,
     },
   },
-  {
-    _id: false,
-  },
+  { _id: false },
 );
 
-// Answer schema
 const examAnswerSchema = new Schema<IExamAnswer>(
   {
     questionId: {
@@ -38,8 +32,7 @@ const examAnswerSchema = new Schema<IExamAnswer>(
     },
 
     selectedOption: {
-      type: Schema.Types.ObjectId,
-      required: false,
+      type: String,
     },
 
     isCorrect: {
@@ -52,12 +45,9 @@ const examAnswerSchema = new Schema<IExamAnswer>(
       default: 0,
     },
   },
-  {
-    _id: false,
-  },
+  { _id: false },
 );
 
-// Main Exam Session Schema
 const examSessionSchema = new Schema<IExamSession>(
   {
     userId: {
@@ -75,18 +65,7 @@ const examSessionSchema = new Schema<IExamSession>(
     source: {
       type: {
         type: String,
-
-        enum: [
-          "topic",
-          "chapter",
-          "subject",
-          "practice_set",
-          "model_test",
-          "previous_year",
-          "daily",
-        ],
       },
-
       id: {
         type: Schema.Types.ObjectId,
       },
@@ -97,51 +76,42 @@ const examSessionSchema = new Schema<IExamSession>(
     answers: [examAnswerSchema],
 
     settings: {
-      shuffleQuestions: {
-        type: Boolean,
-        default: false,
-      },
-
-      shuffleOptions: {
-        type: Boolean,
-        default: false,
-      },
+      shuffleQuestions: Boolean,
+      shuffleOptions: Boolean,
     },
 
-    duration: {
-      type: Number,
-      required: true,
-    },
+    duration: Number,
 
-    totalMarks: {
-      type: Number,
-      required: true,
-    },
+    totalMarks: Number,
 
-    negativeMark: {
-      type: Number,
-      default: 0,
-    },
+    negativeMark: Number,
 
     status: {
       type: String,
-
       enum: Object.values(ExamSessionStatus),
-
       default: ExamSessionStatus.RUNNING,
     },
 
-    startTime: {
-      type: Date,
-      required: true,
-    },
+    startTime: Date,
 
-    endTime: {
-      type: Date,
-    },
+    endTime: Date,
 
-    submittedAt: {
-      type: Date,
+    submittedAt: Date,
+
+    // ===============================
+    // Persisted Result
+    // ===============================
+
+    result: {
+      score: Number,
+
+      correct: Number,
+
+      wrong: Number,
+
+      skipped: Number,
+
+      accuracy: Number,
     },
   },
   {

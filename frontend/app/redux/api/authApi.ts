@@ -36,6 +36,7 @@ export const authApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/auth/refresh-token",
         method: "POST",
+        credentials: "include",
       }),
     }),
 
@@ -66,8 +67,8 @@ export const authApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/auth/logout",
         method: "POST",
+        credentials: "include",
       }),
-      
     }),
 
     // Change Password

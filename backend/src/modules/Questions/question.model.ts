@@ -4,6 +4,7 @@ import { IQuestion } from "./question.interface";
 import { QuestionStatus } from "./question.constant";
 
 const questionSchema = new Schema<IQuestion>(
+  
   {
     subjectId: {
       type: Schema.Types.ObjectId,

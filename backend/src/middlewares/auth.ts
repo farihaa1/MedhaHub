@@ -9,6 +9,11 @@ const auth =
   (...requiredRoles: string[]) =>
   async (req: Request, _res: Response, next: NextFunction) => {
     try {
+      console.log("==============");
+      console.log("Cookies:", req.cookies);
+     console.log("====");
+     console.log(req.method, req.originalUrl);
+     console.log(req.cookies);
       // Read token from cookie
       const token = req.cookies?.accessToken;
 

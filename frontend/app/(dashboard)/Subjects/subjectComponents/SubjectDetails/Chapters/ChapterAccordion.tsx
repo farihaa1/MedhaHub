@@ -75,6 +75,7 @@ function ChapterItem({
   })
 
   const topics = data?.data ?? []
+  console.log(topics)
 
   const selectedCount = topics.filter((topic) =>
     selectedTopics.includes(topic._id)

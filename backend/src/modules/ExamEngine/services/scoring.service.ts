@@ -6,16 +6,33 @@ interface IScoreInput {
   negativeMark: number;
 }
 
-const calculateScore = (data: IScoreInput) => {
-  const score = data.correct - data.wrong * data.negativeMark;
-  const accuracy = data.total === 0 ? 0 : (data.correct / data.total) * 100;
+const calculateScore = ({
+  correct,
+  wrong,
+  skipped,
+  total,
+  negativeMark,
+}: IScoreInput) => {
+  const score = correct - wrong * negativeMark;
+
+  const accuracy =
+    total === 0 ? 0 : Number(((correct / total) * 100).toFixed(2));
+
+  const percentage =
+    total === 0 ? 0 : Number(((score / total) * 100).toFixed(2));
 
   return {
     score,
+
+    percentage,
+
     accuracy,
-    correct: data.correct,
-    wrong: data.wrong,
-    skipped: data.skipped,
+
+    correct,
+
+    wrong,
+
+    skipped,
   };
 };
 

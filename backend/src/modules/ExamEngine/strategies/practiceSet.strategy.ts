@@ -1,32 +1,40 @@
+import httpStatus from "http-status";
+
+import AppError from "../../../error/AppError";
+
+import { BaseExamStrategy } from "./base.strategy";
 import { IExamStrategy } from "./strategy.interface";
 
-import { IStartExamPayload, IExamConfiguration } from "../examEngine.interface";
+import { IExamConfiguration, IStartExamPayload } from "../examEngine.interface";
+
 import { PracticeSet } from "../../PracticeSets/practiceSet.model";
 
-export class PracticeSetStrategy implements IExamStrategy {
+export class PracticeSetStrategy
+  extends BaseExamStrategy
+  implements IExamStrategy
+{
   async generateExam(payload: IStartExamPayload): Promise<IExamConfiguration> {
     if (!payload.sourceId) {
-      throw new Error("Practice set id required");
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Practice Set id is required.",
+      );
     }
 
     const practiceSet = await PracticeSet.findById(payload.sourceId);
 
     if (!practiceSet) {
-      throw new Error("Practice set not found");
+      throw new AppError(httpStatus.NOT_FOUND, "Practice Set not found.");
     }
 
-    return {
-      questions: practiceSet.questions,
+    return this.buildConfiguration(practiceSet.questions, {
+      duration: practiceSet.settings?.duration,
 
-      duration: practiceSet.settings?.duration ?? practiceSet.questions.length,
+      negativeMark: practiceSet.settings?.negativeMark,
 
-      totalMarks: practiceSet.questions.length,
+      shuffleQuestions: practiceSet.settings?.shuffleQuestions,
 
-      negativeMark: practiceSet.settings?.negativeMark ?? 0,
-
-      shuffleQuestions: practiceSet.settings?.shuffleQuestions ?? true,
-
-      shuffleOptions: practiceSet.settings?.shuffleOptions ?? true,
-    };
+      shuffleOptions: practiceSet.settings?.shuffleOptions,
+    });
   }
 }

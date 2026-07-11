@@ -17,7 +17,6 @@ export class CustomExamStrategy implements IExamStrategy {
 
     return {
       questions: questions.map((q) => q._id),
-
       duration: TimerService.calculateDuration(questions.length),
 
       totalMarks: questions.length,

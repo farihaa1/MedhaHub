@@ -7,17 +7,21 @@ export interface IExamSessionQuestion {
   order: number;
 }
 
-
 export interface IExamAnswer {
   questionId: Types.ObjectId;
-  selectedOption?: Types.ObjectId;
-  isCorrect?: boolean;
-  timeTaken?: number;
+
+  selectedOption?: "A" | "B" | "C" | "D";
+
+  isCorrect: boolean;
+
+  timeTaken: number;
 }
 
 export interface IExamSession {
   userId: Types.ObjectId;
+
   examType: TExamType;
+
   source?: {
     type:
       | "topic"
@@ -27,23 +31,47 @@ export interface IExamSession {
       | "model_test"
       | "previous_year"
       | "daily";
+
     id?: Types.ObjectId;
   };
+
   questions: IExamSessionQuestion[];
-  answers?: IExamAnswer[];
+
+  answers: IExamAnswer[];
+
   settings: {
     shuffleQuestions: boolean;
     shuffleOptions: boolean;
   };
 
   duration: number;
-  // minutes
+
   totalMarks: number;
+
   negativeMark: number;
+
   status: TExamSessionStatus;
+
   startTime: Date;
+
   endTime?: Date;
+
   submittedAt?: Date;
+
   createdAt?: Date;
+
   updatedAt?: Date;
+  result?: {
+    score: number;
+    correct: number;
+    wrong: number;
+    skipped: number;
+    accuracy: number;
+  };
+}
+export interface ISubmitAnswerPayload {
+  sessionId: string;
+  questionId: string;
+  selectedOption: "A" | "B" | "C" | "D";
+  timeTaken?: number;
 }

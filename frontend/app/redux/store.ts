@@ -1,11 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit"
 import authReducer from "./slices/authSlice"
 import { baseApi } from "./api/baseApi"
+import examEngineReducer from "@/app/redux/slices/exam-engine.slice"
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-
+    examEngine: examEngineReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
 

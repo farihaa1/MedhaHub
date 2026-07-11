@@ -1,78 +1,75 @@
-import { Types } from "mongoose";
-import { Question } from "../../Questions/question.model";
+import { FilterQuery } from "mongoose";
 
-interface IQuestionFilter {
+import AppError from "../../../error/AppError";
+
+import { Question } from "../../Questions/question.model";
+import { IQuestion } from "../../Questions/question.interface";
+
+interface ISelectQuestionOptions {
   subjectId?: string;
+
   chapterId?: string;
+
   topicIds?: string[];
 
   source?: string;
+
   year?: number;
 
-  difficulty?: string[];
-  questionType?: string[];
+  tags?: string[];
 
   count: number;
 }
 
 const selectQuestions = async (
-  filter: IQuestionFilter,
-): Promise<Types.ObjectId[]> => {
-  const query: Record<string, unknown> = {
-    status: "published",
-  };
+  options: ISelectQuestionOptions,
+): Promise<IQuestion[]> => {
+  const filter: FilterQuery<IQuestion> = {};
 
-  if (filter.subjectId) {
-    query.subjectId = new Types.ObjectId(filter.subjectId);
+  if (options.subjectId) {
+    filter.subjectId = options.subjectId;
   }
 
-  if (filter.chapterId) {
-    query.chapterId = new Types.ObjectId(filter.chapterId);
+  if (options.chapterId) {
+    filter.chapterId = options.chapterId;
   }
 
-  if (filter.topicIds?.length) {
-    query.topicId = {
-      $in: filter.topicIds.map((id) => new Types.ObjectId(id)),
+  if (options.topicIds?.length) {
+    filter.topicId = {
+      $in: options.topicIds,
     };
   }
 
-  if (filter.source) {
-    query.source = filter.source;
+  if (options.source) {
+    filter["examInfo.category"] = options.source;
   }
 
-  if (filter.year) {
-    query.year = filter.year;
+  if (options.year) {
+    filter["examInfo.year"] = options.year;
   }
 
-  if (filter.difficulty?.length) {
-    query.difficulty = {
-      $in: filter.difficulty,
+  if (options.tags?.length) {
+    filter.tags = {
+      $in: options.tags,
     };
   }
 
-  if (filter.questionType?.length) {
-    query.questionType = {
-      $in: filter.questionType,
-    };
-  }
-
-  const questions: { _id: Types.ObjectId }[] = await Question.aggregate([
+  const questions = await Question.aggregate([
     {
-      $match: query,
+      $match: filter,
     },
     {
       $sample: {
-        size: filter.count,
-      },
-    },
-    {
-      $project: {
-        _id: 1,
+        size: options.count,
       },
     },
   ]);
 
-  return questions.map((question) => question._id);
+  if (!questions.length) {
+    throw new AppError(404, "No questions found for this exam.");
+  }
+
+  return questions;
 };
 
 export const QuestionSelectorService = {

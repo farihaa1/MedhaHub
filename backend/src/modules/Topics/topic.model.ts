@@ -8,6 +8,11 @@ const topicSchema = new Schema<ITopic>(
       ref: "Chapter",
       required: true,
     },
+    subjectId: {
+      type: Schema.Types.ObjectId,
+      ref: "Subject",
+      required: true,
+    },
 
     title: {
       type: String,

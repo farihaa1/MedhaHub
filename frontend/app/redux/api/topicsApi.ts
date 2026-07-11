@@ -9,6 +9,7 @@ export enum TopicStatus {
 export interface ITopic {
   _id: string
   chapterId: string
+  subjectId?: string
   title: string
   slug: string
   order: number

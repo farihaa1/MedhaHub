@@ -1,14 +1,22 @@
+import httpStatus from "http-status";
+
+import AppError from "../../../error/AppError";
+
+import { BaseExamStrategy } from "./base.strategy";
+
 import { IExamStrategy } from "./strategy.interface";
 
-import { IStartExamPayload, IExamConfiguration } from "../examEngine.interface";
+import { IExamConfiguration, IStartExamPayload } from "../examEngine.interface";
 
 import { QuestionSelectorService } from "../services/questionSelector.service";
-import { TimerService } from "../services/timer.service";
 
-export class TopicExamStrategy implements IExamStrategy {
+export class TopicExamStrategy
+  extends BaseExamStrategy
+  implements IExamStrategy
+{
   async generateExam(payload: IStartExamPayload): Promise<IExamConfiguration> {
     if (!payload.topicIds?.length) {
-      throw new Error("Topic required");
+      throw new AppError(httpStatus.BAD_REQUEST, "Topic ids are required.");
     }
 
     const questions = await QuestionSelectorService.selectQuestions({
@@ -17,18 +25,6 @@ export class TopicExamStrategy implements IExamStrategy {
       count: payload.questionCount ?? 20,
     });
 
-    return {
-      questions: questions.map((q) => q._id),
-
-      duration: TimerService.calculateDuration(questions.length),
-
-      totalMarks: questions.length,
-
-      negativeMark: 0,
-
-      shuffleQuestions: true,
-
-      shuffleOptions: true,
-    };
+    return this.buildConfiguration(questions.map((question) => question._id!));
   }
 }

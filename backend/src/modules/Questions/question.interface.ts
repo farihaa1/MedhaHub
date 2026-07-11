@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import { QuestionStatus } from "./question.constant";
 
 export interface IQuestion {
-  _id?: Types.ObjectId;
+  _id: Types.ObjectId;
 
   // Classification
   subjectId: Types.ObjectId;

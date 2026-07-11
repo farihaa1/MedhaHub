@@ -1,7 +1,4 @@
-import { notFound } from "next/navigation"
-
 import { SubjectSlug, color } from "@/app/type"
-import { subjectDetails } from "@/app/subjectDetails"
 import { getSubjectColorBySlug } from "@/app/data/colorPalete"
 
 import SubjectPracticeClient from "./SubjectPracticeClient"
@@ -25,7 +22,6 @@ export default async function SubjectPage({ params }: Props) {
 console.log(subjectSlug)
   return (
     <SubjectPracticeClient
-    
       subjectSlug={subjectSlug}
       color={color}
     />

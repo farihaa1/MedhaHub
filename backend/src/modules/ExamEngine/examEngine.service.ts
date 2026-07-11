@@ -1,41 +1,80 @@
-import { Types } from "mongoose";
 import { getExamStrategy } from "./factory/examStrategy.factory";
+
 import { IStartExamPayload } from "./examEngine.interface";
 import { ExamSessionService } from "../examSession/examSession.service";
+import { hasSessionExpired } from "../examSession/examSession.utils";
+import { ExamSessionStatus } from "../examSession/examSession.constant";
 
 const startExam = async (payload: IStartExamPayload) => {
-  // 1. Select strategy based on exam type
+  /**
+   * ---------------------------------------
+   * STEP 1
+   * Check for existing running session
+   * ---------------------------------------
+   */
+
+  const runningSession = await ExamSessionService.getRunningSession(
+    payload.userId,
+    payload.examType,
+  );
+
+  if (runningSession) {
+    /**
+     * Expired?
+     */
+    if (hasSessionExpired(runningSession.startTime, runningSession.duration)) {
+      runningSession.status = ExamSessionStatus.EXPIRED;
+      runningSession.endTime = new Date();
+
+      await runningSession.save();
+    } else {
+      /**
+       * Resume exam
+       */
+      return runningSession;
+    }
+  }
+
+  /**
+   * ---------------------------------------
+   * STEP 2
+   * Generate Exam
+   * ---------------------------------------
+   */
+
   const strategy = getExamStrategy(payload.examType);
-  // 2. Generate exam configuration
+
   const examConfig = await strategy.generateExam(payload);
 
-  // 3. Create exam session
+  /**
+   * ---------------------------------------
+   * STEP 3
+   * Create Session
+   * ---------------------------------------
+   */
 
-  const examSession = await ExamSessionService.createSession({
+  const session = await ExamSessionService.createSession({
     userId: payload.userId,
+
     examType: payload.examType,
+
     questions: examConfig.questions,
+
     duration: examConfig.duration,
+
     totalMarks: examConfig.totalMarks,
-    negativeMark: examConfig.negativeMark ?? 0,
+
+    negativeMark: examConfig.negativeMark,
+
     settings: {
       shuffleQuestions: examConfig.shuffleQuestions,
+
       shuffleOptions: examConfig.shuffleOptions,
     },
   });
 
-  return examSession;
+  return session;
 };
-
-
-export interface IExamConfiguration {
-  questions: Types.ObjectId[];
-  duration: number;
-  totalMarks: number;
-  negativeMark: number;
-  shuffleQuestions: boolean;
-  shuffleOptions: boolean;
-}
 
 export const ExamEngineService = {
   startExam,
