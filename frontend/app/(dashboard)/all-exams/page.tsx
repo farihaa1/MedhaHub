@@ -1,6 +1,6 @@
-import AllExamsTable from "@/app/customComponents/AllExams/AllExamsTable"
-import ExamHeader from "@/app/customComponents/AllExams/ExamHeader"
-import FilterSection from "@/app/customComponents/AllExams/FilterSection"
+import AllExamsTable from "@/app/customComponents/Dashboard/AllExams/AllExamsTable"
+import ExamHeader from "@/app/customComponents/Dashboard/AllExams/ExamHeader"
+import FilterSection from "@/app/customComponents/Dashboard/AllExams/FilterSection"
 import { mockExams } from "@/app/data/data"
 
 export default function ExamsPage() {

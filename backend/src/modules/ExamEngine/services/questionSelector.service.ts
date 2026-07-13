@@ -1,9 +1,7 @@
-import { FilterQuery } from "mongoose";
-
 import AppError from "../../../error/AppError";
-
 import { Question } from "../../Questions/question.model";
 import { IQuestion } from "../../Questions/question.interface";
+import { Types } from "mongoose";
 
 interface ISelectQuestionOptions {
   subjectId?: string;
@@ -24,7 +22,13 @@ interface ISelectQuestionOptions {
 const selectQuestions = async (
   options: ISelectQuestionOptions,
 ): Promise<IQuestion[]> => {
-  const filter: FilterQuery<IQuestion> = {};
+const filter: Record<string, unknown> = {};
+
+if (options.topicIds?.length) {
+  filter.topicId = {
+    $in: options.topicIds.map((id) => new Types.ObjectId(id)),
+  };
+}
 
   if (options.subjectId) {
     filter.subjectId = options.subjectId;
@@ -34,11 +38,7 @@ const selectQuestions = async (
     filter.chapterId = options.chapterId;
   }
 
-  if (options.topicIds?.length) {
-    filter.topicId = {
-      $in: options.topicIds,
-    };
-  }
+  
 
   if (options.source) {
     filter["examInfo.category"] = options.source;
@@ -53,6 +53,11 @@ const selectQuestions = async (
       $in: options.tags,
     };
   }
+console.log("Filter:", filter);
+
+const total = await Question.countDocuments(filter);
+
+console.log("Matching questions:", total);
 
   const questions = await Question.aggregate([
     {

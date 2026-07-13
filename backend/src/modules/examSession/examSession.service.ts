@@ -1,18 +1,18 @@
 import { Types } from "mongoose";
 import httpStatus from "http-status";
-
 import AppError from "../../error/AppError";
-
 import { ExamSession } from "./examSession.model";
 import { ExamSessionStatus } from "./examSession.constant";
-import { calculateRemainingTime, hasSessionExpired } from "./examSession.utils";
+import { hasSessionExpired } from "./examSession.utils";
 import { HydratedDocument } from "mongoose";
 import { IExamSession } from "./examSession.interface";
 type IExamSessionDocument = HydratedDocument<IExamSession>;
 import { TExamType } from "../ExamEngine/examEngine.constant";
 import { ISubmitAnswerPayload } from "./examSession.interface";
-import { Question } from "../Questions/question.model";
-
+import { mapExamSession } from "./mapper/examSession.mapper";
+import { SessionQueryService } from "./services/session-query.service";
+import { SessionValidationService } from "./services/session-validation.service";
+import { AnswerService } from "./services/answer.service";
 import { ResultService } from "../Result/result.service";
 interface ICreateSession {
   userId: string;
@@ -31,22 +31,16 @@ interface ICreateSession {
 }
 
 const createSession = async (payload: ICreateSession) => {
-  const formattedQuestions = payload.questions.map((questionId, index) => ({
-    questionId,
+  const formattedQuestions = payload.questions.map((id, index) => ({
+    questionId: id,
     order: index + 1,
   }));
-
-  return await ExamSession.create({
+  return ExamSession.create({
     userId: new Types.ObjectId(payload.userId),
 
     examType: payload.examType,
 
     questions: formattedQuestions,
-
-    settings: {
-      shuffleQuestions: payload.settings?.shuffleQuestions ?? false,
-      shuffleOptions: payload.settings?.shuffleOptions ?? false,
-    },
 
     duration: payload.duration,
 
@@ -54,48 +48,37 @@ const createSession = async (payload: ICreateSession) => {
 
     negativeMark: payload.negativeMark,
 
+    settings: {
+      shuffleQuestions: payload.settings?.shuffleQuestions ?? false,
+
+      shuffleOptions: payload.settings?.shuffleOptions ?? false,
+    },
+
     status: ExamSessionStatus.RUNNING,
 
     startTime: new Date(),
   });
 };
-
 const getSessionById = async (sessionId: string, userId: string) => {
-  const session = await ExamSession.findById(sessionId).populate(
-    "questions.questionId",
+  console.log("SESSION ID:", sessionId);
+  console.log("USER ID:", userId);
+
+  const session = await SessionQueryService.getOwnedSessionWithQuestions(
+    sessionId,
+    userId,
   );
 
-  if (!session) {
-    throw new AppError(httpStatus.NOT_FOUND, "Exam session not found");
-  }
+  console.log("SESSION:", session);
 
-  // Ownership validation
-  if (session.userId.toString() !== userId) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      "You are not allowed to access this session",
-    );
-  }
+  await SessionValidationService.ensureSessionIsRunning(session);
 
-  return {
-    ...session.toObject(),
-    remainingTime: calculateRemainingTime(session.startTime, session.duration),
-  };
+  return mapExamSession(session);
 };
 
 const submitSession = async (sessionId: string, userId: string) => {
-  const session = await ExamSession.findById(sessionId);
-
+  const session = await SessionQueryService.getOwnedSession(sessionId, userId);
   if (!session) {
     throw new AppError(httpStatus.NOT_FOUND, "Exam session not found");
-  }
-
-  // Ownership validation
-  if (session.userId.toString() !== userId) {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      "You cannot submit another user's exam.",
-    );
   }
 
   if (session.status === ExamSessionStatus.SUBMITTED) {
@@ -111,9 +94,12 @@ const submitSession = async (sessionId: string, userId: string) => {
   await session.save();
 
   // Persist exam result
-  await ResultService.createResult(session._id.toString());
 
-  return session;
+  const result = await ResultService.createResult(session._id.toString());
+  return {
+    session,
+    result,
+  };
 };
 
 const validateRunningSession = async (session: IExamSessionDocument) => {
@@ -130,63 +116,19 @@ const validateRunningSession = async (session: IExamSessionDocument) => {
   }
 };
 
-
 const submitAnswer = async (payload: ISubmitAnswerPayload, userId: string) => {
-  const session = await ExamSession.findById(payload.sessionId);
-
-  if (!session) {
-    throw new AppError(httpStatus.NOT_FOUND, "Exam session not found");
-  }
-
-  if (session.userId.toString() !== userId) {
-    throw new AppError(httpStatus.FORBIDDEN, "Access denied");
-  }
-
-  if (session.status !== ExamSessionStatus.RUNNING) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Exam already finished");
-  }
-
-  const question = await Question.findById(payload.questionId);
-
-  if (!question) {
-    throw new AppError(httpStatus.NOT_FOUND, "Question not found");
-  }
-
-  const existingAnswer = session.answers.find(
-    (answer) => answer.questionId.toString() === payload.questionId,
+  const session = await SessionQueryService.getOwnedSession(
+    payload.sessionId,
+    userId,
   );
 
-  const isCorrect = question.correctAnswer === payload.selectedOption;
+  await SessionValidationService.ensureSessionIsRunning(session);
 
-  if (existingAnswer) {
-    existingAnswer.selectedOption = payload.selectedOption;
-    existingAnswer.timeTaken = payload.timeTaken ?? 0;
-    existingAnswer.isCorrect = isCorrect;
-  } else {
-    session.answers.push({
-      questionId: question._id,
-      selectedOption: payload.selectedOption,
-      isCorrect,
-      timeTaken: payload.timeTaken ?? 0,
-    });
-  }
-await validateRunningSession(session);
-  await session.save();
+  return AnswerService.saveAnswer(session, payload);
+};
 
-  return session;
-};
-const getRunningSession = async (userId: string, examType: TExamType) => {
-  return ExamSession.findOne({
-    userId,
-    examType,
-    status: ExamSessionStatus.RUNNING,
-  }).sort({
-    createdAt: -1,
-  });
-};
 export const ExamSessionService = {
   createSession,
-  getRunningSession,
   getSessionById,
   submitAnswer,
   submitSession,

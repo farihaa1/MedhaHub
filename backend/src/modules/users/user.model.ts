@@ -22,13 +22,13 @@ const userSchema = new Schema<IUser, UserModel>(
       trim: true,
     },
 
-   password: {
-  type: String,
-  required: function (this: IUser): boolean {
-    return this.provider === AuthProvider.CREDENTIAL;
-  },
-  select: false,
-},
+    password: {
+      type: String,
+      required: function (this: IUser): boolean {
+        return this.provider === AuthProvider.CREDENTIAL;
+      },
+      select: false,
+    },
 
     role: {
       type: String,
@@ -61,6 +61,10 @@ const userSchema = new Schema<IUser, UserModel>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    points: {
+      type: Number,
+      default: 0,
     },
   },
   {

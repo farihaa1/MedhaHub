@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
-import httpStatus  from "http-status";
+import httpStatus from "http-status";
 import { AuthService } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
 import { clearAuthCookies, setAuthCookies } from "./auth.utils";
-
-
 
 const register = catchAsync(async (req, res) => {
   const result = await AuthService.register(req.body);
@@ -67,21 +65,30 @@ const updateProfile = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
 const refreshToken = catchAsync(async (req, res) => {
-  const token = req.cookies.refreshToken;
+  const refreshToken = req.cookies?.refreshToken;
 
-  const result = await AuthService.refreshToken(token);
-console.log(result)
+  if (!refreshToken) {
+    return sendResponse(res, {
+      success: false,
+      statusCode: 401,
+      message: "Refresh token missing",
+      data: null,
+    });
+  }
+
+  const result = await AuthService.refreshToken(refreshToken);
+
   setAuthCookies(res, result.accessToken, result.refreshToken);
 
   sendResponse(res, {
-    statusCode: 200,
     success: true,
+    statusCode: 200,
     message: "Token refreshed",
     data: result.user,
   });
 });
+
 const logout = catchAsync(async (_req, res) => {
   clearAuthCookies(res);
 
@@ -99,5 +106,6 @@ export const AuthController = {
   changePassword,
   getMe,
   updateProfile,
-  refreshToken,logout
+  refreshToken,
+  logout,
 };

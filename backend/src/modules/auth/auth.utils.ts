@@ -13,9 +13,6 @@ interface TokenPayloadUser {
   email: string;
   role: UserRole;
 }
-const FIFTEEN_MINUTES = 15 * 60 * 1000;
-const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
-
 const cookieOptions = {
   httpOnly: true,
   secure: config.nodeEnv === "production",
@@ -29,12 +26,12 @@ export const setAuthCookies = (
 ) => {
   res.cookie("accessToken", accessToken, {
     ...cookieOptions,
-    maxAge: FIFTEEN_MINUTES,
+    maxAge: config.accessCookieMaxAge,
   });
 
   res.cookie("refreshToken", refreshToken, {
     ...cookieOptions,
-    maxAge: SEVEN_DAYS,
+    maxAge: config.refreshCookieMaxAge,
   });
 };
 

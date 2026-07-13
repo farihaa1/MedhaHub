@@ -4,7 +4,6 @@ import { IQuestion } from "./question.interface";
 import { QuestionStatus } from "./question.constant";
 
 const questionSchema = new Schema<IQuestion>(
-  
   {
     subjectId: {
       type: Schema.Types.ObjectId,
@@ -94,12 +93,20 @@ const questionSchema = new Schema<IQuestion>(
     status: {
       type: String,
       enum: Object.values(QuestionStatus),
-      default: QuestionStatus.DRAFT,
+      default: QuestionStatus.PENDING,
     },
 
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    approvedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    approvedAt: {
+      type: Date,
     },
   },
 

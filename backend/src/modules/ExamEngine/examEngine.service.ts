@@ -4,6 +4,7 @@ import { IStartExamPayload } from "./examEngine.interface";
 import { ExamSessionService } from "../examSession/examSession.service";
 import { hasSessionExpired } from "../examSession/examSession.utils";
 import { ExamSessionStatus } from "../examSession/examSession.constant";
+import { SessionQueryService } from "../examSession/services/session-query.service";
 
 const startExam = async (payload: IStartExamPayload) => {
   /**
@@ -13,10 +14,10 @@ const startExam = async (payload: IStartExamPayload) => {
    * ---------------------------------------
    */
 
-  const runningSession = await ExamSessionService.getRunningSession(
-    payload.userId,
-    payload.examType,
-  );
+const runningSession = await SessionQueryService.getRunningSession(
+  payload.userId,
+  payload.examType,
+);
 
   if (runningSession) {
     /**

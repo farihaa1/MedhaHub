@@ -13,17 +13,25 @@ const config = {
 
   mongoUri: process.env.MONGO_URI as string,
 
-  bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 12,
+  bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
 
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET as string,
 
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET as string,
 
+  // JWT expires
   jwtAccessExpiresIn: (process.env.JWT_ACCESS_EXPIRES_IN ||
     "15m") as SignOptions["expiresIn"],
 
   jwtRefreshExpiresIn: (process.env.JWT_REFRESH_EXPIRES_IN ||
-    "7d") as SignOptions["expiresIn"],
+    "15d") as SignOptions["expiresIn"],
+
+  // Cookie expires (milliseconds)
+  accessCookieMaxAge:
+    Number(process.env.ACCESS_COOKIE_MAX_AGE) || 15 * 60 * 1000,
+
+  refreshCookieMaxAge:
+    Number(process.env.REFRESH_COOKIE_MAX_AGE) || 15 * 24 * 60 * 60 * 1000,
 };
 
 export default config;

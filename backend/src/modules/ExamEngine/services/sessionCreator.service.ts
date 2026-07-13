@@ -24,6 +24,7 @@ const createSession = async (payload: ICreateSession) => {
       order: index + 1,
     }),
   );
+  console.log(questions)
 
   return await ExamSession.create({
     userId: new Types.ObjectId(payload.userId),

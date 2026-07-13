@@ -44,7 +44,7 @@ export const NavLinks = [
   {
     id: "add_question",
     label_bn: "প্রশ্ন যোগ করুন",
-    url: "/questions/add",
+    url: "/add-questions",
     icon: "add",
   },
 ] as const

@@ -7,6 +7,7 @@ import QuestionRoutes from "../modules/Questions/question.route";
 import UserRoutes from "../modules/users/user.route";
 import ExamEngineRoutes from "../modules/ExamEngine/examEngine.route";
 import ExamSessionRoutes from "../modules/examSession/examSession.route";
+import ResultRoutes from "../modules/Result/result.route";
 
 const router = Router();
 
@@ -16,8 +17,8 @@ router.use("/subjects", SubjectRoutes);
 router.use("/chapters", ChapterRoutes);
 router.use("/topics", TopicRoutes);
 router.use("/questions", QuestionRoutes);
-
 router.use("/exam-engine", ExamEngineRoutes);
 router.use("/exam", ExamSessionRoutes);
+router.use("/result", ResultRoutes);
 
 export default router;

@@ -13,7 +13,7 @@ export default function ConfigureExamPage() {
 
   const { user, isLoading: userLoading } = useCurrentUser()
 
-  console.log("Current User:", user)
+  console.log("Current User:", user?._id)
 
   const { data: topicResponse, isLoading: topicsLoading } = useGetTopicsQuery()
 
@@ -47,7 +47,7 @@ export default function ConfigureExamPage() {
         examType: "topic",
         topicIds: topicIds,
         count: questionCount,
-        user
+        userId:user?._id
       }).unwrap()
 
       console.log("Created Exam Session:", response)

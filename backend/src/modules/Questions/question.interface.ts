@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { QuestionStatus } from "./question.constant";
+import { TQuestionStatus } from "./question.constant";
 
 export interface IQuestion {
   _id: Types.ObjectId;
@@ -34,8 +34,11 @@ export interface IQuestion {
   tags?: string[];
 
   // Management
-  status: QuestionStatus;
+  status: TQuestionStatus;
 
+  approvedBy?: Types.ObjectId;
+
+  approvedAt?: Date;
   createdBy?: Types.ObjectId;
 
   createdAt?: Date;

@@ -15,10 +15,9 @@ const getSession = catchAsync(async (req: Request, res: Response) => {
       "User authentication required.",
     );
   }
-
   const result = await ExamSessionService.getSessionById(
     req.params.id as string,
-    req.user._id.toString(),
+    req.user.id,
   );
 
   sendResponse(res, {
@@ -39,7 +38,7 @@ const submitSession = catchAsync(async (req: Request, res: Response) => {
 
   const result = await ExamSessionService.submitSession(
     req.params.id as string,
-    req.user._id.toString(),
+    req.user.id,
   );
 
   sendResponse(res, {
@@ -59,7 +58,7 @@ const submitAnswer = catchAsync(async (req, res) => {
       ...req.body,
       sessionId: req.params.id,
     },
-    req.user._id.toString(),
+    req.user.id ,
   );
 
   sendResponse(res, {

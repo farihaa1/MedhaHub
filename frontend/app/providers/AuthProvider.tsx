@@ -2,8 +2,10 @@
 
 import { ReactNode, useEffect } from "react"
 import { usePathname } from "next/navigation"
+
 import { useMeQuery } from "@/app/redux/api/authApi"
 import { useAppDispatch } from "@/app/redux/hooks"
+
 import {
   clearCredentials,
   setCredentials,
@@ -24,15 +26,16 @@ export default function AuthProvider({ children }: Props) {
 
   const { data, isLoading, isSuccess, isError } = useMeQuery(undefined, {
     skip: isPublicRoute,
-  
   })
 
   useEffect(() => {
+    // Public pages don't need authentication
     if (isPublicRoute) {
-      dispatch(clearCredentials())
+      dispatch(setLoading(false))
       return
     }
 
+    // Loading user
     if (isLoading) {
       dispatch(setLoading(true))
       return
@@ -40,11 +43,13 @@ export default function AuthProvider({ children }: Props) {
 
     dispatch(setLoading(false))
 
+    // User authenticated
     if (isSuccess && data?.data) {
       dispatch(setCredentials(data.data))
       return
     }
 
+    // Authentication failed
     if (isError) {
       dispatch(clearCredentials())
     }

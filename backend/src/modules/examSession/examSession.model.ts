@@ -33,6 +33,7 @@ const examAnswerSchema = new Schema<IExamAnswer>(
 
     selectedOption: {
       type: String,
+      required: true,
     },
 
     isCorrect: {

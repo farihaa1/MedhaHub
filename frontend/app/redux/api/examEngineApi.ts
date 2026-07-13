@@ -1,3 +1,4 @@
+import { ExamSessionResponse, ResultResponse } from "../types/exam.type"
 import { baseApi } from "./baseApi"
 
 export const examEngineApi = baseApi.injectEndpoints({
@@ -11,16 +12,16 @@ export const examEngineApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getExamSession: builder.query({
+    getExamSession: builder.query<ExamSessionResponse, string>({
       query: (sessionId) => ({
-        url: `/exam-session/${sessionId}`,
+        url: `/exam/${sessionId}`,
         method: "GET",
       }),
     }),
 
     submitAnswer: builder.mutation({
       query: (data) => ({
-        url: `/exam-session/${data.sessionId}/answer`,
+        url: `/exam/${data.sessionId}/answer`,
         method: "POST",
         body: data,
       }),
@@ -28,8 +29,15 @@ export const examEngineApi = baseApi.injectEndpoints({
 
     submitExam: builder.mutation({
       query: (data) => ({
-        url: `/exam-session/${data.sessionId}/submit`,
+        url: `/exam/${data.sessionId}/submit`,
         method: "POST",
+      }),
+    }),
+
+    getResult: builder.query<ResultResponse, string>({
+      query: (sessionId) => ({
+        url: `/result/${sessionId}`,
+        method: "GET",
       }),
     }),
   }),
@@ -40,4 +48,5 @@ export const {
   useGetExamSessionQuery,
   useSubmitAnswerMutation,
   useSubmitExamMutation,
+  useGetResultQuery,
 } = examEngineApi

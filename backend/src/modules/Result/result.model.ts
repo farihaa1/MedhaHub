@@ -3,12 +3,6 @@ import { IResult } from "./result.interface";
 
 const resultSchema = new Schema<IResult>(
   {
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
     sessionId: {
       type: Schema.Types.ObjectId,
       ref: "ExamSession",
@@ -16,28 +10,51 @@ const resultSchema = new Schema<IResult>(
       unique: true,
     },
 
-    examType: {
-      type: String,
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
 
-    totalQuestions: Number,
+    totalQuestions: {
+      type: Number,
+      required: true,
+    },
 
-    attempted: Number,
+    attempted: {
+      type: Number,
+      required: true,
+    },
 
-    correct: Number,
+    correct: {
+      type: Number,
+      required: true,
+    },
 
-    wrong: Number,
+    wrong: {
+      type: Number,
+      required: true,
+    },
 
-    skipped: Number,
+    skipped: {
+      type: Number,
+      required: true,
+    },
 
-    score: Number,
+    score: {
+      type: Number,
+      required: true,
+    },
 
-    accuracy: Number,
+    accuracy: {
+      type: Number,
+      required: true,
+    },
 
-    negativeMark: Number,
-
-    submittedAt: Date,
+    negativeMark: {
+      type: Number,
+      required: true,
+    },
   },
   {
     timestamps: true,

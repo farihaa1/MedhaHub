@@ -17,11 +17,10 @@ export interface IUser {
   phone?: string;
 
   isVerified: boolean;
-
+  points?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
-
 
 export interface UserModel extends Model<IUser> {
   isUserExistsByEmail(email: string): Promise<HydratedDocument<IUser> | null>;
