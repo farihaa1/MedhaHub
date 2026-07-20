@@ -51,15 +51,25 @@ export interface IQuestion {
   createdAt?: string
   updatedAt?: string
 }
-
+interface QuestionQuery {
+  page?: number
+  limit?: number
+  searchTerm?: string
+  subjectId?: string
+  chapterId?: string
+  topicId?: string
+  status?: QuestionStatus
+}
 export const questionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all questions
-    getQuestions: builder.query<IApiResponse<IQuestion[]>, void>({
-      query: () => ({
+    getQuestions: builder.query<IApiResponse<IQuestion[]>, QuestionQuery>({
+      query: (params) => ({
         url: "/questions",
         method: "GET",
+        params,
       }),
+
       providesTags: ["Question"],
     }),
 

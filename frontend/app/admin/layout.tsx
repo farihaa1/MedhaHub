@@ -1,16 +1,25 @@
-"use client"
+import { ReactNode } from "react"
+import { AdminNavbar } from "../customComponents/AdminDashboard/AdminNavbar/AdminNavbar"
+import { AdminSidebar } from "../customComponents/AdminDashboard/AdminSidebar/AdminSidebar"
 
-import ProtectedRoute from "../(public)/(auth)/components/ProtectedRoute"
-import RoleGuard from "../(public)/(auth)/components/RoleGurd"
+interface AdminLayoutProps {
+  children: ReactNode
+}
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <ProtectedRoute>
-      <RoleGuard allowedRoles={["ADMIN"]}>{children}</RoleGuard>
-    </ProtectedRoute>
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <AdminSidebar />
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Navbar */}
+        <AdminNavbar />
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
+    </div>
   )
 }

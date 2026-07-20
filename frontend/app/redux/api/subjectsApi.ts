@@ -16,10 +16,50 @@ export const subjectsApi = baseApi.injectEndpoints({
       }),
       providesTags: (_result, _error, slug) => [{ type: "Subject", id: slug }],
     }),
+
+    createSubject: builder.mutation<IApiResponse<ISubject>, Partial<ISubject>>({
+      query: (body) => ({
+        url: "/subjects",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Subject"],
+    }),
+
+    updateSubject: builder.mutation<
+      IApiResponse<ISubject>,
+      {
+        id: string
+        data: Partial<ISubject>
+      }
+    >({
+      query: ({ id, data }) => ({
+        url: `/subjects/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        "Subject",
+        { type: "Subject", id },
+      ],
+    }),
+
+    deleteSubject: builder.mutation<IApiResponse<null>, string>({
+      query: (id) => ({
+        url: `/subjects/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Subject"],
+    }),
   }),
 
   overrideExisting: false,
 })
 
-export const {  useGetSubjectQuery,useGetSubjectsQuery} =
-  subjectsApi
+export const {
+  useGetSubjectsQuery,
+  useGetSubjectQuery,
+  useCreateSubjectMutation,
+  useUpdateSubjectMutation,
+  useDeleteSubjectMutation,
+} = subjectsApi

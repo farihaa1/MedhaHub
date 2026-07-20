@@ -8,6 +8,10 @@ import UserRoutes from "../modules/users/user.route";
 import ExamEngineRoutes from "../modules/ExamEngine/examEngine.route";
 import ExamSessionRoutes from "../modules/examSession/examSession.route";
 import ResultRoutes from "../modules/Result/result.route";
+import QuestionSubmissionRoutes from "../modules/QuestionSubmission/questionSubmission.route";
+import AdminDashboardRoutes from "../modules/admin/admin.route";
+import QuestionBankItemRoutes from "../modules/questionBankItems/questionBankItem.route";
+import QuestionBankRoutes from "../modules/questionBank/questionBank.route";
 
 const router = Router();
 
@@ -20,5 +24,8 @@ router.use("/questions", QuestionRoutes);
 router.use("/exam-engine", ExamEngineRoutes);
 router.use("/exam", ExamSessionRoutes);
 router.use("/result", ResultRoutes);
-
+router.use("/question-submissions", QuestionSubmissionRoutes);
+router.use("/admin",AdminDashboardRoutes)
+router.use("/question-bank", QuestionBankRoutes);
+router.use("/question-bank-items", QuestionBankItemRoutes);
 export default router;

@@ -2,7 +2,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Anek_Bangla, Hind_Siliguri, Poppins } from "next/font/google"
 import Providers from "./providers/providers"
-
+import { Toaster } from "@/components/ui/sonner"
 
 const anekBangla = Anek_Bangla({
   subsets: ["bengali"],
@@ -41,7 +41,7 @@ export default function RootLayout({
             enableSystem={false}
             disableTransitionOnChange
           >
-            {children}
+            {children} <Toaster />
           </ThemeProvider>
         </Providers>
       </body>

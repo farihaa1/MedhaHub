@@ -50,23 +50,6 @@ export interface Exam {
   accuracy: number
 }
 
-export type SubjectSlug =
-  | "current-affairs"
-  | "bangla-grammar"
-  | "english-language"
-  | "general-science"
-  | "international-affairs"
-  | "ethics-values"
-  | "mental-ability"
-  | "registration-school"
-  | "bangla-literature"
-  | "english-literature"
-  | "mathematical-reasoning"
-  | "bangladesh-affairs"
-  | "geography-disaster"
-  | "ict"
-  | "registration-college"
-
 export interface Chapter {
   id: string
   subjectId: string
@@ -80,31 +63,23 @@ export interface Chapter {
   userId?:string
 }
 
-export interface Subject {
-  id: string
-  title: string
-  slug: SubjectSlug
-  url: string
-  examsCount: number
-}
-
-export interface Question {
-  id: string
-  subjectId: string
-  chapterId: string
-  topicId: string
-  question: string
-  options: {
-    id: string
-    text: string
-  }[]
-  correctOptionId: string
-  explanation: string
-  source: string
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
+// export interface Question {
+//   id: string
+//   subjectId: string
+//   chapterId: string
+//   topicId: string
+//   question: string
+//   options: {
+//     id: string
+//     text: string
+//   }[]
+//   correctOptionId: string
+//   explanation: string
+//   source: string
+//   isActive: boolean
+//   createdAt: string
+//   updatedAt: string
+// }
 export interface color {
   name: string
   bg: string

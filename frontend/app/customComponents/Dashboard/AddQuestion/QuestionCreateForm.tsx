@@ -1,15 +1,19 @@
 "use client"
 
-import { useEffect } from "react"
+import { useState } from "react"
 
-import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form"
+import { useForm, useFieldArray, Controller } from "react-hook-form"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { questionSchema, QuestionFormValues } from "./questionSchema"
 
+import { QuestionLocation } from "./QuestionLocationSelector"
+
 import { Input } from "@/components/ui/input"
+
 import { Textarea } from "@/components/ui/textarea"
+
 import { Button } from "@/components/ui/button"
 
 import {
@@ -20,228 +24,146 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { useCreateQuestionMutation } from "@/app/redux/api/questionsApi"
+import { toast } from "sonner"
 
-import { useGetSubjectsQuery } from "@/app/redux/api/subjectsApi"
-
-import { useGetChaptersBySubjectQuery } from "@/app/redux/api/chaptersApi"
-
-import { useGetTopicsByChapterQuery } from "@/app/redux/api/topicsApi"
+import { useCreateQuestionSubmissionMutation } from "@/app/redux/api/questionSubmissionApi"
 
 const defaultOptions = [
-  { label: "A" as const, text: "" },
-  { label: "B" as const, text: "" },
-  { label: "C" as const, text: "" },
-  { label: "D" as const, text: "" },
+  {
+    label: "A" as const,
+    text: "",
+  },
+
+  {
+    label: "B" as const,
+    text: "",
+  },
+
+  {
+    label: "C" as const,
+    text: "",
+  },
+
+  {
+    label: "D" as const,
+    text: "",
+  },
 ]
 
-export default function QuestionCreateForm() {
+interface Props {
+  location: QuestionLocation
+}
+
+export default function QuestionCreateForm({ location }: Props) {
+  const [tagInput, setTagInput] = useState("")
+
   const {
     register,
+
     control,
+
     handleSubmit,
-    setValue,
+
     reset,
+
     formState: { errors, isSubmitting },
   } = useForm<QuestionFormValues>({
     resolver: zodResolver(questionSchema),
 
     defaultValues: {
-      subjectId: "",
-      chapterId: "",
-      topicId: "",
       questionText: "",
+
       options: defaultOptions,
+
       correctAnswer: "A",
+
+      tags: [],
     },
   })
 
   const { fields } = useFieldArray({
     control,
+
     name: "options",
   })
-  const subjectId = useWatch({
-    control,
-    name: "subjectId",
-  })
 
-  const chapterId = useWatch({
-    control,
-    name: "chapterId",
-  })
-  const { data: subjectsData, isLoading: subjectsLoading } =
-    useGetSubjectsQuery()
+  const [createSubmission] = useCreateQuestionSubmissionMutation()
 
-  const { data: chaptersData, isLoading: chaptersLoading } =
-    useGetChaptersBySubjectQuery(subjectId, {
-      skip: !subjectId,
-    })
-  const { data: topicsData, isLoading: topicsLoading } =
-    useGetTopicsByChapterQuery(chapterId, {
-      skip: !chapterId,
-    })
-
-  useEffect(() => {
-    setValue("chapterId", "")
-    setValue("topicId", "")
-  }, [subjectId, setValue])
-
-  useEffect(() => {
-    setValue("topicId", "")
-  }, [chapterId, setValue])
-  const [createQuestion] = useCreateQuestionMutation()
   const onSubmit = async (data: QuestionFormValues) => {
+    console.log("onSubmit called", data)
     try {
-      await createQuestion(data).unwrap()
+      const payload = {
+        subjectId: location.subjectId,
 
-      alert("Question Created")
+        chapterId: location.chapterId || undefined,
+
+        topicId: location.topicId || undefined,
+
+        suggestedChapterTitle: location.suggestedChapterTitle || undefined,
+
+        suggestedTopicTitle: location.suggestedTopicTitle || undefined,
+
+        questionText: data.questionText,
+
+        options: data.options,
+
+        correctAnswer: data.correctAnswer,
+
+        tags: tagInput
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      }
+
+      const res = await createSubmission(payload).unwrap()
+      console.log(res)
+      toast.success("Question submitted for review")
 
       reset()
-    } catch (err) {
-      console.error(err)
+
+      setTagInput("")
+    } catch (error) {
+      console.log(error)
+
+      toast.error("Failed to submit question")
     }
   }
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 rounded-xl border bg-background p-6"
+      onSubmit={handleSubmit(onSubmit, (errors) => {
+        console.log("Validation errors:", errors)
+      })}
+      className="space-y-6 rounded-xl border p-6"
     >
-      {/* Subject */}
-      <div className="space-y-2">
-        <label className="font-medium">Subject</label>
+      {/* QUESTION */}
 
-        <Controller
-          control={control}
-          name="subjectId"
-          render={({ field }) => (
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Subject" />
-              </SelectTrigger>
-
-              <SelectContent>
-                {subjectsLoading ? (
-                  <SelectItem value="loading" disabled>
-                    Loading...
-                  </SelectItem>
-                ) : (
-                  subjectsData?.data?.map((subject) => (
-                    <SelectItem key={subject._id} value={subject._id}>
-                      {subject.title}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          )}
-        />
-
-        {errors.subjectId && (
-          <p className="text-sm text-red-500">{errors.subjectId.message}</p>
-        )}
-      </div>
-
-      {/* Chapter */}
-      <div className="space-y-2">
-        <label className="font-medium">Chapter</label>
-
-        <Controller
-          control={control}
-          name="chapterId"
-          render={({ field }) => (
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={!subjectId || chaptersLoading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Chapter" />
-              </SelectTrigger>
-
-              <SelectContent>
-                {chaptersLoading ? (
-                  <SelectItem value="loading" disabled>
-                    Loading...
-                  </SelectItem>
-                ) : (
-                  chaptersData?.data?.map((chapter) => (
-                    <SelectItem key={chapter._id} value={chapter._id}>
-                      {chapter.title}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          )}
-        />
-
-        {errors.chapterId && (
-          <p className="text-sm text-red-500">{errors.chapterId.message}</p>
-        )}
-      </div>
-
-      {/* Topic */}
-      <div className="space-y-2">
-        <label className="font-medium">Topic</label>
-
-        <Controller
-          control={control}
-          name="topicId"
-          render={({ field }) => (
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={!chapterId || topicsLoading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Topic" />
-              </SelectTrigger>
-
-              <SelectContent>
-                {topicsLoading ? (
-                  <SelectItem value="loading" disabled>
-                    Loading...
-                  </SelectItem>
-                ) : (
-                  topicsData?.data?.map((topic) => (
-                    <SelectItem key={topic._id} value={topic._id}>
-                      {topic.title}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          )}
-        />
-
-        {errors.topicId && (
-          <p className="text-sm text-red-500">{errors.topicId.message}</p>
-        )}
-      </div>
-
-      {/* Question */}
       <div className="space-y-2">
         <label className="font-medium">Question</label>
 
-        <Textarea placeholder="Enter question" {...register("questionText")} />
+        <Textarea
+          placeholder="Enter question"
+
+          {...register("questionText")}
+        />
 
         {errors.questionText && (
           <p className="text-sm text-red-500">{errors.questionText.message}</p>
         )}
       </div>
 
-      {/* Options */}
-      <div className="space-y-4">
-        <label className="font-medium">Options</label>
+      {/* OPTIONS */}
 
-        <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-3 text-sm">
+        <label className="font-medium ">Options</label>
+
+        <div className="grid gap-4 md:grid-cols-2 pt-1">
           {fields.map((item, index) => (
             <div key={item.id} className="space-y-2">
-              <label>Option {item.label}</label>
-
+             
               <Input
                 placeholder={`Option ${item.label}`}
+
                 {...register(`options.${index}.text`)}
               />
 
@@ -255,7 +177,8 @@ export default function QuestionCreateForm() {
         </div>
       </div>
 
-      {/* Correct Answer */}
+      {/* ANSWER */}
+
       <div className="space-y-2">
         <label className="font-medium">Correct Answer</label>
 
@@ -263,24 +186,49 @@ export default function QuestionCreateForm() {
           control={control}
           name="correctAnswer"
           render={({ field }) => (
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger>
+            <Select
+              value={field.value}
+
+              onValueChange={field.onChange}
+            >
+              <SelectTrigger className="w-full text-muted-foreground">
                 <SelectValue />
               </SelectTrigger>
 
-              <SelectContent>
-                <SelectItem value="A">A</SelectItem>
-                <SelectItem value="B">B</SelectItem>
-                <SelectItem value="C">C</SelectItem>
-                <SelectItem value="D">D</SelectItem>
+              <SelectContent className="text-muted-foreground">
+                {["A", "B", "C", "D"].map((option) => (
+                  <SelectItem
+                    key={option}
+
+                    value={option}
+                  >
+                    {option}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
         />
       </div>
 
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Creating..." : "Create Question"}
+      {/* TAGS */}
+
+      <div className="space-y-2">
+        <label className="font-medium">Tags</label>
+
+        <Input
+          placeholder="BCS, SSC, HSC, NTRCA"
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
+        />
+
+        <p className="text-xs text-muted-foreground">
+          Separate tags using comma
+        </p>
+      </div>
+
+      <Button type="submit" className="hover:scale-75" disabled={isSubmitting}>
+        {isSubmitting ? "Submitting..." : "Submit Question"}
       </Button>
     </form>
   )
