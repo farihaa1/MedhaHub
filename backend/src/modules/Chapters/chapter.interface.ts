@@ -9,6 +9,6 @@ export interface IChapter {
   status: ChapterStatus;
   totalTopics: number;
   totalQuestions: number;
-  progress: number;
-  userId?: Types.ObjectId;
+  createdBy?: Types.ObjectId;
+  updatedBy?: Types.ObjectId;
 }

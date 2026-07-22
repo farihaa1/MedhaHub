@@ -1,6 +1,8 @@
 import { Model, Types } from "mongoose";
 
-export interface TQuestionBankItem {
+export interface IQuestionBankItem {
+  _id?: Types.ObjectId;
+
   questionBank: Types.ObjectId;
 
   question: Types.ObjectId;
@@ -16,11 +18,15 @@ export interface TQuestionBankItem {
   createdBy: Types.ObjectId;
 
   updatedBy?: Types.ObjectId;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }
 
-export interface QuestionBankItemModel extends Model<TQuestionBankItem> {
+export interface QuestionBankItemModel extends Model<IQuestionBankItem> {
   isQuestionExistsInBank(
     questionBank: Types.ObjectId,
     question: Types.ObjectId,
-  ): Promise<TQuestionBankItem | null>;
+  ): Promise<IQuestionBankItem | null>;
 }

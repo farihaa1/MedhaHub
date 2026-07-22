@@ -4,7 +4,17 @@ import AppError from "../../error/AppError";
 import httpStatus from "http-status";
 
 const createChapter = async (payload: IChapter) => {
-  return await Chapter.create(payload);
+  const existing = await Chapter.findOne({
+    subjectId: payload.subjectId,
+    slug: payload.slug,
+  });
+
+  if (existing) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Chapter already exists");
+  }
+  const chapter = await Chapter.create(payload);
+
+  return chapter.populate("subjectId", "title slug");
 };
 
 const getAllChapters = async () => {
@@ -30,7 +40,7 @@ const updateChapter = async (id: string, payload: Partial<IChapter>) => {
   const chapter = await Chapter.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
-  });
+  }).populate("subjectId", "title slug");
 
   if (!chapter) {
     throw new AppError(httpStatus.NOT_FOUND, "Chapter not found");
@@ -50,7 +60,13 @@ const deleteChapter = async (id: string) => {
 };
 
 const getChaptersBySubject = async (subjectId: string) => {
-  const chapters = await Chapter.find({ subjectId }).sort({ order: 1 });
+  const chapters = await Chapter.find({
+    subjectId,
+  })
+    .populate("subjectId", "title slug")
+    .sort({
+      order: 1,
+    });
 
   if (!chapters.length) {
     throw new AppError(
@@ -68,5 +84,5 @@ export const ChapterService = {
   getSingleChapter,
   updateChapter,
   deleteChapter,
-  getChaptersBySubject
+  getChaptersBySubject,
 };

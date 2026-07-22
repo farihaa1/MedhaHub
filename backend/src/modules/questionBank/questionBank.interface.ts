@@ -1,20 +1,13 @@
 import { Model, Types } from "mongoose";
 import {
-  QuestionBankCategory,
-  QuestionBankPaper,
-  QuestionBankVisibility,
+  TQuestionBankCategory,
+  TQuestionBankPaper,
+  TQuestionBankVisibility,
 } from "./questionBank.constant";
 
-export type TQuestionBankCategory =
-  (typeof QuestionBankCategory)[keyof typeof QuestionBankCategory];
+export interface IQuestionBank {
+  _id?: Types.ObjectId;
 
-export type TQuestionBankPaper =
-  (typeof QuestionBankPaper)[keyof typeof QuestionBankPaper];
-
-export type TQuestionBankVisibility =
-  (typeof QuestionBankVisibility)[keyof typeof QuestionBankVisibility];
-
-export interface TQuestionBank {
   title: string;
 
   slug: string;
@@ -36,16 +29,22 @@ export interface TQuestionBank {
   isPublished: boolean;
 
   isPremium: boolean;
+
   isDeleted: boolean;
 
   deletedAt?: Date | null;
 
-  deletedBy?: Types.ObjectId;
+  deletedBy?: Types.ObjectId | null;
+
   createdBy: Types.ObjectId;
 
   updatedBy?: Types.ObjectId;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }
 
-export interface QuestionBankModel extends Model<TQuestionBank> {
-  isSlugExists(slug: string): Promise<TQuestionBank | null>;
+export interface QuestionBankModel extends Model<IQuestionBank> {
+  isSlugExists(slug: string): Promise<IQuestionBank | null>;
 }

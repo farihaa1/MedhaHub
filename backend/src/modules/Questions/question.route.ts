@@ -10,6 +10,11 @@ QuestionRoutes.post(
   validateRequest(QuestionValidation.createQuestionValidationSchema),
   QuestionController.createQuestion,
 );
+QuestionRoutes.post(
+  "/bulk",
+  validateRequest(QuestionValidation.bulkCreateQuestionValidationSchema),
+  QuestionController.bulkCreateQuestions,
+);
 
 QuestionRoutes.get("/", QuestionController.getAllQuestions);
 
@@ -22,6 +27,9 @@ QuestionRoutes.patch(
   validateRequest(QuestionValidation.updateQuestionValidationSchema),
   QuestionController.updateQuestion,
 );
+
+QuestionRoutes.get("/stats", QuestionController.getQuestionStats);
+
 
 QuestionRoutes.delete("/:id", QuestionController.deleteQuestion);
 

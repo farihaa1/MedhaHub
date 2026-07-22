@@ -1,12 +1,12 @@
 import { Schema, model } from "mongoose";
 
 import {
+  IQuestionBankItem,
   QuestionBankItemModel,
-  TQuestionBankItem,
 } from "./questionBankItem.interface";
 
 const questionBankItemSchema = new Schema<
-  TQuestionBankItem,
+  IQuestionBankItem,
   QuestionBankItemModel
 >(
   {
@@ -25,16 +25,19 @@ const questionBankItemSchema = new Schema<
     order: {
       type: Number,
       required: true,
+      min: 1,
     },
 
     marks: {
       type: Number,
       default: 1,
+      min: 0,
     },
 
     negativeMarks: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     isActive: {
@@ -57,6 +60,12 @@ const questionBankItemSchema = new Schema<
     timestamps: true,
   },
 );
+
+/* ===================================================
+   Indexes
+=================================================== */
+
+// Prevent duplicate questions inside one bank
 questionBankItemSchema.index(
   {
     questionBank: 1,
@@ -66,21 +75,37 @@ questionBankItemSchema.index(
     unique: true,
   },
 );
+
+// Fast ordering
 questionBankItemSchema.index({
   questionBank: 1,
   order: 1,
 });
+
+// Fast lookup
+questionBankItemSchema.index({
+  question: 1,
+});
+
+/* ===================================================
+   Static Methods
+=================================================== */
+
 questionBankItemSchema.statics.isQuestionExistsInBank = async function (
   questionBank,
   question,
 ) {
-  return await this.findOne({
+  return this.findOne({
     questionBank,
     question,
   });
 };
 
-export const QuestionBankItem = model<TQuestionBankItem, QuestionBankItemModel>(
+/* ===================================================
+   Model
+=================================================== */
+
+export const QuestionBankItem = model<IQuestionBankItem, QuestionBankItemModel>(
   "QuestionBankItem",
   questionBankItemSchema,
 );

@@ -150,6 +150,7 @@ const deleteChapter = async (req: Request, res: Response) => {
   }
 };
 
+
 export const ChapterController = {
   createChapter,
   getAllChapters,

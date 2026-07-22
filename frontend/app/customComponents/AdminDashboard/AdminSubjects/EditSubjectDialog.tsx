@@ -1,13 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { toast } from "sonner"
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 
 import SubjectForm, { SubjectFormValues } from "./SubjectForm"
@@ -16,43 +17,37 @@ import { ISubject } from "@/app/(dashboard)/subjects/subjects.type"
 import { useUpdateSubjectMutation } from "@/app/redux/api/subjectsApi"
 
 interface Props {
-  open: boolean
-  onOpenChange: (open: boolean) => void
   subject: ISubject
+  children?: React.ReactNode
 }
 
-export default function EditSubjectDialog({
-  open,
-  onOpenChange,
-  subject,
-}: Props) {
+export default function EditSubjectDialog({ subject, children }: Props) {
+  const [open, setOpen] = useState(false)
+
   const [updateSubject, { isLoading }] = useUpdateSubjectMutation()
 
-  const handleSubmit = async (values: SubjectFormValues) => {
+  async function handleSubmit(values: SubjectFormValues) {
     try {
       await updateSubject({
         id: subject._id,
-        data: {
-          title: values.title,
-          slug: values.slug as ISubject["slug"],
-          url: values.url,
-        },
+        data: values,
       }).unwrap()
 
-      toast.success("Subject updated successfully.")
-      onOpenChange(false)
-    } catch (error: unknown) {
-      //   toast.error(error?.data?.message ?? "Failed to update subject.")
+      toast.success("Subject updated")
+
+      setOpen(false)
+    } catch (error) {
       console.log(error)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+
+      <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>Edit Subject</DialogTitle>
-          <DialogDescription>Update subject information.</DialogDescription>
         </DialogHeader>
 
         <SubjectForm

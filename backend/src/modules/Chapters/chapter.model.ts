@@ -30,8 +30,8 @@ const chapterSchema = new Schema<IChapter>(
 
     status: {
       type: String,
-      enum: ChapterStatus,
-      default: ChapterStatus.Draft,
+      enum: Object.values(ChapterStatus),
+      default: ChapterStatus.DRAFT,
     },
 
     totalTopics: {
@@ -46,14 +46,11 @@ const chapterSchema = new Schema<IChapter>(
       min: 0,
     },
 
-    progress: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 100,
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
-
-    userId: {
+    updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+
 import { toast } from "sonner"
 
 import {
@@ -11,46 +13,45 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { ISubject } from "@/app/(dashboard)/subjects/subjects.type"
+
 import { useDeleteSubjectMutation } from "@/app/redux/api/subjectsApi"
 
-interface DeleteSubjectDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface Props {
   subject: ISubject
+  children?: React.ReactNode
 }
 
-export default function DeleteSubjectDialog({
-  open,
-  onOpenChange,
-  subject,
-}: DeleteSubjectDialogProps) {
+export default function DeleteSubjectDialog({ subject, children }: Props) {
+  const [open, setOpen] = useState(false)
+
   const [deleteSubject, { isLoading }] = useDeleteSubjectMutation()
 
-  const handleDelete = async () => {
+  async function handleDelete() {
     try {
       await deleteSubject(subject._id).unwrap()
 
-      toast.success("Subject deleted successfully.")
+      toast.success("Subject deleted")
 
-      onOpenChange(false)
-    } catch (error: unknown) {
-        console.log(error)
-    //   toast.error(error?.data?.message ?? "Failed to delete subject.")
+      setOpen(false)
+    } catch (error) {
+      console.log(error)
     }
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Subject</AlertDialogTitle>
 
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{subject.title}</strong>?
-            <br />
+            Delete <strong>{subject.title}</strong>?
             <br />
             This action cannot be undone.
           </AlertDialogDescription>
@@ -59,11 +60,7 @@ export default function DeleteSubjectDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-          <AlertDialogAction
-            disabled={isLoading}
-            onClick={handleDelete}
-            className="bg-destructive hover:bg-destructive/90"
-          >
+          <AlertDialogAction disabled={isLoading} onClick={handleDelete}>
             {isLoading ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

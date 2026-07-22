@@ -1,3 +1,5 @@
+import AppError from "../../error/AppError";
+import { Chapter } from "../Chapters/chapter.model";
 import { SubjectSlug } from "./subject.constrain";
 import { ISubject } from "./subject.interface";
 import { Subject } from "./subject.model";
@@ -23,6 +25,14 @@ const updateSubject = async (slug: SubjectSlug, payload: Partial<ISubject>) => {
 };
 
 const deleteSubject = async (slug: SubjectSlug) => {
+  const chapterCount = await Chapter.countDocuments({ slug: slug});
+
+  if (chapterCount > 0) {
+    throw new AppError(
+      400,
+      "Cannot delete subject because it contains chapters.",
+    );
+  }
   return await Subject.findOneAndDelete({ slug });
 };
 

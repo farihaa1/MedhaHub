@@ -1,46 +1,70 @@
 import { Types } from "mongoose";
-import { TQuestionStatus } from "./question.constant";
+import {
+  TQuestionDifficulty,
+  TQuestionSourceType,
+  TQuestionStatus,
+  TQuestionType,
+} from "./question.constant";
+
+export interface IQuestionOption {
+  _id: Types.ObjectId;
+
+  text: string;
+
+  image?: string;
+
+  isCorrect: boolean;
+}
+
+export interface IQuestionSource {
+  type: TQuestionSourceType;
+
+  name: string;
+
+  year?: number;
+}
 
 export interface IQuestion {
   _id: Types.ObjectId;
 
   // Classification
-  subjectId: Types.ObjectId;
-  chapterId: Types.ObjectId;
-  topicId: Types.ObjectId;
+  subject: Types.ObjectId;
+  chapter: Types.ObjectId;
+  topic: Types.ObjectId;
 
-  // MCQ Question
+  // Question
+  type: TQuestionType;
   questionText: string;
+  questionImage?: string;
+  options: IQuestionOption[];
 
-  options: {
-    label: "A" | "B" | "C" | "D";
-    text: string;
-  }[];
-
-  correctAnswer: "A" | "B" | "C" | "D";
-
-  // Learning support
+  // Learning
   explanation?: string;
+  explanationImage?: string;
 
-  // Exam information
-  examInfo?: {
-    category: "BCS" | "Bank" | "Primary" | "NTRCA" | "Other";
+  // Previous exams / Model tests
+  sources?: IQuestionSource[];
 
-    examName?: string;
-    year?: number;
-  };
-
-  // Search/filter
+  // Search
   tags?: string[];
+  difficulty?: TQuestionDifficulty;
 
-  // Management
+  // Workflow
   status: TQuestionStatus;
-
   approvedBy?: Types.ObjectId;
-
   approvedAt?: Date;
-  createdBy?: Types.ObjectId;
-
+  createdBy: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface IQuestionStats {
+  total: number;
+  published: number;
+  draft: number;
+  pending: number;
+  rejected: number;
+  premium: number;
+  reported: number;
+  today: number;
 }

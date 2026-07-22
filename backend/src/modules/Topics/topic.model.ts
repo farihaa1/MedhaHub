@@ -1,19 +1,18 @@
 import { Schema, model } from "mongoose";
-import { ITopic } from "./topic.interface";
+import { ITopic, TopicStatus } from "./topic.interface";
 
 const topicSchema = new Schema<ITopic>(
   {
-    chapterId: {
+    chapter: {
       type: Schema.Types.ObjectId,
       ref: "Chapter",
       required: true,
     },
-    subjectId: {
+    subject: {
       type: Schema.Types.ObjectId,
       ref: "Subject",
       required: true,
     },
-
     title: {
       type: String,
       required: true,
@@ -24,6 +23,7 @@ const topicSchema = new Schema<ITopic>(
       type: String,
       required: true,
       trim: true,
+      lowercase: true,
     },
 
     order: {
@@ -34,8 +34,8 @@ const topicSchema = new Schema<ITopic>(
 
     status: {
       type: String,
-      enum: ["draft", "approved"],
-      default: "draft",
+      enum: Object.values(TopicStatus),
+      default: TopicStatus.Draft,
     },
 
     totalQuestions: {
@@ -50,7 +50,7 @@ const topicSchema = new Schema<ITopic>(
 
 topicSchema.index(
   {
-    chapterId: 1,
+    chapter: 1,
     slug: 1,
   },
   {
@@ -58,4 +58,13 @@ topicSchema.index(
   },
 );
 
+topicSchema.index(
+  {
+    chapter: 1,
+    order: 1,
+  },
+  {
+    unique: true,
+  },
+);
 export const Topic = model<ITopic>("Topic", topicSchema);

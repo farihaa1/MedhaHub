@@ -1,11 +1,13 @@
 import httpStatus from "http-status";
-
 import { QuestionBankService } from "./questionBank.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 
+/* ======================================================
+   Create
+====================================================== */
+
 const createQuestionBank = catchAsync(async (req, res) => {
- 
   const result = await QuestionBankService.createQuestionBank(
     req.body,
     req.user!,
@@ -19,6 +21,10 @@ const createQuestionBank = catchAsync(async (req, res) => {
   });
 });
 
+/* ======================================================
+   Get All
+====================================================== */
+
 const getAllQuestionBanks = catchAsync(async (req, res) => {
   const result = await QuestionBankService.getAllQuestionBanks(req.query);
 
@@ -29,6 +35,10 @@ const getAllQuestionBanks = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+/* ======================================================
+   Get Single
+====================================================== */
 
 const getSingleQuestionBank = catchAsync(async (req, res) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -42,6 +52,10 @@ const getSingleQuestionBank = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+/* ======================================================
+   Update
+====================================================== */
 
 const updateQuestionBank = catchAsync(async (req, res) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -60,18 +74,27 @@ const updateQuestionBank = catchAsync(async (req, res) => {
   });
 });
 
+/* ======================================================
+   Delete
+====================================================== */
+
 const deleteQuestionBank = catchAsync(async (req, res) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
-  const result = await QuestionBankService.deleteQuestionBank(id, req.user!);
+  await QuestionBankService.deleteQuestionBank(id, req.user!);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Question Bank deleted successfully",
-    data: result,
+    data: null,
   });
 });
+
+/* ======================================================
+   Export
+====================================================== */
+
 export const QuestionBankController = {
   createQuestionBank,
   getAllQuestionBanks,

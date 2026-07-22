@@ -1,10 +1,14 @@
 import { Types } from "mongoose";
 
-export type TopicStatus = "draft" | "approved";
+export enum TopicStatus {
+  Draft = "draft",
+  Approved = "approved",
+}
 
 export interface ITopic {
-  chapterId: Types.ObjectId;
-  subjectId: Types.ObjectId;
+  _id: string;
+  chapter: Types.ObjectId;
+  subject: Types.ObjectId;
   title: string;
   slug: string;
   order: number;

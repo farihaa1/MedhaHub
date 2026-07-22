@@ -1,4 +1,4 @@
 export enum ChapterStatus {
-  Draft = "draft",
-  Approved = "approved",
+  DRAFT = "draft",
+  APPROVED = "approved",
 }

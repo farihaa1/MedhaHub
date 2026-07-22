@@ -1,26 +1,22 @@
-// src/app/modules/questionBanks/questionBank.model.ts
-
 import { Schema, model } from "mongoose";
-
-import { QuestionBankModel, TQuestionBank } from "./questionBank.interface";
-
+import { IQuestionBank, QuestionBankModel } from "./questionBank.interface";
 import {
   QUESTION_BANK_CATEGORY,
   QUESTION_BANK_PAPER,
   QUESTION_BANK_VISIBILITY,
 } from "./questionBank.constant";
 
-const questionBankSchema = new Schema<TQuestionBank, QuestionBankModel>(
+const questionBankSchema = new Schema<IQuestionBank, QuestionBankModel>(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "Question bank title is required"],
       trim: true,
     },
 
     slug: {
       type: String,
-      required: true,
+      required: [true, "Slug is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -28,12 +24,14 @@ const questionBankSchema = new Schema<TQuestionBank, QuestionBankModel>(
 
     category: {
       type: String,
-      required: true,
       enum: QUESTION_BANK_CATEGORY,
+      required: true,
     },
 
     year: {
       type: Number,
+      min: 1900,
+      max: 2100,
     },
 
     paper: {
@@ -44,11 +42,13 @@ const questionBankSchema = new Schema<TQuestionBank, QuestionBankModel>(
     organization: {
       type: String,
       trim: true,
+      default: "",
     },
 
     description: {
       type: String,
       trim: true,
+      default: "",
     },
 
     visibility: {
@@ -60,6 +60,7 @@ const questionBankSchema = new Schema<TQuestionBank, QuestionBankModel>(
     totalQuestions: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     isPublished: {
@@ -72,16 +73,6 @@ const questionBankSchema = new Schema<TQuestionBank, QuestionBankModel>(
       default: false,
     },
 
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     isDeleted: {
       type: Boolean,
       default: false,
@@ -97,9 +88,33 @@ const questionBankSchema = new Schema<TQuestionBank, QuestionBankModel>(
       ref: "User",
       default: null,
     },
+
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   {
     timestamps: true,
+  },
+);
+
+/* ======================================================
+   Indexes
+====================================================== */
+
+questionBankSchema.index(
+  {
+    slug: 1,
+  },
+  {
+    unique: true,
   },
 );
 
@@ -109,19 +124,53 @@ questionBankSchema.index({
 });
 
 questionBankSchema.index({
+  category: 1,
+  paper: 1,
+});
+
+questionBankSchema.index({
+  visibility: 1,
+  isPublished: 1,
+});
+
+questionBankSchema.index({
   title: "text",
   organization: "text",
   description: "text",
 });
 
+/* ======================================================
+   Static Methods
+====================================================== */
+
 questionBankSchema.statics.isSlugExists = async function (slug: string) {
-  return await this.findOne({
+  return this.findOne({
     slug,
     isDeleted: false,
   });
 };
 
-export const QuestionBank = model<TQuestionBank, QuestionBankModel>(
+/* ======================================================
+   Query Middleware
+====================================================== */
+
+function excludeDeleted(this: any) {
+  this.where({
+    isDeleted: false,
+  });
+}
+
+questionBankSchema.pre("find", excludeDeleted);
+
+questionBankSchema.pre("findOne", excludeDeleted);
+
+questionBankSchema.pre("findOneAndUpdate", excludeDeleted);
+
+/* ======================================================
+   Model
+====================================================== */
+
+export const QuestionBank = model<IQuestionBank, QuestionBankModel>(
   "QuestionBank",
   questionBankSchema,
 );

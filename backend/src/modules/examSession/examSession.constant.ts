@@ -3,8 +3,9 @@ export const ExamSessionStatus = {
   RUNNING: "running",
   SUBMITTED: "submitted",
   EXPIRED: "expired",
-  CANCELLED : "cancelled",
+  CANCELLED: "cancelled",
 } as const;
 
 export type TExamSessionStatus =
   (typeof ExamSessionStatus)[keyof typeof ExamSessionStatus];
+

@@ -2,8 +2,8 @@ import { IApiResponse } from "@/app/features/auth/auth.type"
 import { baseApi } from "./baseApi"
 
 export enum TopicStatus {
-  Draft = "draft",
-  Approved = "approved",
+  DRAFT = "draft",
+  APPROVED= "approved",
 }
 
 export interface ITopic {
@@ -74,7 +74,36 @@ export const topicsApi = baseApi.injectEndpoints({
         { type: "Topic", id },
       ],
     }),
+    moveTopic: builder.mutation<
+      IApiResponse<ITopic>,
+      {
+        id: string
+        chapterId: string
+      }
+    >({
+      query: ({ id, chapterId }) => ({
+        url: `/topics/${id}/move`,
+        method: "PATCH",
+        body: { chapterId },
+      }),
+      invalidatesTags: ["Topic", "Chapter"],
+    }),
 
+    mergeTopic: builder.mutation<
+      IApiResponse<ITopic>,
+      {
+        sourceTopicId: string
+        targetTopicId: string
+      }
+    >({
+      query: (body) => ({
+        url: "/topics/merge",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Topic", "Question", "Chapter"],
+    }),
+    
     // Delete topic
     deleteTopic: builder.mutation<IApiResponse<null>, string>({
       query: (id) => ({
@@ -95,4 +124,6 @@ export const {
   useCreateTopicMutation,
   useUpdateTopicMutation,
   useDeleteTopicMutation,
+  useMoveTopicMutation,
+  useMergeTopicMutation,
 } = topicsApi

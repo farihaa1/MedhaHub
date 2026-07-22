@@ -1,49 +1,76 @@
 import { z } from "zod";
 
-const addQuestion = z.object({
+/* ======================================================
+   Add Single Question
+====================================================== */
+
+const addQuestionValidationSchema = z.object({
   body: z.object({
-    question: z.string(),
+    question: z.string().min(1, "Question id is required"),
 
-    order: z.number().int().optional(),
+    order: z.number().int().min(1).optional(),
 
-    marks: z.number().optional(),
+    marks: z.number().min(0).optional(),
 
-    negativeMarks: z.number().optional(),
+    negativeMarks: z.number().min(0).optional(),
   }),
 });
 
-const bulkAddQuestions = z.object({
+/* ======================================================
+   Bulk Add Questions
+====================================================== */
+
+const bulkAddQuestionsValidationSchema = z.object({
   body: z.object({
-    questionIds: z.array(z.string()).min(1),
+    questionIds: z
+      .array(z.string().min(1))
+      .min(1, "At least one question is required"),
   }),
 });
 
-const reorderQuestions = z.object({
+/* ======================================================
+   Reorder Questions
+====================================================== */
+
+const reorderQuestionsValidationSchema = z.object({
   body: z.object({
-    items: z.array(
-      z.object({
-        id: z.string(),
-        order: z.number().int().min(1),
-      }),
-    ),
+    items: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+
+          order: z.number().int().min(1),
+        }),
+      )
+      .min(1),
   }),
 });
 
-const updateQuestionBankItem = z.object({
-  body: z.object({
-    order: z.number().int().optional(),
+/* ======================================================
+   Update Question Bank Item
+====================================================== */
 
-    marks: z.number().optional(),
+const updateQuestionBankItemValidationSchema = z.object({
+  body: z
+    .object({
+      order: z.number().int().min(1).optional(),
 
-    negativeMarks: z.number().optional(),
+      marks: z.number().min(0).optional(),
 
-    isActive: z.boolean().optional(),
-  }),
+      negativeMarks: z.number().min(0).optional(),
+
+      isActive: z.boolean().optional(),
+    })
+    .strict(),
 });
+
+/* ======================================================
+   Export
+====================================================== */
 
 export const QuestionBankItemValidation = {
-  addQuestion,
-  bulkAddQuestions,
-  reorderQuestions,
-  updateQuestionBankItem,
+  addQuestionValidationSchema,
+  bulkAddQuestionsValidationSchema,
+  reorderQuestionsValidationSchema,
+  updateQuestionBankItemValidationSchema,
 };

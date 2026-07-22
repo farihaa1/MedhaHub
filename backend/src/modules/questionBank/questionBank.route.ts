@@ -25,21 +25,21 @@ QuestionBankRoutes.get("/:id", QuestionBankController.getSingleQuestionBank);
 
 QuestionBankRoutes.post(
   "/",
-  auth(UserRole.USER, UserRole.ADMIN),
+  auth( UserRole.ADMIN),
   validateRequest(QuestionBankValidation.createQuestionBankValidationSchema),
   QuestionBankController.createQuestionBank,
 );
 
 QuestionBankRoutes.patch(
   "/:id",
-  auth(UserRole.USER, UserRole.ADMIN),
+  auth( UserRole.ADMIN),
   validateRequest(QuestionBankValidation.updateQuestionBankValidationSchema),
   QuestionBankController.updateQuestionBank,
 );
 
 QuestionBankRoutes.delete(
   "/:id",
-  auth(UserRole.USER, UserRole.ADMIN),
+  auth( UserRole.ADMIN),
   QuestionBankController.deleteQuestionBank,
 );
 

@@ -1,21 +1,36 @@
-import { IApiResponse } from "@/app/features/auth/auth.type";
-import { baseApi } from "./baseApi";
+import { IApiResponse } from "@/app/features/auth/auth.type"
+import { baseApi } from "./baseApi"
+import { ITopic } from "./topicsApi"
 export enum ChapterStatus {
-  Draft = "draft",
-  Approved = "approved",
+  DRAFT = "draft",
+  APPROVED = "approved",
 }
 
 export interface IChapter {
-    _id:string
-  subjectId: string
+  _id: string
+  subjectId:
+    | string
+    | {
+        _id: string
+        title: string
+        slug: string
+      }
+
   title: string
   slug: string
   order: number
   status: ChapterStatus
   totalTopics: number
   totalQuestions: number
-  progress: number
-  userId?: string
+  topics?: ITopic[]
+}
+
+export interface CreateChapterPayload {
+  subjectId: string
+  title: string
+  slug: string
+  order: number
+  status: ChapterStatus
 }
 
 export const chaptersApi = baseApi.injectEndpoints({
@@ -50,7 +65,10 @@ export const chaptersApi = baseApi.injectEndpoints({
     }),
 
     // Create chapter
-    createChapter: builder.mutation<IApiResponse<IChapter>, Partial<IChapter>>({
+    createChapter: builder.mutation<
+      IApiResponse<IChapter>,
+      CreateChapterPayload
+    >({
       query: (body) => ({
         url: "/chapters",
         method: "POST",
@@ -62,7 +80,10 @@ export const chaptersApi = baseApi.injectEndpoints({
     // Update chapter
     updateChapter: builder.mutation<
       IApiResponse<IChapter>,
-      { id: string; data: Partial<IChapter> }
+      {
+        id: string
+        data: Partial<CreateChapterPayload>
+      }
     >({
       query: ({ id, data }) => ({
         url: `/chapters/${id}`,

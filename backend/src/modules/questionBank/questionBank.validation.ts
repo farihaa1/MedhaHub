@@ -6,28 +6,47 @@ import {
   QUESTION_BANK_VISIBILITY,
 } from "./questionBank.constant";
 
+/* ============================================================
+   Enums
+============================================================ */
+
+const CategoryEnum = z.enum([...QUESTION_BANK_CATEGORY] as [
+  string,
+  ...string[],
+]);
+
+const PaperEnum = z.enum([...QUESTION_BANK_PAPER] as [string, ...string[]]);
+
+const VisibilityEnum = z.enum([...QUESTION_BANK_VISIBILITY] as [
+  string,
+  ...string[],
+]);
+
+/* ============================================================
+   Create
+============================================================ */
 
 const createQuestionBankValidationSchema = z.object({
   body: z.object({
-    title: z.string({
-      message: "Title is required",
-    }),
+    title: z
+      .string()
+      .trim()
+      .min(3, "Title must be at least 3 characters")
+      .max(200),
 
-    slug: z.string().optional(),
+    slug: z.string().trim().min(3).max(200).optional(),
 
-    category: z.string({
-      message: "Category is required",
-    }),
+    category: CategoryEnum,
 
-    year: z.number().optional(),
+    year: z.number().int().min(1900).max(2100).optional(),
 
-    paper: z.string().optional(),
+    paper: PaperEnum.optional(),
 
-    organization: z.string().optional(),
+    organization: z.string().trim().max(200).optional(),
 
-    description: z.string().optional(),
+    description: z.string().trim().max(2000).optional(),
 
-    visibility: z.string().optional(),
+    visibility: VisibilityEnum.optional(),
 
     isPublished: z.boolean().optional(),
 
@@ -35,33 +54,34 @@ const createQuestionBankValidationSchema = z.object({
   }),
 });
 
+/* ============================================================
+   Update
+============================================================ */
 
 const updateQuestionBankValidationSchema = z.object({
-  body: z.object({
-    title: z.string().trim().min(3).max(200).optional(),
+  body: z
+    .object({
+      title: z.string().trim().min(3).max(200).optional(),
 
-    slug: z.string().trim().min(3).max(200).optional(),
+      slug: z.string().trim().min(3).max(200).optional(),
 
-    category: z
-      .enum([...QUESTION_BANK_CATEGORY] as [string, ...string[]])
-      .optional(),
+      category: CategoryEnum.optional(),
 
-    year: z.number().int().positive().optional(),
+      year: z.number().int().min(1900).max(2100).optional(),
 
-    paper: z.enum([...QUESTION_BANK_PAPER] as [string, ...string[]]).optional(),
+      paper: PaperEnum.optional(),
 
-    organization: z.string().trim().max(200).optional(),
+      organization: z.string().trim().max(200).optional(),
 
-    description: z.string().trim().max(2000).optional(),
+      description: z.string().trim().max(2000).optional(),
 
-    visibility: z
-      .enum([...QUESTION_BANK_VISIBILITY] as [string, ...string[]])
-      .optional(),
+      visibility: VisibilityEnum.optional(),
 
-    isPublished: z.boolean().optional(),
+      isPublished: z.boolean().optional(),
 
-    isPremium: z.boolean().optional(),
-  }),
+      isPremium: z.boolean().optional(),
+    })
+    .strict(),
 });
 
 export const QuestionBankValidation = {

@@ -7,6 +7,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     examEngine: examEngineReducer,
+    questionFilter: questionFilterReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
 

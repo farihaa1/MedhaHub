@@ -14,6 +14,17 @@ const createQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const bulkCreateQuestions = catchAsync(async (req, res) => {
+  const result = await QuestionService.bulkCreateQuestions(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 201,
+    message: "Questions created successfully",
+    data: result,
+  });
+});
+
 const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.getAllQuestions();
 
@@ -26,7 +37,9 @@ const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getQuestionsByTopic = catchAsync(async (req: Request, res: Response) => {
-  const result = await QuestionService.getQuestionsByTopic(req.params.topicId as string);
+  const result = await QuestionService.getQuestionsByTopic(
+    req.params.topicId as string,
+  );
 
   sendResponse(res, {
     success: true,
@@ -73,7 +86,16 @@ const deleteQuestion = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getQuestionStats = catchAsync(async (_req: Request, res: Response) => {
+  const result = await QuestionService.getQuestionStats();
 
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Question statistics retrieved successfully",
+    data: result,
+  });
+});
 export const QuestionController = {
   createQuestion,
   getAllQuestions,
@@ -81,4 +103,6 @@ export const QuestionController = {
   getSingleQuestion,
   updateQuestion,
   deleteQuestion,
+  bulkCreateQuestions,
+  getQuestionStats,
 };

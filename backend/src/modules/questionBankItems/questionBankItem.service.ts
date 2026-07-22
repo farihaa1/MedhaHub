@@ -132,7 +132,6 @@ const bulkAddQuestions = async (
   questionIds: string[],
   user: JwtPayload,
 ) => {
-    console.log("bulk add Question,",req.params)
   const session = await mongoose.startSession();
 
   try {

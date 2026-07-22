@@ -1,50 +1,72 @@
 import httpStatus from "http-status";
 import mongoose from "mongoose";
-import { TQuestionBank } from "./questionBank.interface";
-import { QuestionBank } from "./questionBank.model";
-import { QUESTION_BANK_SEARCHABLE_FIELDS } from "./questionBank.constant";
-import { generateQuestionBankSlug } from "./questionBank.utils";
-import AppError from "../../error/AppError";
-import QueryBuilder from "../../middlewares/QueryBuilder";
 import { JwtPayload } from "jsonwebtoken";
 
-const createQuestionBank = async (payload: TQuestionBank, user: JwtPayload) => {
-  if (!payload.slug) {
-    payload.slug = generateQuestionBankSlug(payload.title);
+import AppError from "../../error/AppError";
+import QueryBuilder from "../../middlewares/QueryBuilder";
+
+import { IQuestionBank } from "./questionBank.interface";
+import { QuestionBank } from "./questionBank.model";
+import { generateQuestionBankSlug } from "./questionBank.utils";
+import { QUESTION_BANK_SEARCHABLE_FIELDS } from "./questionBank.constant";
+
+/* ======================================================
+   Create Question Bank
+====================================================== */
+
+const createQuestionBank = async (payload: IQuestionBank, user: JwtPayload) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    if (!payload.slug) {
+      payload.slug = generateQuestionBankSlug(payload.title);
+    }
+
+    const exists = await QuestionBank.findOne({
+      slug: payload.slug,
+    }).session(session);
+
+    if (exists) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Question Bank slug already exists",
+      );
+    }
+
+    payload.createdBy = new mongoose.Types.ObjectId(user.userId);
+
+    const [questionBank] = await QuestionBank.create([payload], {
+      session,
+    });
+
+    await session.commitTransaction();
+
+    return questionBank;
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
   }
-
-  const exists = await QuestionBank.isSlugExists(payload.slug);
-
-  if (exists) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Question Bank slug already exists",
-    );
-  }
-
-  payload.createdBy = new mongoose.Types.ObjectId(user.id);
-
-  return await QuestionBank.create(payload);
 };
 
+/* ======================================================
+   Get All Question Banks
+====================================================== */
+
 const getAllQuestionBanks = async (query: Record<string, unknown>) => {
-  const questionBankQuery = new QueryBuilder(
-    QuestionBank.find({
-      isDeleted: {
-        $ne: true,
-      },
-    }),
-    query,
-  )
+  const qb = new QueryBuilder(QuestionBank.find(), query)
     .search(QUESTION_BANK_SEARCHABLE_FIELDS)
     .filter()
     .sort()
     .paginate()
     .fields();
 
-  const data = await questionBankQuery.modelQuery;
+  const data = await qb.modelQuery.populate("createdBy", "name email");
 
-  const meta = await questionBankQuery.countTotal();
+  const meta = await qb.countTotal();
 
   return {
     meta,
@@ -52,24 +74,39 @@ const getAllQuestionBanks = async (query: Record<string, unknown>) => {
   };
 };
 
+/* ======================================================
+   Get Single Question Bank
+====================================================== */
+
 const getSingleQuestionBank = async (identifier: string) => {
-  const result = await QuestionBank.findOne({
-    $or: [{ _id: identifier }, { slug: identifier }],
-    isDeleted: false,
+  const questionBank = await QuestionBank.findOne({
+    $or: [
+      {
+        _id: mongoose.isValidObjectId(identifier) ? identifier : undefined,
+      },
+      {
+        slug: identifier,
+      },
+    ],
   })
     .populate("createdBy", "name email")
     .populate("updatedBy", "name email")
     .populate("deletedBy", "name email");
-  if (!result) {
+
+  if (!questionBank) {
     throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
   }
 
-  return result;
+  return questionBank;
 };
+
+/* ======================================================
+   Update Question Bank
+====================================================== */
 
 const updateQuestionBank = async (
   id: string,
-  payload: Partial<TQuestionBank>,
+  payload: Partial<IQuestionBank>,
   user: JwtPayload,
 ) => {
   const session = await mongoose.startSession();
@@ -77,107 +114,132 @@ const updateQuestionBank = async (
   try {
     session.startTransaction();
 
-    const bank = await QuestionBank.findOne({
-      _id: id,
-      isDeleted: { $ne: true },
-    }).session(session);
-    if (!bank) {
-      throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
+    const questionBank = await QuestionBank.findById(id).session(session);
+
+    if (!questionBank) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        "Question Bank not found",
+      );
     }
 
     /**
-     * Slug Regeneration
+     * Generate new slug if title changes
      */
-
-    if (payload.title && payload.title !== bank.title) {
+    if (
+      payload.title &&
+      payload.title !== questionBank.title &&
+      !payload.slug
+    ) {
       payload.slug = generateQuestionBankSlug(payload.title);
     }
 
     /**
-     * Duplicate Slug Check
+     * Check duplicate slug
      */
-
     if (payload.slug) {
-      const existing = await QuestionBank.findOne({
+      const exists = await QuestionBank.findOne({
         slug: payload.slug,
         _id: { $ne: id },
-        isDeleted: { $ne: true },
       }).session(session);
 
-      if (existing) {
-        throw new AppError(httpStatus.BAD_REQUEST, "Slug already exists");
+      if (exists) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          "Question Bank slug already exists",
+        );
       }
     }
 
-    payload.updatedBy = user.userId;
+    payload.updatedBy = new mongoose.Types.ObjectId(user.userId);
 
-    const result = await QuestionBank.findByIdAndUpdate(id, payload, {
-      new: true,
-      runValidators: true,
-      session,
-    });
-
-    await session.commitTransaction();
-
-    return result;
-  } catch (error) {
-    await session.abortTransaction();
-
-    throw error;
-  } finally {
-    session.endSession();
-  }
-};
-
-const deleteQuestionBank = async (id: string, user: JwtPayload) => {
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-
-    const bank = await QuestionBank.findOne({
-      _id: id,
-      isDeleted: { $ne: true },
-    }).session(session);
-    if (!bank) {
-      throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
-    }
-
-    if (bank.isDeleted) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Question Bank already deleted",
-      );
-    }
-
-    const result = await QuestionBank.findByIdAndUpdate(
+    const updated = await QuestionBank.findByIdAndUpdate(
       id,
-      {
-        isDeleted: true,
-        deletedAt: new Date(),
-        deletedBy: user.userId,
-        updatedBy: user.userId,
-      },
+      payload,
       {
         new: true,
+        runValidators: true,
         session,
       },
     );
 
     await session.commitTransaction();
 
-    return result;
-  } catch (error) {
+    return updated;
+  } catch (err) {
     await session.abortTransaction();
-    throw error;
+    throw err;
   } finally {
     session.endSession();
   }
 };
+
+/* ======================================================
+   Soft Delete
+====================================================== */
+
+const deleteQuestionBank = async (
+  id: string,
+  user: JwtPayload,
+) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const questionBank = await QuestionBank.findById(id).session(session);
+
+    if (!questionBank) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        "Question Bank not found",
+      );
+    }
+
+    questionBank.isDeleted = true;
+    questionBank.deletedAt = new Date();
+    questionBank.deletedBy = new mongoose.Types.ObjectId(user.userId);
+    questionBank.updatedBy = new mongoose.Types.ObjectId(user.userId);
+
+    await questionBank.save({ session });
+
+    await session.commitTransaction();
+
+    return null;
+  } catch (err) {
+    await session.abortTransaction();
+    throw err;
+  } finally {
+    session.endSession();
+  }
+};
+
+/* ======================================================
+   Helpers
+====================================================== */
+
+const getQuestionBankOrThrow = async (id: string) => {
+  const questionBank = await QuestionBank.findById(id);
+
+  if (!questionBank) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Question Bank not found",
+    );
+  }
+
+  return questionBank;
+};
+
+/* ======================================================
+   Export
+====================================================== */
+
 export const QuestionBankService = {
   createQuestionBank,
   getAllQuestionBanks,
   getSingleQuestionBank,
   updateQuestionBank,
   deleteQuestionBank,
+  getQuestionBankOrThrow,
 };

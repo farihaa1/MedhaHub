@@ -4,8 +4,12 @@ export const QuestionBankCategory = {
   NTRCA: "NTRCA",
   BANK: "BANK",
   UNIVERSITY: "UNIVERSITY",
+  MEDICAL: "MEDICAL",
   CUSTOM: "CUSTOM",
 } as const;
+
+export type TQuestionBankCategory =
+  (typeof QuestionBankCategory)[keyof typeof QuestionBankCategory];
 
 export const QuestionBankPaper = {
   PRELIMINARY: "PRELIMINARY",
@@ -13,10 +17,16 @@ export const QuestionBankPaper = {
   VIVA: "VIVA",
 } as const;
 
+export type TQuestionBankPaper =
+  (typeof QuestionBankPaper)[keyof typeof QuestionBankPaper];
+
 export const QuestionBankVisibility = {
   PUBLIC: "PUBLIC",
   PRIVATE: "PRIVATE",
 } as const;
+
+export type TQuestionBankVisibility =
+  (typeof QuestionBankVisibility)[keyof typeof QuestionBankVisibility];
 
 export const QUESTION_BANK_CATEGORY = Object.values(QuestionBankCategory);
 
