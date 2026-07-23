@@ -36,5 +36,14 @@ QuestionBankItemRoutes.patch(
   validateRequest(QuestionBankItemValidation.reorderQuestionsValidationSchema),
   QuestionBankItemController.reorderQuestions,
 );
+QuestionBankItemRoutes.get(
+  "/:questionBankId/questions",
+  QuestionBankItemController.getQuestionsByBank,
+);
+QuestionBankItemRoutes.delete(
+  "/:questionBankId/questions/:questionId",
+  auth(UserRole.ADMIN),
+  QuestionBankItemController.removeQuestionFromBank,
+);
 
 export default QuestionBankItemRoutes

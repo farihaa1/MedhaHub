@@ -1,11 +1,12 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, useForm } from "react-hook-form"
+import { z } from "zod"
 
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 
 import {
   Select,
@@ -17,213 +18,257 @@ import {
 
 import { Checkbox } from "@/components/ui/checkbox"
 
-import { useCreateQuestionBankMutation } from "@/app/redux/api/questionBankApi"
-import { IQuestionBankForm } from "@/app/redux/types/questionBank.types"
+const categories = [
+  "BCS",
+  "PRIMARY",
+  "NTRCA",
+  "BANK",
+  "UNIVERSITY",
+  "CUSTOM",
+] as const
 
+const papers = ["PRELIMINARY", "WRITTEN", "VIVA"] as const
 
-type QuestionBankCategory =
-  | "BCS"
-  | "PRIMARY"
-  | "NTRCA"
-  | "BANK"
-  | "UNIVERSITY"
-  | "CUSTOM"
+const visibilities = ["PUBLIC", "PRIVATE"] as const
 
-type QuestionBankPaper =
-  | "PRELIMINARY"
-  | "WRITTEN"
-  | "VIVA"
+export const questionBankSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
 
-type QuestionBankVisibility =
-  | "PUBLIC"
-  | "PRIVATE"
+  category: z.enum(categories),
 
+  year: z.number().optional(),
 
-export default function QuestionBankForm() {
-  const router = useRouter()
+  paper: z.enum(papers).optional(),
 
-  const [createQuestionBank, { isLoading }] = useCreateQuestionBankMutation()
+  organization: z.string().optional(),
 
-  const { register, handleSubmit, setValue, watch } =
-    useForm<IQuestionBankForm>({
-      defaultValues: {
-        category: "BCS",
-        paper: "PRELIMINARY",
-        visibility: "PUBLIC",
-        isPublished: true,
-        isPremium: false,
-      },
-    })
+  description: z.string().optional(),
 
-  const onSubmit = async (values: IQuestionBankForm) => {
-    try {
-      const res = await createQuestionBank(values).unwrap()
+  visibility: z.enum(visibilities),
 
-      console.log(res)
+  isPublished: z.boolean(),
 
-      router.push("/question-bank")
-    } catch (error) {
-      console.log(error)
-    }
-  }
+  isPremium: z.boolean(),
+})
+
+type QuestionBankFormValues = z.infer<typeof questionBankSchema>
+
+interface Props {
+  defaultValues?: Partial<QuestionBankFormValues>
+
+  onSubmit: (values: QuestionBankFormValues) => void
+
+  loading?: boolean
+}
+
+export default function QuestionBankForm({
+  defaultValues,
+  onSubmit,
+  loading = false,
+}: Props) {
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<QuestionBankFormValues>({
+    resolver: zodResolver(questionBankSchema),
+
+    defaultValues: {
+      title: "",
+
+      category: "BCS",
+
+      year: undefined,
+
+      paper: "PRELIMINARY",
+
+      organization: "",
+
+      description: "",
+
+      visibility: "PUBLIC",
+
+      isPublished: true,
+
+      isPremium: false,
+
+      ...defaultValues,
+    },
+  })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl space-y-6">
-      {/* Title */}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {/* TITLE */}
 
-      <div className="space-y-2">
+      <div>
         <label className="text-sm font-medium">Title</label>
 
-        <Input
-          placeholder="BCS 2025 Preliminary"
-          {...register("title", {
-            required: true,
-          })}
+        <Input placeholder="BCS 49th Preliminary" {...register("title")} />
+
+        {errors.title && (
+          <p className="text-sm text-red-500">{errors.title.message}</p>
+        )}
+      </div>
+
+      {/* CATEGORY */}
+
+      <div>
+        <label className="text-sm font-medium">Category</label>
+
+        <Controller
+          name="category"
+          control={control}
+
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+                {categories.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         />
       </div>
 
-      {/* Category */}
+      {/* YEAR */}
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Category</label>
-
-        <Select
-          defaultValue="BCS"
-          onValueChange={(value) =>
-            setValue("category", value as QuestionBankCategory)
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value="BCS">BCS</SelectItem>
-
-            <SelectItem value="PRIMARY">Primary</SelectItem>
-
-            <SelectItem value="NTRCA">NTRCA</SelectItem>
-
-            <SelectItem value="BANK">Bank</SelectItem>
-
-            <SelectItem value="UNIVERSITY">University</SelectItem>
-
-            <SelectItem value="CUSTOM">Custom</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Year */}
-
-      <div className="space-y-2">
+      <div>
         <label className="text-sm font-medium">Year</label>
 
         <Input
           type="number"
-          placeholder="2025"
+
           {...register("year", {
             valueAsNumber: true,
           })}
         />
       </div>
 
-      {/* Paper */}
+      {/* PAPER */}
 
-      <div className="space-y-2">
+      <div>
         <label className="text-sm font-medium">Paper</label>
 
-        <Select
-          defaultValue="PRELIMINARY"
-          onValueChange={(value) =>
-            setValue("paper", value as QuestionBankPaper)
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select paper" />
-          </SelectTrigger>
+        <Controller
+          name="paper"
+          control={control}
 
-          <SelectContent>
-            <SelectItem value="PRELIMINARY">Preliminary</SelectItem>
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
 
-            <SelectItem value="WRITTEN">Written</SelectItem>
-
-            <SelectItem value="VIVA">Viva</SelectItem>
-          </SelectContent>
-        </Select>
+              <SelectContent>
+                {papers.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
       </div>
 
-      {/* Organization */}
+      {/* ORGANIZATION */}
 
-      <div className="space-y-2">
+      <div>
         <label className="text-sm font-medium">Organization</label>
 
         <Input
-          placeholder="Bangladesh Public Service Commission"
+          placeholder="BPSC"
+
           {...register("organization")}
         />
       </div>
 
-      {/* Description */}
+      {/* DESCRIPTION */}
 
-      <div className="space-y-2">
+      <div>
         <label className="text-sm font-medium">Description</label>
 
-        <Textarea
-          placeholder="Question bank description..."
-          rows={5}
-          {...register("description")}
-        />
+        <Textarea {...register("description")} />
       </div>
 
-      {/* Visibility */}
+      {/* VISIBILITY */}
 
-      <div className="space-y-2">
+      <div>
         <label className="text-sm font-medium">Visibility</label>
 
-        <Select
-          defaultValue="PUBLIC"
-          onValueChange={(value) =>
-            setValue("visibility", value as QuestionBankVisibility)
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+        <Controller
+          name="visibility"
 
-          <SelectContent>
-            <SelectItem value="PUBLIC">Public</SelectItem>
+          control={control}
 
-            <SelectItem value="PRIVATE">Private</SelectItem>
-          </SelectContent>
-        </Select>
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+                {visibilities.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
       </div>
 
-      {/* Premium */}
+      {/* PUBLISHED */}
 
       <div className="flex items-center gap-3">
-        <Checkbox
-          checked={watch("isPremium")}
-          onCheckedChange={(checked) => setValue("isPremium", Boolean(checked))}
+        <Controller
+          name="isPublished"
+
+          control={control}
+
+          render={({ field }) => (
+            <Checkbox
+              checked={field.value}
+
+              onCheckedChange={field.onChange}
+            />
+          )}
         />
 
-        <span>Premium Question Bank</span>
+        <label>Published</label>
       </div>
 
-      {/* Published */}
+      {/* PREMIUM */}
 
       <div className="flex items-center gap-3">
-        <Checkbox
-          checked={watch("isPublished")}
-          onCheckedChange={(checked) =>
-            setValue("isPublished", Boolean(checked))
-          }
+        <Controller
+          name="isPremium"
+
+          control={control}
+
+          render={({ field }) => (
+            <Checkbox
+              checked={field.value}
+
+              onCheckedChange={field.onChange}
+            />
+          )}
         />
 
-        <span>Publish immediately</span>
+        <label>Premium</label>
       </div>
 
-      <Button type="submit" disabled={isLoading}>
-        {isLoading ? "Creating..." : "Create Question Bank"}
+      <Button disabled={loading} type="submit">
+        {loading ? "Saving..." : "Save Question Bank"}
       </Button>
     </form>
   )

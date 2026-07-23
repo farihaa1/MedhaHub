@@ -1,87 +1,134 @@
 "use client"
 
-import { useMemo } from "react"
+import { DataTable } from "../data-table/DataTable"
+
+import { columns, IQuestionRow } from "./QuestionColumns"
 
 import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
+  IQuestion,
+  QuestionDifficulty,
+  QuestionQuery,
+  QuestionSourceType,
+  QuestionStatus,
+  QuestionType,
+  useGetQuestionsQuery,
+} from "@/app/redux/api/questionsApi"
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+interface QuestionTableProps {
+  search: string
 
-import { useAppSelector } from "@/app/redux/hooks"
+  subjectId: string
 
-import { useGetQuestionsQuery } from "@/app/redux/api/questionsApi"
+  chapterId: string
 
-import { columns } from "./QuestionColumns"
+  topicId: string
 
-import QuestionPagination from "./QuestionPagination"
-import QuestionTableSkeleton from "./QuestionTableSkeleton"
-import QuestionEmptyState from "./QuestionEmptyState"
+  difficulty: string
 
-export default function QuestionTable() {
-  const filters = useAppSelector((state) => state.questionFilter)
+  type: string
 
-  const { data, isLoading } = useGetQuestionsQuery(filters)
+  status: string
 
-  const table = useReactTable({
-    data: data?.data ?? [],
+  source: string
 
-    columns,
+  sort: string
+}
 
-    getCoreRowModel: getCoreRowModel(),
-  })
+export default function QuestionTable({
+  search,
 
-  if (isLoading) {
-    return <QuestionTableSkeleton />
+  subjectId,
+
+  chapterId,
+
+  topicId,
+
+  difficulty,
+
+  type,
+
+  status,
+
+  source,
+
+  sort,
+}: QuestionTableProps) {
+  const params: QuestionQuery = {
+    searchTerm: search || undefined,
+
+    subjectId: subjectId === "all" ? undefined : subjectId,
+
+    chapterId: chapterId === "all" ? undefined : chapterId,
+
+    topicId: topicId === "all" ? undefined : topicId,
+
+    difficulty:
+      difficulty === "all" ? undefined : (difficulty as QuestionDifficulty),
+
+    type: type === "all" ? undefined : (type as QuestionType),
+
+    status: status === "all" ? undefined : (status as QuestionStatus),
+
+    source: source === "all" ? undefined : (source as QuestionSourceType),
+
+    sortBy: sort === "az" || sort === "za" ? "questionText" : "createdAt",
+
+    sortOrder: sort === "oldest" || sort === "az" ? "asc" : "desc",
   }
 
-  if (!data?.data.length) {
-    return <QuestionEmptyState />
-  }
+  const { data, isLoading } = useGetQuestionsQuery(params)
+
+  const tableData: IQuestionRow[] =
+    data?.data.data?.map((item: IQuestion) => ({
+      _id: item._id,
+
+      question: item.questionText,
+
+      subject:
+        item.subjectId && typeof item.subjectId !== "string"
+          ? {
+              _id: item.subjectId._id,
+              name: item.subjectId.title ?? "-",
+            }
+          : undefined,
+
+      chapter:
+        item.chapterId && typeof item.chapterId !== "string"
+          ? {
+              _id: item.chapterId._id,
+              name: item.chapterId.title ?? "-",
+            }
+          : undefined,
+
+      topic:
+        item.topicId && typeof item.topicId !== "string"
+          ? {
+              _id: item.topicId._id,
+              name: item.topicId.title ?? "-",
+            }
+          : undefined,
+
+      type: item.type,
+
+      difficulty: item.difficulty ?? "",
+
+      status: item.status,
+
+      // FIX HERE
+      source: item.sources ?? [],
+
+      marks: item.marks ?? 1,
+
+      createdAt: item.createdAt ?? "",
+    })) ?? []
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((group) => (
-              <TableRow key={group.id}>
-                {group.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
+    <DataTable
+      columns={columns}
 
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      data={tableData}
 
-      <QuestionPagination meta={data.meta} />
-    </div>
+      isLoading={isLoading}
+    />
   )
 }

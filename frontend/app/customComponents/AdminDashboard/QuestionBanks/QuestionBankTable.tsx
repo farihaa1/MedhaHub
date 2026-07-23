@@ -1,12 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-
+import { Badge } from "@/components/ui/badge"
 
 import {
   Table,
@@ -16,62 +10,123 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useGetQuestionBanksQuery } from "@/app/redux/api/questionBankApi"
-import { questionBankColumns } from "./QuestionBankColumns"
 
-export default function QuestionBankTable() {
-  const { data, isLoading } = useGetQuestionBanksQuery({})
-console.log(data)
-  const columns = useMemo(() => questionBankColumns, [])
+import { IQuestionBank } from "@/app/redux/types/questionBank.types"
 
-  const table = useReactTable({
-    data: data?.data?.data ?? [],
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
+import QuestionBankActions from "./QuestionBankActions"
 
-  if (isLoading) {
-    return <div>Loading...</div>
+interface QuestionBankTableProps {
+  data: IQuestionBank[]
+
+  loading?: boolean
+
+  onView?: (bank: IQuestionBank) => void
+
+  onEdit?: (bank: IQuestionBank) => void
+
+  onDelete?: (bank: IQuestionBank) => void
+
+  onManageQuestions?: (bank: IQuestionBank) => void
+}
+
+export default function QuestionBankTable({
+  data,
+  loading = false,
+
+  onView,
+  onEdit,
+  onDelete,
+  onManageQuestions,
+}: QuestionBankTableProps) {
+  if (loading) {
+    return <div className="rounded-lg border p-10 text-center">Loading...</div>
+  }
+
+  if (!data.length) {
+    return (
+      <div className="rounded-lg border p-10 text-center">
+        No Question Banks Found
+      </div>
+    )
   }
 
   return (
     <div className="rounded-lg border">
       <Table>
         <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
+          <TableRow>
+            <TableHead>Title</TableHead>
+
+            <TableHead>Category</TableHead>
+
+            <TableHead>Year</TableHead>
+
+            <TableHead>Paper</TableHead>
+
+            <TableHead>Questions</TableHead>
+
+            <TableHead>Visibility</TableHead>
+
+            <TableHead>Status</TableHead>
+
+            <TableHead>Premium</TableHead>
+
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
         </TableHeader>
 
         <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No Question Banks Found.
+          {data.map((bank) => (
+            <TableRow key={bank._id}>
+              <TableCell className="font-medium">{bank.title}</TableCell>
+
+              <TableCell>{bank.category}</TableCell>
+
+              <TableCell>{bank.year ?? "-"}</TableCell>
+
+              <TableCell>{bank.paper ?? "-"}</TableCell>
+
+              <TableCell>
+                <Badge variant="secondary">{bank.totalQuestions}</Badge>
+              </TableCell>
+
+              <TableCell>
+                <Badge
+                  variant={
+                    bank.visibility === "PUBLIC" ? "default" : "secondary"
+                  }
+                >
+                  {bank.visibility}
+                </Badge>
+              </TableCell>
+
+              <TableCell>
+                <Badge variant={bank.isPublished ? "default" : "destructive"}>
+                  {bank.isPublished ? "Published" : "Draft"}
+                </Badge>
+              </TableCell>
+
+              <TableCell>
+                <Badge variant={bank.isPremium ? "destructive" : "outline"}>
+                  {bank.isPremium ? "Premium" : "Free"}
+                </Badge>
+              </TableCell>
+
+              <TableCell className="text-right">
+                <QuestionBankActions
+                  bank={bank}
+
+                  onView={onView}
+
+                  onEdit={onEdit}
+
+                  onDelete={onDelete}
+
+                  onManageQuestions={onManageQuestions}
+                />
               </TableCell>
             </TableRow>
-          )}
+          ))}
         </TableBody>
       </Table>
     </div>

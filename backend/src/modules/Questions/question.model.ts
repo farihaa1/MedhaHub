@@ -56,19 +56,19 @@ const sourceSchema = new Schema(
 
 const questionSchema = new Schema<IQuestion>(
   {
-    subject: {
+    subjectId: {
       type: Schema.Types.ObjectId,
       ref: "Subject",
       required: [true, "বিষয় নির্বাচন করা আবশ্যক।"],
     },
 
-    chapter: {
+    chapterId: {
       type: Schema.Types.ObjectId,
       ref: "Chapter",
       required: [true, "অধ্যায় নির্বাচন করা আবশ্যক।"],
     },
 
-    topic: {
+    topicId: {
       type: Schema.Types.ObjectId,
       ref: "Topic",
       required: [true, "টপিক নির্বাচন করা আবশ্যক।"],
@@ -170,9 +170,9 @@ questionSchema.index({
 });
 
 questionSchema.index({
-  subject: 1,
-  chapter: 1,
-  topic: 1,
+  subjectId: 1,
+  chapterId: 1,
+  topicId: 1,
 });
 questionSchema.index({
   "sources.type": 1,

@@ -1,5 +1,5 @@
-import CreateSubjectDialog from "@/app/customComponents/AdminDashboard/AdminSubjects/CreateSubjectDialog";
-import PageHeader from "@/app/customComponents/AdminDashboard/AdminSubjects/PageHeader";
+import CreateSubjectDialog from "@/app/customComponents/AdminDashboard/AdminSubjects/CreateSubjectDialog"
+import PageHeader from "@/app/customComponents/shared/PageHeader"
 
 export default function SubjectsPage() {
   return (
@@ -9,8 +9,6 @@ export default function SubjectsPage() {
         description="Manage all subjects"
         action={<CreateSubjectDialog />}
       />
-
-   
     </div>
   )
 }

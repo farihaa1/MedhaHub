@@ -1,5 +1,4 @@
 import httpStatus from "http-status";
-import { Request } from "express";
 import { QuestionBankItemService } from "./questionBankItem.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
@@ -7,36 +6,33 @@ import { sendResponse } from "../../utils/sendResponse";
 /**
  * Add Single Question
  */
-const addQuestionToBank = catchAsync(
-  async (req, res) => {
-    console.log("add questionbank ",req.params)
-  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const result = await QuestionBankItemService.addQuestionToBank(
-      id,
-      req.body,
-      req.user!,
-    );
+const addQuestionToBank = catchAsync(async (req, res) => {
+  console.log("add questionbank ", req.params);
+  const questionBankId = req.params.questionBankId as string;
+  const result = await QuestionBankItemService.addQuestionToBank(
+    questionBankId,
+    req.body,
+    req.user!,
+  );
 
-    sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.CREATED,
-      message: "Question added successfully",
-      data: result,
-    });
-  },
-);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.CREATED,
+    message: "Question added successfully",
+    data: result,
+  });
+});
 
 /**
  * Bulk Add Questions
  */
 const bulkAddQuestions = catchAsync(async (req, res) => {
-    console.log("bulk add questionbank ", req.params);
- const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const { questionBankId } = req.params ;
 
   const { questionIds } = req.body;
 
   const result = await QuestionBankItemService.bulkAddQuestions(
-    id,
+    questionBankId as string,
     questionIds,
     req.user!,
   );
@@ -53,8 +49,8 @@ const bulkAddQuestions = catchAsync(async (req, res) => {
  * Get Questions of a Bank
  */
 const getQuestionsByBank = catchAsync(async (req, res) => {
-    console.log("get questionbank ", req.params);
- const {questionBankId} = req.params
+  console.log("get questionbank ", req.params);
+  const { questionBankId } = req.params;
 
   const result = await QuestionBankItemService.getQuestionsByBank(
     questionBankId as string,
@@ -73,10 +69,13 @@ const getQuestionsByBank = catchAsync(async (req, res) => {
  * Remove Question
  */
 const removeQuestionFromBank = catchAsync(async (req, res) => {
-    const questionBankId = req.params.questionBankId as string;
+  const questionBankId = req.params.questionBankId as string;
   const questionId = req.params.questionId as string;
 
-  await QuestionBankItemService.removeQuestionFromBank(questionBankId, questionId);
+  await QuestionBankItemService.removeQuestionFromBank(
+    questionBankId,
+    questionId,
+  );
 
   sendResponse(res, {
     success: true,
@@ -90,10 +89,12 @@ const removeQuestionFromBank = catchAsync(async (req, res) => {
  * Reorder Questions
  */
 const reorderQuestions = catchAsync(async (req, res) => {
-  const { id } = req.params;
+ const { questionBankId } = req.params ;
+
+ await QuestionBankItemService.reorderQuestions(questionBankId as string, req.body.items);
 
   const result = await QuestionBankItemService.reorderQuestions(
-    id as string,
+    questionBankId as string,
     req.body.items,
   );
 

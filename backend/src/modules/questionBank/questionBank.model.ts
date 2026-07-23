@@ -109,15 +109,6 @@ const questionBankSchema = new Schema<IQuestionBank, QuestionBankModel>(
    Indexes
 ====================================================== */
 
-questionBankSchema.index(
-  {
-    slug: 1,
-  },
-  {
-    unique: true,
-  },
-);
-
 questionBankSchema.index({
   category: 1,
   year: -1,

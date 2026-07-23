@@ -28,9 +28,9 @@ export interface IQuestion {
   _id: Types.ObjectId;
 
   // Classification
-  subject: Types.ObjectId;
-  chapter: Types.ObjectId;
-  topic: Types.ObjectId;
+  subjectId: Types.ObjectId;
+  chapterId: Types.ObjectId;
+  topicId: Types.ObjectId;
 
   // Question
   type: TQuestionType;

@@ -1,71 +1,46 @@
 "use client"
 
-import { useState } from "react"
-
-import {
-  Plus,
-  Upload,
-  Download,
-  RefreshCw,
-  FileSpreadsheet,
-} from "lucide-react"
+import { Download, RefreshCw, Upload } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
-import CreateQuestionDialog from "./CreateQuestionDialog"
-import BulkUploadDialog from "./BulkUploadDialog"
-import ImportQuestionsDialog from "./ImportQuestionsDialog"
-import ExportQuestionsDialog from "./ExportQuestionsDialog"
-import BulkActionsDropdown from "./BulkActionsDropdown"
+interface QuestionToolbarProps {
+  onRefresh: () => void
+  onExport: () => void
+  onImport?: () => void
+}
 
-export default function QuestionToolbar() {
-  const [refreshKey, setRefreshKey] = useState(0)
-
+export default function QuestionToolbar({
+  onRefresh,
+  onExport,
+  onImport,
+}: QuestionToolbarProps) {
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          <CreateQuestionDialog>
-            <Button>
-              <Plus className="mr-2 size-4" />
-              Create Question
-            </Button>
-          </CreateQuestionDialog>
+    <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 className="text-lg font-semibold">Question Tools</h2>
 
-          <BulkUploadDialog>
-            <Button variant="outline">
-              <Upload className="mr-2 size-4" />
-              Bulk Upload
-            </Button>
-          </BulkUploadDialog>
-
-          <ImportQuestionsDialog>
-            <Button variant="outline">
-              <FileSpreadsheet className="mr-2 size-4" />
-              Import
-            </Button>
-          </ImportQuestionsDialog>
-
-          <ExportQuestionsDialog>
-            <Button variant="outline">
-              <Download className="mr-2 size-4" />
-              Export
-            </Button>
-          </ExportQuestionsDialog>
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setRefreshKey((prev) => prev + 1)}
-          >
-            <RefreshCw className="mr-2 size-4" />
-            Refresh
-          </Button>
-
-          <BulkActionsDropdown />
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Manage, import and export question data.
+        </p>
       </div>
-    </>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" onClick={onRefresh}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Refresh
+        </Button>
+
+        <Button variant="outline" onClick={onExport}>
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+
+        <Button onClick={onImport}>
+          <Upload className="mr-2 h-4 w-4" />
+          Import
+        </Button>
+      </div>
+    </div>
   )
 }

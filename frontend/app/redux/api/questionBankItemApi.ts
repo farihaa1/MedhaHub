@@ -1,17 +1,43 @@
 import { baseApi } from "./baseApi"
+import {
+  IQuestionBankQuestion,
+  IPaginatedResponse,
+} from "../types/questionBank.types"
 
 export const questionBankItemApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getQuestionsByBank: builder.query({
-      query: ({ questionBankId, ...params }) => {
-        console.log("API QuestionBankId:", questionBankId)
+    getQuestionsByBank: builder.query<
+      IPaginatedResponse<IQuestionBankQuestion>,
+      {
+        questionBankId: string
+        page?: number
+        limit?: number
+        searchTerm?: string
+      }
+    >({
+      query: ({ questionBankId, ...params }) => ({
+        url: `/question-bank-items/${questionBankId}/questions`,
+        params,
+      }),
 
-        return {
-          url: `/question-bank-items/${questionBankId}/questions`,
-          method: "GET",
-          params,
-        }
-      },
+      providesTags: (result, _error, { questionBankId }) =>
+        result
+          ? [
+              ...result.data.map((item) => ({
+                type: "QuestionBankItem" as const,
+                id: item._id,
+              })),
+              {
+                type: "QuestionBankItem",
+                id: questionBankId,
+              },
+            ]
+          : [
+              {
+                type: "QuestionBankItem",
+                id: questionBankId,
+              },
+            ],
     }),
 
     addQuestionToBank: builder.mutation({
@@ -20,7 +46,11 @@ export const questionBankItemApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["QuestionBankItem", "QuestionBank"],
+
+      invalidatesTags: (_r, _e, { questionBankId }) => [
+        { type: "QuestionBankItem", id: questionBankId },
+        { type: "QuestionBank", id: questionBankId },
+      ],
     }),
 
     bulkAddQuestions: builder.mutation({
@@ -32,7 +62,10 @@ export const questionBankItemApi = baseApi.injectEndpoints({
         },
       }),
 
-      invalidatesTags: ["QuestionBankItem", "QuestionBank"],
+      invalidatesTags: (_r, _e, { questionBankId }) => [
+        { type: "QuestionBankItem", id: questionBankId },
+        { type: "QuestionBank", id: questionBankId },
+      ],
     }),
 
     updateQuestionBankItem: builder.mutation({
@@ -41,7 +74,13 @@ export const questionBankItemApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["QuestionBankItem"],
+
+      invalidatesTags: (_r, _e, { id }) => [
+        {
+          type: "QuestionBankItem",
+          id,
+        },
+      ],
     }),
 
     removeQuestionFromBank: builder.mutation({
@@ -49,7 +88,11 @@ export const questionBankItemApi = baseApi.injectEndpoints({
         url: `/question-bank-items/${questionBankId}/questions/${questionId}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["QuestionBankItem", "QuestionBank"],
+
+      invalidatesTags: (_r, _e, { questionBankId }) => [
+        { type: "QuestionBankItem", id: questionBankId },
+        { type: "QuestionBank", id: questionBankId },
+      ],
     }),
 
     reorderQuestions: builder.mutation({
@@ -58,7 +101,10 @@ export const questionBankItemApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: { items },
       }),
-      invalidatesTags: ["QuestionBankItem"],
+
+      invalidatesTags: (_r, _e, { questionBankId }) => [
+        { type: "QuestionBankItem", id: questionBankId },
+      ],
     }),
   }),
 })

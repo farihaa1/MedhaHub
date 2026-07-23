@@ -1,9 +1,9 @@
-import { IApiResponse } from "@/app/features/auth/auth.type"
 import { baseApi } from "./baseApi"
+import { IApiResponse } from "@/app/features/auth/auth.type"
 
-/* ===========================
-   Enums
-=========================== */
+/* ==========================================================
+   ENUMS
+========================================================== */
 
 export enum QuestionStatus {
   PENDING = "PENDING",
@@ -31,9 +31,14 @@ export enum QuestionSourceType {
   CUSTOM = "CUSTOM",
 }
 
-/* ===========================
-   Interfaces
-=========================== */
+/* ==========================================================
+   COMMON TYPES
+========================================================== */
+
+export interface IEntityRef {
+  _id: string
+  title: string
+}
 
 export interface IQuestionOption {
   _id?: string
@@ -53,14 +58,18 @@ export interface IQuestionSource {
   year?: number
 }
 
+/* ==========================================================
+   QUESTION
+========================================================== */
+
 export interface IQuestion {
   _id: string
 
-  subjectId: string
+  subjectId: IEntityRef
 
-  chapterId: string
+  chapterId: IEntityRef
 
-  topicId: string
+  topicId: IEntityRef
 
   type: QuestionType
 
@@ -78,24 +87,28 @@ export interface IQuestion {
 
   tags?: string[]
 
-  difficulty?: QuestionDifficulty
+  difficulty: QuestionDifficulty
 
   status: QuestionStatus
 
-  createdBy: string
+  marks?: number
+
+  negativeMarks?: number
+
+  createdBy?: string
 
   approvedBy?: string
 
   approvedAt?: string
 
-  createdAt?: string
+  createdAt: string
 
-  updatedAt?: string
+  updatedAt: string
 }
 
-/* ===========================
-   Payload Types
-=========================== */
+/* ==========================================================
+   REQUEST TYPES
+========================================================== */
 
 export type CreateQuestionPayload = Omit<
   IQuestion,
@@ -109,10 +122,6 @@ export interface QuestionQuery {
 
   limit?: number
 
-  sortBy?: string
-
-  sortOrder?: "asc" | "desc"
-
   searchTerm?: string
 
   subjectId?: string
@@ -125,41 +134,74 @@ export interface QuestionQuery {
 
   status?: QuestionStatus
 
-  tags?: string[]
+  type?: QuestionType
 
-  language?: string
+  source?: QuestionSourceType
 
-  createdBy?: string
+  sortBy?: string
 
-  premium?: boolean
+  sortOrder?: "asc" | "desc"
 }
+
+/* ==========================================================
+   PAGINATION
+========================================================== */
+
+export interface QuestionMeta {
+  page: number
+
+  limit: number
+
+  total: number
+
+  totalPage: number
+}
+
+export interface PaginatedQuestionResponse {
+  meta: QuestionMeta
+
+  data: IQuestion[]
+}
+
+/* ==========================================================
+   STATS
+========================================================== */
 
 export interface IQuestionStats {
   total: number
+
   published: number
+
   draft: number
+
   pending: number
+
   rejected: number
+
   premium: number
+
   reported: number
+
   today: number
 }
 
 export interface IQuestionStatsResponse {
   success: boolean
+
   data: IQuestionStats
 }
-/* ===========================
+
+/* ==========================================================
    API
-=========================== */
+========================================================== */
 
 export const questionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getQuestions: builder.query<
-      IApiResponse<IQuestion[]>,
+      IApiResponse<PaginatedQuestionResponse>,
       QuestionQuery | undefined
     >({
-      query: (params = {}) => ({
+      query: (params) => ({
         url: "/questions",
         method: "GET",
         params,
@@ -241,10 +283,6 @@ export const questionsApi = baseApi.injectEndpoints({
         },
       ],
     }),
-    getQuestionStats: builder.query<IQuestionStatsResponse, void>({
-      query: () => "/questions/stats",
-      providesTags: ["Question"],
-    }),
 
     deleteQuestion: builder.mutation<IApiResponse<IQuestion>, string>({
       query: (id) => ({
@@ -253,6 +291,14 @@ export const questionsApi = baseApi.injectEndpoints({
       }),
 
       invalidatesTags: ["Question"],
+    }),
+
+    getQuestionStats: builder.query<IQuestionStatsResponse, void>({
+      query: () => ({
+        url: "/questions/stats",
+      }),
+
+      providesTags: ["Question"],
     }),
   }),
 
@@ -267,5 +313,5 @@ export const {
   useBulkCreateQuestionsMutation,
   useUpdateQuestionMutation,
   useDeleteQuestionMutation,
-  useGetQuestionStatsQuery
+  useGetQuestionStatsQuery,
 } = questionsApi

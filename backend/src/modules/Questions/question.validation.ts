@@ -60,12 +60,13 @@ const sourceSchema = z.object({
 
 const createQuestionValidationSchema = z.object({
   body: z.object({
-    subject: z.string().min(1),
-    chapter: z.string().min(1),
-    topic: z.string().min(1),
+    subjectId: z.string().min(1),
+
+    chapterId: z.string().min(1),
+
+    topicId: z.string().min(1),
 
     type: QuestionTypeEnum.optional(),
-
 
     questionText: z.string().min(5, "Question must be at least 5 characters"),
 
@@ -104,15 +105,13 @@ const createQuestionValidationSchema = z.object({
 
 const updateQuestionValidationSchema = z.object({
   body: z.object({
-    subject: z.string().optional(),
+    subjectId: z.string().min(1),
 
-    chapter: z.string().optional(),
+    chapterId: z.string().min(1),
 
-    topic: z.string().optional(),
+    topicId: z.string().min(1),
 
     type: QuestionTypeEnum.optional(),
-
-   
 
     questionText: z.string().min(5).optional(),
 

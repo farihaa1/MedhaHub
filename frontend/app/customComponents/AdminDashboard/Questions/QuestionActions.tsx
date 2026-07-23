@@ -1,14 +1,9 @@
 "use client"
 
-import {
-  MoreHorizontal,
-  Eye,
-  Pencil,
-  Copy,
-  Trash2,
-  BarChart3,
-  History,
-} from "lucide-react"
+import { useState } from "react"
+import { Eye, Pencil,BookOpen, Trash2, MoreHorizontal } from "lucide-react"
+import AddToQuestionBankDialog from "./AddToQuestionBankDialog"
+import { Button } from "@/components/ui/button"
 
 import {
   DropdownMenu,
@@ -17,54 +12,76 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { Button } from "@/components/ui/button"
+import PreviewQuestionDialog from "./PreviewQuestionDialog"
+import EditQuestionDialog from "./EditQuestionDialog"
+import DeleteQuestionDialog from "./DeleteQuestionDialog"
+import { IQuestionRow } from "./QuestionColumns"
 
-import { IQuestion } from "@/app/redux/api/questionsApi"
-
-interface Props {
-  question: IQuestion
+interface QuestionActionsProps {
+  question: IQuestionRow
 }
 
-export default function QuestionActions({ question }: Props) {
+export default function QuestionActions({ question }: QuestionActionsProps) {
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [questionBankOpen, setQuestionBankOpen] = useState(false)
+  console.log(question)
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="icon" variant="ghost">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>
-          <Eye className="mr-2 h-4 w-4" />
-          Preview
-        </DropdownMenuItem>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setPreviewOpen(true)}>
+            <Eye className="mr-2 h-4 w-4" />
+            Preview
+          </DropdownMenuItem>
 
-        <DropdownMenuItem>
-          <Pencil className="mr-2 h-4 w-4" />
-          Edit
-        </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setEditOpen(true)}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setQuestionBankOpen(true)}>
+            <BookOpen className="mr-2 h-4 w-4" />
+            Add To Question Bank
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setDeleteOpen(true)}
+            className="text-red-600 focus:text-red-600"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        <DropdownMenuItem>
-          <Copy className="mr-2 h-4 w-4" />
-          Duplicate
-        </DropdownMenuItem>
+      <PreviewQuestionDialog
+        questionId={question._id}
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+      />
 
-        <DropdownMenuItem>
-          <BarChart3 className="mr-2 h-4 w-4" />
-          Analytics
-        </DropdownMenuItem>
-
-        <DropdownMenuItem>
-          <History className="mr-2 h-4 w-4" />
-          History
-        </DropdownMenuItem>
-
-        <DropdownMenuItem className="text-red-600">
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      <EditQuestionDialog
+        questionId={question._id}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+      <AddToQuestionBankDialog
+        open={questionBankOpen}
+        onOpenChange={setQuestionBankOpen}
+        questionId={question._id}
+      />
+      <DeleteQuestionDialog
+        question={question}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
+    </>
   )
 }

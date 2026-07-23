@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-import PageHeader from "@/app/customComponents/AdminDashboard/AdminSubjects/PageHeader"
+import PageHeader from "@/app/customComponents/shared/PageHeader"
 
 import AcademicStats from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/AcademicStats"
 import AcademicToolbar from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/AcademicToolbar"
@@ -10,7 +10,7 @@ import AcademicFilters from "@/app/customComponents/AdminDashboard/ChaptersAndTo
 import AcademicTree from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/AcademicTree"
 
 import CreateChapterDialog from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/CreateChapterDialog"
-import BulkImportDialog from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/BulkImportDialog"
+// import BulkImportDialog from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/BulkImportDialog"
 
 import { Button } from "@/components/ui/button"
 
@@ -40,7 +40,7 @@ export default function AdminChaptersAndTopicsPage() {
         description="Manage subjects, chapters and topics across the entire platform."
         action={
           <div className="flex gap-2">
-            <BulkImportDialog />
+            {/* <BulkImportDialog /> */}
 
             <CreateChapterDialog />
 

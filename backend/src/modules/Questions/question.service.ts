@@ -14,7 +14,7 @@ const createQuestion = async (payload: IQuestion) => {
     const question = await Question.create([payload], { session });
 
     await StatisticsService.incrementQuestionCount(
-      payload.chapter.toString(),
+      payload.chapterId.toString(),
       1,
       session,
     );
@@ -43,7 +43,7 @@ const bulkCreateQuestions = async (payload: IQuestion[]) => {
     const chapterMap = new Map<string, number>();
 
     for (const question of payload) {
-      const chapterId = question.chapter.toString();
+      const chapterId = question.chapterId.toString();
 
       chapterMap.set(chapterId, (chapterMap.get(chapterId) || 0) + 1);
     }
@@ -63,24 +63,93 @@ const bulkCreateQuestions = async (payload: IQuestion[]) => {
     session.endSession();
   }
 };
-const getAllQuestions = async () => {
-  return await Question.find()
-    .populate("subject", "title")
-    .populate("chapter", "title")
-    .populate("topic", "title")
-    .sort({ createdAt: -1 });
+const getAllQuestions = async (query: Record<string, any>) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 20;
+  const skip = (page - 1) * limit;
+
+  const filter: Record<string, any> = {};
+
+  // Academic Filters
+  if (query.subjectId && query.subjectId !== "all") {
+    filter.subjectId = query.subjectId;
+  }
+
+  if (query.chapterId && query.chapterId !== "all") {
+    filter.chapterId = query.chapterId;
+  }
+
+  if (query.topicId && query.topicId !== "all") {
+    filter.topicId = query.topicId;
+  }
+
+  // Metadata Filters
+  if (query.status && query.status !== "all") {
+    filter.status = query.status;
+  }
+
+  if (query.difficulty && query.difficulty !== "all") {
+    filter.difficulty = query.difficulty;
+  }
+
+  if (query.type && query.type !== "all") {
+    filter.type = query.type;
+  }
+
+  if (query.source && query.source !== "all") {
+    filter["sources.type"] = query.source;
+  }
+
+  // Search
+  if (query.searchTerm) {
+    filter.questionText = {
+      $regex: query.searchTerm,
+      $options: "i",
+    };
+  }
+
+  // Sorting
+  const sortField = query.sortBy || "createdAt";
+  const sortOrder = query.sortOrder === "asc" ? 1 : -1;
+
+  const [questions, total] = await Promise.all([
+    Question.find(filter)
+      .populate("subjectId", "title name")
+      .populate("chapterId", "title name")
+      .populate("topicId", "title name")
+      .sort({
+        [sortField]: sortOrder,
+      })
+      .skip(skip)
+      .limit(limit),
+
+    Question.countDocuments(filter),
+  ]);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
+    },
+    data: questions,
+  };
 };
 
 const getQuestionsByTopic = async (topic: string) => {
   const questions = await Question.find({
-    topic,
+    topicId: topic,
   });
 
   return questions;
 };
 
 const getSingleQuestion = async (id: string) => {
-  const question = await Question.findById(id);
+  const question = await Question.findById(id)
+    .populate("subjectId", "title")
+    .populate("chapterId", "title")
+    .populate("topicId", "title");
 
   if (!question) {
     throw new AppError(404, "Question not found");
@@ -114,7 +183,7 @@ const deleteQuestion = async (id: string) => {
       throw new AppError(404, "Question not found");
     }
     await StatisticsService.decrementQuestionCount(
-      question.chapter.toString(),
+      question.chapterId.toString(),
       1,
       session,
     );

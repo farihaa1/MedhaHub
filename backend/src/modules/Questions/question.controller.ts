@@ -26,7 +26,9 @@ const bulkCreateQuestions = catchAsync(async (req, res) => {
 });
 
 const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
-  const result = await QuestionService.getAllQuestions();
+  console.log("Query:", req.query);
+
+  const result = await QuestionService.getAllQuestions(req.query);
 
   sendResponse(res, {
     success: true,

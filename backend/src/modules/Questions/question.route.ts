@@ -17,6 +17,7 @@ QuestionRoutes.post(
 );
 
 QuestionRoutes.get("/", QuestionController.getAllQuestions);
+QuestionRoutes.get("/stats", QuestionController.getQuestionStats);
 
 QuestionRoutes.get("/topic/:topicId", QuestionController.getQuestionsByTopic);
 
@@ -28,7 +29,6 @@ QuestionRoutes.patch(
   QuestionController.updateQuestion,
 );
 
-QuestionRoutes.get("/stats", QuestionController.getQuestionStats);
 
 
 QuestionRoutes.delete("/:id", QuestionController.deleteQuestion);

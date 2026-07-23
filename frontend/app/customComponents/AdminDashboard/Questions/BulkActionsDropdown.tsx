@@ -1,36 +1,91 @@
 "use client"
 
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  Archive,
+  CheckCircle2,
+  ChevronDown,
+  Copy,
+  Download,
+  Trash2,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
-export default function BulkActionsDropdown() {
-  const selectedCount = 0 // Replace with table selection state
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
-  if (!selectedCount) return null
+interface BulkActionsDropdownProps {
+  selectedIds?: string[]
+
+  onPublish?: (ids: string[]) => void
+
+  onArchive?: (ids: string[]) => void
+
+  onDelete?: (ids: string[]) => void
+
+  onExport?: (ids: string[]) => void
+
+  onDuplicate?: (ids: string[]) => void
+}
+
+export default function BulkActionsDropdown({
+  selectedIds = [],
+  onPublish,
+  onArchive,
+  onDelete,
+  onExport,
+  onDuplicate,
+}: BulkActionsDropdownProps) {
+  const disabled = selectedIds.length === 0
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary">Bulk Actions</Button>
+        <Button variant="outline" disabled={disabled}>
+          Bulk Actions
+          <ChevronDown className="ml-2 h-4 w-4" />
+        </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>Publish</DropdownMenuItem>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>{selectedIds.length} Selected</DropdownMenuLabel>
 
-        <DropdownMenuItem>Move to Draft</DropdownMenuItem>
+        <DropdownMenuSeparator />
 
-        <DropdownMenuItem>Mark Premium</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onPublish?.(selectedIds)}>
+          <CheckCircle2 className="mr-2 h-4 w-4" />
+          Publish
+        </DropdownMenuItem>
 
-        <DropdownMenuItem>Export Selected</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onArchive?.(selectedIds)}>
+          <Archive className="mr-2 h-4 w-4" />
+          Archive
+        </DropdownMenuItem>
 
-        <DropdownMenuItem className="text-red-600">
-          Delete Selected
+        <DropdownMenuItem onClick={() => onDuplicate?.(selectedIds)}>
+          <Copy className="mr-2 h-4 w-4" />
+          Duplicate
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={() => onExport?.(selectedIds)}>
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          className="text-destructive"
+          onClick={() => onDelete?.(selectedIds)}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

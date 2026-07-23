@@ -25,7 +25,6 @@ const addQuestionToBank = async (
     /**
      * Check Question Bank
      */
-
     const bank = await QuestionBank.findById(questionBankId).session(session);
 
     if (!bank) {
@@ -35,7 +34,6 @@ const addQuestionToBank = async (
     /**
      * Check Question
      */
-
     const question = await Question.findById(payload.question).session(session);
 
     if (!question) {
@@ -43,9 +41,8 @@ const addQuestionToBank = async (
     }
 
     /**
-     * Duplicate Check
+     * Prevent Duplicate
      */
-
     const exists = await QuestionBankItem.findOne({
       questionBank: questionBankId,
       question: payload.question,
@@ -59,39 +56,32 @@ const addQuestionToBank = async (
     }
 
     /**
-     * Auto Order
+     * Auto Generate Order
      */
-
     let order = payload.order;
 
     if (!order) {
-      const last = await QuestionBankItem.findOne({
+      const lastItem = await QuestionBankItem.findOne({
         questionBank: questionBankId,
       })
-        .sort("-order")
+        .sort({ order: -1 })
         .session(session);
 
-      order = last ? last.order + 1 : 1;
+      order = lastItem ? lastItem.order + 1 : 1;
     }
 
     /**
-     * Create Item
+     * Create Question Bank Item
      */
-
     const [item] = await QuestionBankItem.create(
       [
         {
-          questionBank: questionBankId,
-
-          question: payload.question,
-
+          questionBank: new Types.ObjectId(questionBankId),
+          question: new Types.ObjectId(payload.question),
           order,
-
-          marks: payload.marks,
-
-          negativeMarks: payload.negativeMarks,
-
-          createdBy: user.userId,
+          marks: payload.marks ?? 1,
+          negativeMarks: payload.negativeMarks ?? 0,
+          createdBy: new Types.ObjectId(user.id),
         },
       ],
       {
@@ -100,28 +90,16 @@ const addQuestionToBank = async (
     );
 
     /**
-     * Update Total Questions
+     * Sync Total Questions
      */
-
-    await QuestionBank.findByIdAndUpdate(
-      questionBankId,
-      {
-        $inc: {
-          totalQuestions: 1,
-        },
-      },
-      {
-        session,
-      },
-    );
+    await syncQuestionBankTotalQuestions(questionBankId, session);
 
     await session.commitTransaction();
 
     return item;
-  } catch (err) {
+  } catch (error) {
     await session.abortTransaction();
-
-    throw err;
+    throw error;
   } finally {
     session.endSession();
   }
@@ -138,9 +116,8 @@ const bulkAddQuestions = async (
     session.startTransaction();
 
     /**
-     * Question Bank
+     * Check Question Bank
      */
-
     const bank = await QuestionBank.findById(questionBankId).session(session);
 
     if (!bank) {
@@ -148,62 +125,65 @@ const bulkAddQuestions = async (
     }
 
     /**
-     * Current Last Order
+     * Get Last Order
      */
-
-    const last = await QuestionBankItem.findOne({
+    const lastItem = await QuestionBankItem.findOne({
       questionBank: questionBankId,
     })
-      .sort("-order")
+      .sort({ order: -1 })
       .session(session);
 
-    let order = last ? last.order + 1 : 1;
+    let order = lastItem ? lastItem.order + 1 : 1;
 
     /**
-     * Existing Questions
+     * Already Existing Questions
      */
-
-    const existing = await QuestionBankItem.find({
+    const existingItems = await QuestionBankItem.find({
       questionBank: questionBankId,
-
-      question: {
-        $in: questionIds,
-      },
+      question: { $in: questionIds },
     }).session(session);
 
-    const existingIds = new Set(existing.map((i) => i.question.toString()));
+    const existingIds = new Set(
+      existingItems.map((item) => item.question.toString()),
+    );
 
     /**
-     * Verify Questions
+     * Verify Question IDs
      */
-
     const validQuestions = await Question.find({
-      _id: {
-        $in: questionIds,
-      },
-    }).session(session);
+      _id: { $in: questionIds },
+    })
+      .select("_id")
+      .session(session);
 
-    const validIds = new Set(validQuestions.map((q) => q._id.toString()));
+    const validIds = new Set(
+      validQuestions.map((question) => question._id.toString()),
+    );
 
     /**
-     * Build Documents
+     * Prepare Documents
      */
+    const documents: {
+      questionBank: Types.ObjectId;
+      question: Types.ObjectId;
+      order: number;
+      marks: number;
+      negativeMarks: number;
+      createdBy: Types.ObjectId;
+    }[] = [];
 
-    const documents = [];
+    for (const questionId of questionIds) {
+      if (!validIds.has(questionId)) continue;
 
-    for (const id of questionIds) {
-      if (!validIds.has(id) || existingIds.has(id)) {
-        continue;
-      }
+      if (existingIds.has(questionId)) continue;
 
       documents.push({
-        questionBank: questionBankId,
-
-        question: id,
-
+        questionBank: new Types.ObjectId(questionBankId),
+        question: new Types.ObjectId(questionId),
         order: order++,
-
-        createdBy: user.userId,
+        marks: 1,
+        negativeMarks: 0,
+        createdBy: new Types.ObjectId(user.id),
       });
     }
 
@@ -211,35 +191,26 @@ const bulkAddQuestions = async (
       throw new AppError(httpStatus.BAD_REQUEST, "No new questions to add");
     }
 
+    /**
+     * Insert Items
+     */
     await QuestionBankItem.insertMany(documents, {
       session,
     });
 
     /**
-     * Update Count
+     * Sync Total Questions
      */
-
-    await QuestionBank.findByIdAndUpdate(
-      questionBankId,
-      {
-        $inc: {
-          totalQuestions: documents.length,
-        },
-      },
-      {
-        session,
-      },
-    );
+    await syncQuestionBankTotalQuestions(questionBankId, session);
 
     await session.commitTransaction();
 
     return {
       inserted: documents.length,
     };
-  } catch (err) {
+  } catch (error) {
     await session.abortTransaction();
-
-    throw err;
+    throw error;
   } finally {
     session.endSession();
   }
@@ -248,43 +219,60 @@ const bulkAddQuestions = async (
 const syncQuestionBankTotalQuestions = async (
   questionBankId: string,
   session?: mongoose.ClientSession,
-) => {
-  const total = await QuestionBankItem.countDocuments({
-    questionBank: questionBankId,
+): Promise<void> => {
+  const totalQuestions = await QuestionBankItem.countDocuments({
+    questionBank: new Types.ObjectId(questionBankId),
     isActive: true,
-  }).session(session || null);
+  }).session(session ?? null);
 
   await QuestionBank.findByIdAndUpdate(
     questionBankId,
     {
-      totalQuestions: total,
+      $set: {
+        totalQuestions,
+      },
     },
     {
       session,
+      runValidators: true,
     },
   );
 };
-
 const getQuestionsByBank = async (
   questionBankId: string,
   query: Record<string, unknown>,
 ) => {
-  console.log("1", questionBankId);
-
+  /**
+   * Check Question Bank
+   */
   const bank = await QuestionBank.findById(questionBankId);
 
-  console.log("2", bank);
+  if (!bank) {
+    throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
+  }
 
-  const qb = new QueryBuilder(
+  /**
+   * Build Query
+   */
+  const queryBuilder = new QueryBuilder(
     QuestionBankItem.find({
-      questionBank: questionBankId,
+      questionBank: new Types.ObjectId(questionBankId),
       isActive: true,
     }).populate({
       path: "question",
       populate: [
-        { path: "subject", select: "name" },
-        { path: "chapter", select: "name" },
-        { path: "topic", select: "name" },
+        {
+          path: "subject",
+          select: "name slug",
+        },
+        {
+          path: "chapter",
+          select: "name slug",
+        },
+        {
+          path: "topic",
+          select: "name slug",
+        },
       ],
     }),
     query,
@@ -293,15 +281,12 @@ const getQuestionsByBank = async (
     .paginate()
     .fields();
 
-  console.log("3");
+  /**
+   * Execute Query
+   */
+  const data = await queryBuilder.modelQuery;
 
-  const data = await qb.modelQuery;
-
-  console.log("4", data.length);
-
-  const meta = await qb.countTotal();
-
-  console.log("5", meta);
+  const meta = await queryBuilder.countTotal();
 
   return {
     meta,
@@ -319,12 +304,20 @@ const removeQuestionFromBank = async (
     session.startTransaction();
 
     /**
-     * Check Item
+     * Check Question Bank
      */
+    const bank = await QuestionBank.findById(questionBankId).session(session);
 
+    if (!bank) {
+      throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
+    }
+
+    /**
+     * Check Question Bank Item
+     */
     const item = await QuestionBankItem.findOne({
-      questionBank: questionBankId,
-      question: questionId,
+      questionBank: new Types.ObjectId(questionBankId),
+      question: new Types.ObjectId(questionId),
     }).session(session);
 
     if (!item) {
@@ -335,26 +328,28 @@ const removeQuestionFromBank = async (
     }
 
     /**
-     * Delete Mapping
+     * Remove Mapping
      */
-
-    await QuestionBankItem.findByIdAndDelete(item._id, {
-      session,
-    });
+    await QuestionBankItem.deleteOne(
+      {
+        _id: item._id,
+      },
+      {
+        session,
+      },
+    );
 
     /**
-     * Sync Count
+     * Sync Total Questions
      */
-
     await syncQuestionBankTotalQuestions(questionBankId, session);
 
     await session.commitTransaction();
 
     return null;
-  } catch (err) {
+  } catch (error) {
     await session.abortTransaction();
-
-    throw err;
+    throw error;
   } finally {
     session.endSession();
   }
@@ -375,7 +370,6 @@ const reorderQuestions = async (
     /**
      * Check Question Bank
      */
-
     const bank = await QuestionBank.findById(questionBankId).session(session);
 
     if (!bank) {
@@ -383,14 +377,24 @@ const reorderQuestions = async (
     }
 
     /**
-     * Bulk Update
+     * Validate Items
      */
+    if (items.length === 0) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "No questions provided for reordering",
+      );
+    }
 
+    /**
+     * Bulk Update Orders
+     */
     const operations = items.map((item) => ({
       updateOne: {
         filter: {
-          _id: item.id,
-          questionBank: questionBankId,
+          _id: new Types.ObjectId(item.id),
+          questionBank: new Types.ObjectId(questionBankId),
+          isActive: true,
         },
         update: {
           $set: {
@@ -407,15 +411,13 @@ const reorderQuestions = async (
     await session.commitTransaction();
 
     return null;
-  } catch (err) {
+  } catch (error) {
     await session.abortTransaction();
-
-    throw err;
+    throw error;
   } finally {
     session.endSession();
   }
 };
-
 const updateQuestionBankItem = async (
   id: string,
   payload: {
@@ -431,17 +433,23 @@ const updateQuestionBankItem = async (
   try {
     session.startTransaction();
 
+    /**
+     * Check Item
+     */
     const item = await QuestionBankItem.findById(id).session(session);
 
     if (!item) {
       throw new AppError(httpStatus.NOT_FOUND, "Question Bank Item not found");
     }
 
-    const result = await QuestionBankItem.findByIdAndUpdate(
+    /**
+     * Update Item
+     */
+    const updatedItem = await QuestionBankItem.findByIdAndUpdate(
       id,
       {
         ...payload,
-        updatedBy: user.userId,
+        updatedBy: new Types.ObjectId(user.id),
       },
       {
         new: true,
@@ -450,26 +458,33 @@ const updateQuestionBankItem = async (
       },
     );
 
+    /**
+     * Sync Total Questions
+     * (Required when isActive changes)
+     */
+    await syncQuestionBankTotalQuestions(item.questionBank.toString(), session);
+
     await session.commitTransaction();
 
-    return result;
-  } catch (err) {
+    return updatedItem;
+  } catch (error) {
     await session.abortTransaction();
-
-    throw err;
+    throw error;
   } finally {
     session.endSession();
   }
 };
+const getQuestionBankOrThrow = async (
+  id: string,
+  session?: mongoose.ClientSession,
+) => {
+  const questionBank = await QuestionBank.findById(id).session(session ?? null);
 
-const getQuestionBankOrThrow = async (id: string) => {
-  const bank = await QuestionBank.findById(id);
-
-  if (!bank) {
+  if (!questionBank) {
     throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
   }
 
-  return bank;
+  return questionBank;
 };
 
 

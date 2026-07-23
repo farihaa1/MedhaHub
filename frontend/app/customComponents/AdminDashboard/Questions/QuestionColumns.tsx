@@ -1,76 +1,108 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown } from "lucide-react"
 
 import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
 
-import { IQuestion } from "@/app/redux/api/questionsApi"
-
+import QuestionActions from "./QuestionActions"
 import StatusBadge from "./StatusBadge"
 import DifficultyBadge from "./DifficultyBadge"
-import QuestionActions from "./QuestionActions"
+import { IQuestionSource } from "@/app/redux/api/questionsApi"
 
-export const columns: ColumnDef<IQuestion>[] = [
+export interface IQuestionRow {
+  _id: string
+  question: string
+  subject?: {
+    _id: string
+    name: string
+  }
+
+  chapter?: {
+    _id: string
+    name: string
+  }
+
+  topic?: {
+    _id: string
+    name: string
+  }
+
+  type: string
+
+  difficulty?: string
+
+  status: string
+
+  source: IQuestionSource[]
+
+  marks: number
+
+  createdAt: string
+}
+
+export const columns: ColumnDef<IQuestionRow>[] = [
   {
     id: "select",
-
-    enableSorting: false,
-
-    enableHiding: false,
 
     header: ({ table }) => (
       <Checkbox
         checked={table.getIsAllPageRowsSelected()}
+
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+
+        aria-label="Select all"
       />
     ),
 
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
+
         onCheckedChange={(value) => row.toggleSelected(!!value)}
+
+        aria-label="Select row"
       />
     ),
+
+    enableSorting: false,
+
+    enableHiding: false,
   },
 
   {
-    accessorKey: "questionText",
+    accessorKey: "question",
 
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Question
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
+    header: "Question",
 
     cell: ({ row }) => (
-      <div className="max-w-lg truncate font-medium">
-        {row.original.questionText}
+      <div className="max-w-md">
+        <p className="line-clamp-2 font-medium">{row.original.question}</p>
       </div>
     ),
   },
 
   {
-    accessorKey: "subjectId.title",
+    accessorKey: "subject.name",
 
     header: "Subject",
+
+    cell: ({ row }) => <span>{row.original.subject?.name ?? "-"}</span>,
   },
 
   {
-    accessorKey: "chapterId.title",
+    accessorKey: "chapter.name",
 
     header: "Chapter",
+
+    cell: ({ row }) => <span>{row.original.chapter?.name ?? "-"}</span>,
   },
 
   {
-    accessorKey: "topicId.title",
+    accessorKey: "topic.name",
 
     header: "Topic",
+
+    cell: ({ row }) => <span>{row.original.topic?.name ?? "-"}</span>,
   },
 
   {
@@ -78,28 +110,56 @@ export const columns: ColumnDef<IQuestion>[] = [
 
     header: "Difficulty",
 
-    cell: ({ row }) => <DifficultyBadge difficulty={row.original.difficulty} />,
+    cell: ({ row }) => (
+      <DifficultyBadge difficulty={row.original.difficulty ?? ""} />
+    ),
   },
+
+  // {
+  //   accessorKey: "status",
+
+  //   header: "Status",
+
+  //   cell: ({ row }) => <StatusBadge status={row.original.status} />,
+  // },
 
   {
-    accessorKey: "status",
+    accessorKey: "source",
 
-    header: "Status",
+    header: "Source",
 
-    cell: ({ row }) => <StatusBadge status={row.original.status} />,
+    cell: ({ row }) => {
+      const sources = row.original.source
+
+      return (
+        <div className="space-y-1">
+          {sources.length > 0
+            ? sources.map((source, index) => (
+                <div key={index} className="text-sm">
+                  {source.type}
+
+                  {source.year && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      ({source.year})
+                    </span>
+                  )}
+                </div>
+              ))
+            : "-"}
+        </div>
+      )
+    },
   },
 
-  {
-    accessorKey: "createdAt",
-
-    header: "Created",
-  },
-
+  
   {
     id: "actions",
 
-    enableSorting: false,
+    header: "",
 
     cell: ({ row }) => <QuestionActions question={row.original} />,
+
+    enableSorting: false,
   },
 ]
