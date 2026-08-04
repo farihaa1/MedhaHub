@@ -1,0 +1,32 @@
+import { BaseExamStrategy } from "./base.strategy";
+import { IExamStrategy } from "./strategy.interface";
+
+import { IExamConfiguration, IStartExamPayload } from "../examEngine.interface";
+
+import { QuestionSelectorService } from "../services/questionSelector.service";
+
+export class PreviousYearStrategy
+  extends BaseExamStrategy
+  implements IExamStrategy
+{
+  async generateExam(payload: IStartExamPayload): Promise<IExamConfiguration> {
+    const questions = await QuestionSelectorService.selectQuestions({
+      source: payload.source,
+      year: payload.year,
+      count: payload.questionCount ?? 200,
+    });
+
+    return this.buildConfiguration(
+      questions.map((q) => q._id!),
+      {
+        duration: 200,
+
+        negativeMark: 0.25,
+
+        shuffleQuestions: false,
+
+        shuffleOptions: false,
+      },
+    );
+  }
+}

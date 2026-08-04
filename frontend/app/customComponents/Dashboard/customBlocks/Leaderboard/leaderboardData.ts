@@ -1,0 +1,42 @@
+export const leaderboard = [
+  {
+    id: 1,
+    name: "ইসমাইল ইসলাম",
+    avatar: "/avatars/avatar1.jpg",
+    points: "99.8",
+    premium: true,
+    rank: 1,
+  },
+  {
+    id: 2,
+    name: "Ashikur Rana",
+    avatar: "/avatars/avatar2.jpg",
+    points: "99.5",
+    premium: false,
+    rank: 2,
+  },
+  {
+    id: 3,
+    name: "মারজিনা",
+    avatar: "/avatars/avatar3.jpg",
+    points: "99.5",
+    premium: false,
+    rank: 3,
+  },
+  {
+    id: 4,
+    name: "Tahsin Ahmed",
+    avatar: "/avatars/avatar4.jpg",
+    points: "98.7",
+    premium: false,
+    rank: 4,
+  },
+  {
+    id: 5,
+    name: "Sadia Islam",
+    avatar: "/avatars/avatar5.jpg",
+    points: "98.3",
+    premium: false,
+    rank: 5,
+  },
+]

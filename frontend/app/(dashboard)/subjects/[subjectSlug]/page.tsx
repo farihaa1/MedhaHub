@@ -1,0 +1,30 @@
+import {  color } from "@/app/type"
+import { getSubjectColorBySlug } from "@/app/data/colorPalete"
+
+import SubjectPracticeClient from "./SubjectPracticeClient"
+import { SubjectSlug } from "../subjects.type"
+
+interface Props {
+  params: Promise<{
+    subjectSlug: SubjectSlug
+  }>
+}
+
+export default async function SubjectPage({ params }: Props) {
+  const { subjectSlug } = await params
+
+  // const subject = subjectDetails.find((item) => item.slug === subjectSlug)
+
+  // if (!subject) {
+  //   notFound()
+  // }
+
+  const color: color = getSubjectColorBySlug(subjectSlug)
+console.log(subjectSlug)
+  return (
+    <SubjectPracticeClient
+      subjectSlug={subjectSlug}
+      color={color}
+    />
+  )
+}

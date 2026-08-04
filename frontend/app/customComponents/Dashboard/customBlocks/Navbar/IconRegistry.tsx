@@ -1,0 +1,21 @@
+import {
+  Home,
+  BookOpen,
+  Briefcase,
+  GraduationCap,
+  Database,
+  FileText,
+  HelpCircle,
+  CirclePlus,
+} from "lucide-react"
+
+export const iconRegistry = {
+  home: Home,
+  exams: BookOpen,
+  jobs: Briefcase,
+  admission: GraduationCap,
+  question_bank: Database,
+  notes: FileText,
+  help: HelpCircle,
+  add: CirclePlus,
+} as const
