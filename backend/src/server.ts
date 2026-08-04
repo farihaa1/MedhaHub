@@ -6,11 +6,9 @@ async function server() {
   try {
     await mongoose.connect(config.mongoUri as string);
 
-  if (config.nodeEnv !== "production") {
-    app.listen(config.port, () => {
-      console.log("Running");
+    app.listen(config.port || 5000, () => {
+      console.log(`Server running on port ${config.port}`);
     });
-  }
   } catch (error) {
     console.log(error);
     }
