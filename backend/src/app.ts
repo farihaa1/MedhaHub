@@ -1,6 +1,5 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
-import path from "path";
 import cors from "cors";
 import router from "./router/router";
 import AppError from "./error/AppError";
@@ -13,6 +12,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
+      process.env.CLIENT_URL!,
     ],
     credentials: true,
   }),
@@ -22,7 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use("/api/v1", router);
 
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (req: Request, res: Response) => {
   res.json({

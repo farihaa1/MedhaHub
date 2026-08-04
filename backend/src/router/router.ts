@@ -14,7 +14,6 @@ import QuestionBankItemRoutes from "../modules/questionBankItems/questionBankIte
 import QuestionBankRoutes from "../modules/questionBank/questionBank.route";
 import QuestionBanksRoutes from "../modules/questionBanks/questionBanks.routes";
 import UploadRoutes from "../modules/Upload/upload.route";
-import PdfImportRoutes from "../modules/pdfImport/pdfImport.route";
 
 const router = Router();
 
@@ -34,6 +33,6 @@ router.use("/question-bank-items", QuestionBankItemRoutes);
 router.use("/question-banks", QuestionBanksRoutes);
 
 router.use("/upload", UploadRoutes);
-router.use("/pdf-import", PdfImportRoutes);
+
 
 export default router;
