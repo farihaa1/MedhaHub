@@ -6,10 +6,20 @@ import config from "../config";
 let isConnected = false;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (!isConnected) {
-    await mongoose.connect(config.mongoUri as string);
-    isConnected = true;
-  }
+  try {
+    if (!isConnected) {
+      await mongoose.connect(config.mongoUri as string);
+      isConnected = true;
+    }
 
-  return app(req, res);
+    return app(req, res);
+  } catch (error) {
+    console.error("SERVER ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server crashed",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 }
