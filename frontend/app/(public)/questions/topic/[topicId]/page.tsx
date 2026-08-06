@@ -19,6 +19,7 @@ interface PageProps {
 
 export default function TopicQuestionsPage({ params }: PageProps) {
   const { topicId } = use(params)
+  console.log(topicId)
   const router = useRouter()
   const user = useAppSelector((state) => state.auth.user)
   const isLoggedIn = !!user
@@ -28,15 +29,16 @@ export default function TopicQuestionsPage({ params }: PageProps) {
   const topic = topicData?.data
   const questions = questionsData?.data ?? []
 
-const handleStartExam = () => {
- const configureUrl = `/configure?type=topic&topics=${topicId}`
+  console.log(questionsData)
+  const handleStartExam = () => {
+    const configureUrl = `/configure?type=topic&topics=${topicId}`
 
-  if (!isLoggedIn) {
-    router.push(`/login?redirect=${encodeURIComponent(configureUrl)}`)
-    return
+    if (!isLoggedIn) {
+      router.push(`/login?redirect=${encodeURIComponent(configureUrl)}`)
+      return
+    }
+    router.push(configureUrl)
   }
-  router.push(configureUrl)
-}
 
   if (topicLoading || questionLoading) {
     return (

@@ -53,7 +53,7 @@ export default function TopicsSection({
   }
 
   const topics = topicsResponse?.data ?? []
-
+  console.log(topics)
   return (
     <section className="container mx-auto px-4 py-12">
       {/* Header */}

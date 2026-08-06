@@ -39,7 +39,6 @@ const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getQuestionsByTopic = catchAsync(async (req: Request, res: Response) => {
-  console.log("Query from get questions by topic:", req.query);
   const result = await QuestionService.getQuestionsByTopic(
     req.params.topicId as string,
   );

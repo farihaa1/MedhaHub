@@ -1,3 +1,4 @@
+import { ReactNode } from "react"
 import { baseApi } from "./baseApi"
 import { IApiResponse } from "@/app/features/auth/auth.type"
 
@@ -71,10 +72,8 @@ export interface IQuestionSource {
 ========================================================== */
 
 export interface IQuestion {
-  duplicate: any
-  confidence: ReactNode
-  questionNumber: ReactNode
-  questionNumber: Key | null | undefined
+  confidence?: ReactNode
+  questionNumber?: ReactNode
   _id: string
   subjectId: IEntityValue
   chapterId: IEntityValue

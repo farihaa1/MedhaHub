@@ -68,10 +68,16 @@ export default function QuestionsPage() {
         title="Questions"
         description="Manage all questions"
         action={
-          <Button onClick={() => router.push("/admin/questions/create")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Question
-          </Button>
+          <div className="flex gap-4">
+            <Button onClick={() => router.push("/admin/questions/all-questions")}>
+              <Plus className="mr-2 h-4 w-4" />
+              All Questions
+            </Button>
+            <Button onClick={() => router.push("/admin/questions/create")}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Question
+            </Button>
+          </div>
         }
       />
 
