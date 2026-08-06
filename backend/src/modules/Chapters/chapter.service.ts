@@ -16,6 +16,11 @@ const createChapter = async (payload: IChapter) => {
 
   return chapter.populate("subjectId", "title slug");
 };
+export const createBulkChapter = async (payload: IChapter[]) => {
+  const chapters = await Chapter.create(payload);
+
+  return chapters;
+};
 
 const getAllChapters = async () => {
   return await Chapter.find()
@@ -77,5 +82,5 @@ export const ChapterService = {
   getSingleChapter,
   updateChapter,
   deleteChapter,
-  getChaptersBySubject,
+  getChaptersBySubject,createBulkChapter
 };

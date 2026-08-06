@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ChapterService } from "./chapter.service";
 import { sendResponse } from "../../utils/sendResponse";
+import { catchAsync } from "../../utils/catchAsync";
 
 const createChapter = async (req: Request, res: Response) => {
   try {
@@ -21,6 +22,17 @@ const createChapter = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const createBulkChapter = catchAsync(async (req, res) => {
+  const result = await ChapterService.createBulkChapter(req.body);
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: "Chapters created successfully",
+    data: result,
+  });
+});
 
 const getAllChapters = async (_req: Request, res: Response) => {
   try {
@@ -155,5 +167,5 @@ export const ChapterController = {
   getSingleChapter,
   updateChapter,
   deleteChapter,
-  getChaptersBySubject,
+  getChaptersBySubject,createBulkChapter
 };

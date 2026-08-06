@@ -33,6 +33,8 @@ export interface CreateChapterPayload {
   status: ChapterStatus
 }
 
+export type CreateBulkChapterPayload = CreateChapterPayload[]
+
 export const chaptersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all chapters
@@ -95,6 +97,17 @@ export const chaptersApi = baseApi.injectEndpoints({
         { type: "Chapter", id },
       ],
     }),
+    createBulkChapter: builder.mutation<
+      IApiResponse<IChapter[]>,
+      CreateBulkChapterPayload
+    >({
+      query: (body) => ({
+        url: "/chapters/bulk",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Chapter"],
+    }),
 
     // Delete chapter
     deleteChapter: builder.mutation<IApiResponse<null>, string>({
@@ -116,4 +129,5 @@ export const {
   useCreateChapterMutation,
   useUpdateChapterMutation,
   useDeleteChapterMutation,
+  useCreateBulkChapterMutation,
 } = chaptersApi

@@ -27,14 +27,14 @@ interface LoginPageProps {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect: redirectTo } = await searchParams
 
-  // if refresh token exists user is probably logged in
-  const cookieStore = await cookies()
+  // // if refresh token exists user is probably logged in
+  // const cookieStore = await cookies()
 
-  const refreshToken = cookieStore.get("refreshToken")
+  // const refreshToken = cookieStore.get("refreshToken")
 
-  if (refreshToken) {
-    redirect("/dashboard")
-  }
+  // if (refreshToken) {
+  //   redirect("/dashboard")
+  // }
 
   return (
     <div className="relative flex items-center justify-center pt-20">
