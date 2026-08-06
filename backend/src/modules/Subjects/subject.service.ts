@@ -10,7 +10,13 @@ const createSubject = async (payload: ISubject) => {
 };
 
 const getAllSubjects = async () => {
-  return await Subject.find().sort({ title: 1 });
+  console.log("SERVICE START");
+
+  console.log("Before Subject.find()");
+  const result = await Subject.find().sort({ title: 1 });
+  console.log("After Subject.find()");
+
+  return result;
 };
 
 const getSingleSubject = async (slug: SubjectSlug) => {

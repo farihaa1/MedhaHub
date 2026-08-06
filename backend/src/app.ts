@@ -22,7 +22,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use("/api/v1", router);
 
-
+app.get("/mongo", async (_req, res) => {
+  try {
+    res.json({
+      readyState: mongoose.connection.readyState,
+      db: mongoose.connection.db?.databaseName ?? null,
+    });
+  } catch (err) {
+    res.json(err);
+  }
+});
 app.get("/", (req: Request, res: Response) => {
   res.json({
     success: true,

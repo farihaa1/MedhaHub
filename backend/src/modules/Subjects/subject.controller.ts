@@ -24,23 +24,20 @@ const createSubject = async (req: Request, res: Response) => {
 };
 
 const getAllSubjects = async (_req: Request, res: Response) => {
-  try {
-    const result = await SubjectService.getAllSubjects();
+  console.log("CONTROLLER START");
 
-    sendResponse(res, {
-      success: true,
-      statusCode: 200,
-      message: "Subjects retrieved successfully",
-      data: result,
-    });
-  } catch (error) {
-    sendResponse(res, {
-      success: false,
-      statusCode: 500,
-      message: "Failed to retrieve subjects",
-      data: error,
-    });
-  }
+  const result = await SubjectService.getAllSubjects();
+
+  console.log("CONTROLLER GOT RESULT");
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Subjects retrieved successfully",
+    data: result,
+  });
+
+  console.log("RESPONSE SENT");
 };
 
 const getSingleSubject = async (req: Request, res: Response) => {
