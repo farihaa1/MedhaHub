@@ -50,12 +50,7 @@ app.get("/", (_req, res) => {
   });
 });
 
-app.get("/mongo", async (_req, res) => {
-  res.json({
-    readyState: mongoose.connection.readyState,
-    db: mongoose.connection.db?.databaseName ?? null,
-  });
-});
+
 
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (error instanceof mongoose.Error.ValidationError) {

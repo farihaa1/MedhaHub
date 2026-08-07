@@ -2,17 +2,18 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAppSelector } from "@/app/redux/hooks"
 
-import useCurrentUser from "../hooks/useCurrentUser"
-
-interface Props {
+export default function ProtectedRoute({
+  children,
+}: {
   children: React.ReactNode
-}
-
-export default function ProtectedRoute({ children }: Props) {
+}) {
   const router = useRouter()
 
-  const { user, isAuthenticated, isLoading } = useCurrentUser()
+  const { user, isAuthenticated, isLoading } = useAppSelector(
+    (state) => state.auth
+  )
 
   useEffect(() => {
     if (isLoading) return
@@ -20,22 +21,23 @@ export default function ProtectedRoute({ children }: Props) {
     if (!isAuthenticated || !user) {
       router.replace("/login")
     }
-  }, [isAuthenticated, user, isLoading, router])
+  }, [isLoading, isAuthenticated, user, router])
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="space-y-4 text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">
-            Checking authentication...
-          </p>
-        </div>
-      </div>
-    )
-  }
+   if (isLoading) {
+     return (
+       <div className="flex min-h-screen items-center justify-center">
+         <div className="space-y-4 text-center">
+           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+           <p className="text-sm text-muted-foreground">
+             Checking authentication...
+           </p>
+         </div>
+       </div>
+     )
+   }
 
-  if (!isAuthenticated || !user) {
+
+  if (!isAuthenticated) {
     return null
   }
 

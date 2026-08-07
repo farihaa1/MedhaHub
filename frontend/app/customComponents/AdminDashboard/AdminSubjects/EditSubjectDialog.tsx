@@ -1,7 +1,8 @@
-"use client"
 
-import { useState } from "react"
-import { toast } from "sonner"
+"use client";
+
+import { useState } from "react";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -9,45 +10,66 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
-import SubjectForm, { SubjectFormValues } from "./SubjectForm"
+import SubjectForm, {
+  SubjectFormValues,
+} from "./SubjectForm";
 
-import { ISubject } from "@/app/(dashboard)/subjects/subjects.type"
-import { useUpdateSubjectMutation } from "@/app/redux/api/subjectsApi"
+import { ISubject } from "@/app/(dashboard)/subjects/subjects.type";
+import { useUpdateSubjectMutation } from "@/app/redux/api/subjectsApi";
 
 interface Props {
-  subject: ISubject
-  children?: React.ReactNode
+  subject: ISubject;
+  children?: React.ReactNode;
 }
 
-export default function EditSubjectDialog({ subject, children }: Props) {
-  const [open, setOpen] = useState(false)
+export default function EditSubjectDialog({
+  subject,
+  children,
+}: Props) {
+  const [open, setOpen] = useState(false);
 
-  const [updateSubject, { isLoading }] = useUpdateSubjectMutation()
+  const [
+    updateSubject,
+    { isLoading },
+  ] = useUpdateSubjectMutation();
 
-  async function handleSubmit(values: SubjectFormValues) {
+  const handleSubmit = async (
+    values: SubjectFormValues,
+  ) => {
     try {
       await updateSubject({
-        id: subject._id,
+        slug: subject.slug,
         data: values,
-      }).unwrap()
+      }).unwrap();
 
-      toast.success("Subject updated")
+      toast.success(
+        "Subject updated successfully.",
+      );
 
-      setOpen(false)
-    } catch (error) {
-      console.log(error)
+      setOpen(false);
+    } catch (error: unknown) {
+       console.error("Update subject error:", error)
+
+       toast.error("Failed to update subject.")
     }
-  }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
 
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Edit Subject</DialogTitle>
+          <DialogTitle>
+            Edit Subject
+          </DialogTitle>
         </DialogHeader>
 
         <SubjectForm
@@ -61,5 +83,5 @@ export default function EditSubjectDialog({ subject, children }: Props) {
         />
       </DialogContent>
     </Dialog>
-  )
+  );
 }

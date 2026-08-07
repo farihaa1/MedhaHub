@@ -27,6 +27,10 @@ import {
   useUpdateChapterMutation,
 } from "@/app/redux/api/chaptersApi"
 
+// ============================================================
+// Schema
+// ============================================================
+
 const chapterSchema = z.object({
   subjectId: z.string().min(1, "Subject required"),
 
@@ -41,6 +45,10 @@ const chapterSchema = z.object({
 
 type ChapterFormValues = z.infer<typeof chapterSchema>
 
+// ============================================================
+// Props
+// ============================================================
+
 interface Props {
   mode: "create" | "edit"
   chapter?: IChapter
@@ -51,6 +59,72 @@ interface SubjectOption {
   _id: string
   title: string
 }
+
+// ============================================================
+// Slug generator
+// ============================================================
+
+/**
+ * Generates a URL-safe slug.
+ *
+ * IMPORTANT:
+ * Do NOT use:
+ *
+ *   /[^\w-]/g
+ *
+ * because \w only supports ASCII characters.
+ *
+ * This version supports:
+ * - English
+ * - Bengali
+ * - Arabic
+ * - Hindi
+ * - Unicode letters in general
+ *
+ * Example:
+ *
+ * "Bangladesh Affairs" -> "bangladesh-affairs"
+ * "বাংলাদেশ বিষয়াবলি" -> "বাংলাদেশ-বিষয়াবলি"
+ * "আন্তর্জাতিক বিষয়াবলি" -> "আন্তর্জাতিক-বিষয়াবলি"
+ */
+const generateSlug = (value: string): string => {
+  return (
+    value
+      .normalize("NFKC")
+      .trim()
+      .toLowerCase()
+      // spaces -> hyphen
+      .replace(/\s+/gu, "-")
+      // Keep Unicode letters, Unicode marks, numbers and hyphens
+      .replace(/[^\p{L}\p{M}\p{N}-]/gu, "")
+      // Multiple hyphens -> one
+      .replace(/-+/gu, "-")
+      // Remove hyphens from beginning/end
+      .replace(/^-+|-+$/gu, "")
+  )
+}
+
+// ============================================================
+// Bulk parser
+// ============================================================
+
+const parseBulk = (text: string, subjectId: string, status: ChapterStatus) => {
+  return text
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((title, index) => ({
+      subjectId,
+      title,
+      slug: generateSlug(title),
+      order: index + 1,
+      status,
+    }))
+}
+
+// ============================================================
+// Component
+// ============================================================
 
 export default function ChapterForm({ mode, chapter, onSuccess }: Props) {
   const { data: subjects } = useGetSubjectsQuery()
@@ -65,6 +139,10 @@ export default function ChapterForm({ mode, chapter, onSuccess }: Props) {
 
   const [createBulkChapter, { isLoading: bulkCreating }] =
     useCreateBulkChapterMutation()
+
+  // ==========================================================
+  // Form
+  // ==========================================================
 
   const {
     register,
@@ -85,21 +163,14 @@ export default function ChapterForm({ mode, chapter, onSuccess }: Props) {
       status: ChapterStatus.DRAFT,
     },
   })
-const subjectId = watch("subjectId")
-const parseBulk = (text: string, subjectId: string, status: ChapterStatus) => {
-  return text
-    .split(/[\n,]+/) // split by comma OR new line
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .map((title, index) => ({
-      subjectId,
-      title,
-      slug: generateSlug(title),
-      order: index + 1,
-      status,
-    }))
-}
-const status = watch("status")
+
+  const subjectId = watch("subjectId")
+  const status = watch("status")
+
+  // ==========================================================
+  // Edit mode
+  // ==========================================================
+
   useEffect(() => {
     if (mode === "edit" && chapter) {
       reset({
@@ -119,81 +190,161 @@ const status = watch("status")
     }
   }, [chapter, mode, reset])
 
-  const generateSlug = (value: string) => {
-    return value
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^\w-]/g, "")
+  // ==========================================================
+  // Single chapter title change
+  // ==========================================================
+
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const title = event.target.value
+
+    setValue("title", title, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+
+    setValue("slug", generateSlug(title), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
   }
 
- const submitBulk = async () => {
-   if (!subjectId) {
-     alert("Please select a subject.")
-     return
-   }
+  // ==========================================================
+  // Bulk submit
+  // ==========================================================
 
-   if (!bulkText.trim()) {
-     alert("Please enter at least one chapter.")
-     return
-   }
+  const submitBulk = async () => {
+    if (!subjectId) {
+      alert("Please select a subject.")
+      return
+    }
 
-   try {
-     const payload = parseBulk(bulkText, subjectId, status)
+    if (!bulkText.trim()) {
+      alert("Please enter at least one chapter.")
+      return
+    }
 
-     await createBulkChapter(payload).unwrap()
+    const payload = parseBulk(bulkText, subjectId, status)
 
-     reset()
+    // ========================================================
+    // Validate generated slugs before sending to backend
+    // ========================================================
 
-     setBulkText("")
+    const invalidItems = payload.filter(
+      (item) => !item.slug || item.slug === "-"
+    )
 
-     setBulkMode(false)
+    if (invalidItems.length > 0) {
+      alert(
+        `Could not generate a valid slug for: ${invalidItems
+          .map((item) => item.title)
+          .join(", ")}`
+      )
 
-     onSuccess?.()
-   } catch (error) {
-     console.error(error)
-   }
- }
- 
- const submitSingle = async (values: ChapterFormValues) => {
-   try {
-     if (mode === "create") {
-       await createChapter(values).unwrap()
-     } else if (chapter) {
-       await updateChapter({
-         id: chapter._id,
-         data: values,
-       }).unwrap()
-     }
+      return
+    }
 
-     reset()
+    // ========================================================
+    // Detect duplicate slugs inside this bulk request
+    // ========================================================
 
-     onSuccess?.()
-   } catch (error) {
-     console.error(error)
-   }
- }
+    const slugMap = new Map<string, string[]>()
+
+    for (const item of payload) {
+      const existing = slugMap.get(item.slug) ?? []
+
+      existing.push(item.title)
+
+      slugMap.set(item.slug, existing)
+    }
+
+    const duplicates = Array.from(slugMap.entries()).filter(
+      ([, titles]) => titles.length > 1
+    )
+
+    if (duplicates.length > 0) {
+      const duplicateMessage = duplicates
+        .map(([slug, titles]) => `${slug}: ${titles.join(" / ")}`)
+        .join("\n")
+
+      alert(`Duplicate chapter slugs detected:\n\n${duplicateMessage}`)
+
+      return
+    }
+
+    try {
+      await createBulkChapter(payload).unwrap()
+
+      reset()
+
+      setBulkText("")
+
+      setBulkMode(false)
+
+      onSuccess?.()
+    } catch (error) {
+      console.error("Bulk chapter creation failed:", error)
+    }
+  }
+
+  // ==========================================================
+  // Single submit
+  // ==========================================================
+
+  const submitSingle = async (values: ChapterFormValues) => {
+    try {
+      if (mode === "create") {
+        await createChapter(values).unwrap()
+      } else if (chapter) {
+        await updateChapter({
+          id: chapter._id,
+          data: values,
+        }).unwrap()
+      }
+
+      reset()
+
+      onSuccess?.()
+    } catch (error) {
+      console.error("Chapter save failed:", error)
+    }
+  }
+
+  // ==========================================================
+  // Loading
+  // ==========================================================
+
+  const isSaving = creating || updating || bulkCreating
+
+  // ==========================================================
+  // Render
+  // ==========================================================
 
   return (
     <form
       onSubmit={
         bulkMode
-          ? (e) => {
-              e.preventDefault()
-              submitBulk()
+          ? (event) => {
+              event.preventDefault()
+              void submitBulk()
             }
           : handleSubmit(submitSingle)
       }
       className="space-y-5"
     >
+      {/* =====================================================
+          Create mode: Single / Bulk
+      ====================================================== */}
+
       {mode === "create" && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex gap-2">
           <Button
             type="button"
             variant={!bulkMode ? "default" : "outline"}
             onClick={() => {
               setBulkMode(false)
+
               reset()
+
               setBulkText("")
             }}
           >
@@ -205,6 +356,7 @@ const status = watch("status")
             variant={bulkMode ? "default" : "outline"}
             onClick={() => {
               setBulkMode(true)
+
               reset()
             }}
           >
@@ -213,7 +365,9 @@ const status = watch("status")
         </div>
       )}
 
-      {/* Subject */}
+      {/* =====================================================
+          Subject
+      ====================================================== */}
 
       <div>
         <label className="text-sm font-medium">Subject</label>
@@ -238,11 +392,17 @@ const status = watch("status")
           )}
         />
 
-        <p className="text-sm text-red-500">{errors.subjectId?.message}</p>
+        {errors.subjectId && (
+          <p className="text-sm text-red-500">{errors.subjectId.message}</p>
+        )}
       </div>
 
+      {/* =====================================================
+          SINGLE CHAPTER
+      ====================================================== */}
+
       {!bulkMode && (
-        <>
+        <div className="flex flex-col">
           {/* Title */}
 
           <div>
@@ -251,14 +411,12 @@ const status = watch("status")
             <Input
               placeholder="Example: Algebra"
               {...register("title")}
-              onChange={(e) => {
-                setValue("title", e.target.value)
-
-                setValue("slug", generateSlug(e.target.value))
-              }}
+              onChange={handleTitleChange}
             />
 
-            <p className="text-sm text-red-500">{errors.title?.message}</p>
+            {errors.title && (
+              <p className="text-sm text-red-500">{errors.title.message}</p>
+            )}
           </div>
 
           {/* Slug */}
@@ -266,9 +424,11 @@ const status = watch("status")
           <div>
             <label className="text-sm font-medium">Slug</label>
 
-            <Input {...register("slug")} />
+            <Input {...register("slug")} placeholder="chapter-slug" />
 
-            <p className="text-sm text-red-500">{errors.slug?.message}</p>
+            {errors.slug && (
+              <p className="text-sm text-red-500">{errors.slug.message}</p>
+            )}
           </div>
 
           {/* Order */}
@@ -283,12 +443,16 @@ const status = watch("status")
               })}
             />
 
-            <p className="text-sm text-red-500">{errors.order?.message}</p>
+            {errors.order && (
+              <p className="text-sm text-red-500">{errors.order.message}</p>
+            )}
           </div>
-        </>
+        </div>
       )}
 
-      {/* Status */}
+      {/* =====================================================
+          STATUS
+      ====================================================== */}
 
       <div>
         <label className="text-sm font-medium">Status</label>
@@ -310,7 +474,15 @@ const status = watch("status")
             </Select>
           )}
         />
+
+        {errors.status && (
+          <p className="text-sm text-red-500">{errors.status.message}</p>
+        )}
       </div>
+
+      {/* =====================================================
+          BULK MODE
+      ====================================================== */}
 
       {bulkMode && (
         <div className="space-y-2">
@@ -319,48 +491,65 @@ const status = watch("status")
           <Textarea
             rows={10}
             value={bulkText}
-            onChange={(e) => setBulkText(e.target.value)}
-            placeholder={`Algebra, Geometry, Calculus
-
-or
-
-Algebra
-Geometry
-Calculus`}
+            onChange={(event) => setBulkText(event.target.value)}
+            placeholder="Article|Proverbs|Sentence Correction|Conditional Sentence|Subject-Verb Agreement|Parts of Speech"
           />
 
           <p className="text-xs text-muted-foreground">
-            Separate chapters with commas (,) or put one chapter per line. Slug
-            and order will be generated automatically.
+            Separate multiple chapters using <strong>|</strong> (pipe).
+            <br />
+            Example:
+            <br />
+            <span className="font-mono">
+              Article|Proverbs|Sentence Correction|Conditional Sentence
+            </span>
           </p>
 
           {bulkText.trim() && (
             <div className="rounded-md border p-3 text-sm">
-              <p className="mb-2 font-medium">
-                Preview ({bulkText.split(/[\n,]+/).filter(Boolean).length}{" "}
+              <p className="mb-3 font-medium">
+                Preview (
+                {
+                  bulkText
+                    .split("|")
+                    .map((item) => item.trim())
+                    .filter(Boolean).length
+                }{" "}
                 chapters)
               </p>
 
-              <ul className="list-disc space-y-1 pl-5">
+              <ul className="space-y-2">
                 {bulkText
-                  .split(/[\n,]+/)
+                  .split("|")
                   .map((item) => item.trim())
                   .filter(Boolean)
-                  .map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
+                  .map((item, index) => {
+                    const slug = generateSlug(item)
+
+                    return (
+                      <li key={`${item}-${index}`} className="flex flex-col">
+                        <span>
+                          {index + 1}. {item}
+                        </span>
+
+                        <span className="text-xs text-muted-foreground">
+                          slug: {slug || "INVALID SLUG"}
+                        </span>
+                      </li>
+                    )
+                  })}
               </ul>
             </div>
           )}
         </div>
       )}
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={creating || updating || bulkCreating}
-      >
-        {creating || updating || bulkCreating
+      {/* =====================================================
+          Submit
+      ====================================================== */}
+
+      <Button type="submit" className="w-full" disabled={isSaving}>
+        {isSaving
           ? "Saving..."
           : bulkMode
             ? "Create Chapters"

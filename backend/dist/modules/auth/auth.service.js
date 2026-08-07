@@ -26,7 +26,10 @@ const register = async (payload) => {
         status: user_constants_1.UserStatus.ACTIVE,
         provider: auth_constant_1.AuthProvider.CREDENTIAL,
     });
-    const tokens = (0, auth_utils_1.generateAuthTokens)(user);
+    const tokens = (0, auth_utils_1.generateAuthTokens)({
+        ...user.toObject(),
+        _id: user._id.toString(),
+    });
     const userObject = user.toObject();
     const { password, ...safeUser } = userObject;
     return {
@@ -46,7 +49,10 @@ const login = async (payload) => {
     if (!matched) {
         throw new AppError_1.default(401, "Incorrect password");
     }
-    const tokens = (0, auth_utils_1.generateAuthTokens)(user);
+    const tokens = (0, auth_utils_1.generateAuthTokens)({
+        ...user.toObject(),
+        _id: user._id.toString(),
+    });
     const userObject = user.toObject();
     const { password, ...safeUser } = userObject;
     return {
@@ -109,7 +115,10 @@ const refreshToken = async (token) => {
     if (user.status === user_constants_1.UserStatus.BLOCKED) {
         throw new AppError_1.default(403, "User is blocked");
     }
-    const tokens = (0, auth_utils_1.generateAuthTokens)(user);
+    const tokens = (0, auth_utils_1.generateAuthTokens)({
+        ...user.toObject(),
+        _id: user._id.toString(),
+    });
     return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,

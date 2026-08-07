@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
+import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { IAuthState, IUser } from "@/app/features/auth/auth.type"
 
 const initialState: IAuthState = {
@@ -10,7 +10,6 @@ const initialState: IAuthState = {
 
 const authSlice = createSlice({
   name: "auth",
-
   initialState,
 
   reducers: {
@@ -30,7 +29,10 @@ const authSlice = createSlice({
       state.isLoading = action.payload
     },
 
-    updateUser: (state, action: PayloadAction<Partial<IUser>>) => {
+    updateUser: (
+      state,
+      action: PayloadAction<Partial<IUser>>
+    ) => {
       if (!state.user) return
 
       state.user = {
@@ -41,7 +43,12 @@ const authSlice = createSlice({
   },
 })
 
-export const { setCredentials, clearCredentials, setLoading, updateUser } =
-  authSlice.actions
+export const {
+  setCredentials,
+  clearCredentials,
+  setLoading,
+  updateUser,
+} = authSlice.actions
 
 export default authSlice.reducer
+

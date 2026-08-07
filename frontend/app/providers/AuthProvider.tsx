@@ -16,25 +16,21 @@ interface Props {
   children: ReactNode
 }
 
-const PUBLIC_ROUTES = [
-  "/",
+const AUTH_ROUTES = [
   "/login",
   "/register",
   "/forgot-password",
-  "/questions",
-  "/subjects",
+  "/reset-password",
 ]
 
 export default function AuthProvider({ children }: Props) {
   const pathname = usePathname()
-
   const dispatch = useAppDispatch()
 
-  const skip = PUBLIC_ROUTES.includes(pathname)
+  const skip = AUTH_ROUTES.some((route) => pathname.startsWith(route))
 
-  const { data, isLoading, isSuccess, isError } = useMeQuery(undefined, {
+  const { data, isLoading, isError } = useMeQuery(undefined, {
     skip,
-    refetchOnMountOrArgChange: true,
   })
 
   useEffect(() => {
@@ -43,20 +39,17 @@ export default function AuthProvider({ children }: Props) {
       return
     }
 
-    if (isLoading) {
-      dispatch(setLoading(true))
-      return
-    }
+    dispatch(setLoading(isLoading))
 
-    if (isSuccess && data?.data) {
+    if (data?.data) {
       dispatch(setCredentials(data.data))
       return
     }
 
-    if (isError) {
+    if (!isLoading && isError) {
       dispatch(clearCredentials())
     }
-  }, [skip, isLoading, isSuccess, isError, data, dispatch])
+  }, [skip, isLoading, isError, data, dispatch])
 
   return <>{children}</>
 }

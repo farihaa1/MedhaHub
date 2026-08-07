@@ -224,10 +224,6 @@ const updateQuestion = async (id, payload) => {
             await statistics_service_1.StatisticsService.incrementQuestionCount(newChapterId, 1, session);
             await statistics_service_1.StatisticsService.incrementTopicQuestionCount(newTopicId, 1, session);
         }
-        /* =====================================================
-           CASE 3:
-           Approved → Pending/Rejected
-           ===================================================== */
         if (wasApproved && !isApproved) {
             await statistics_service_1.StatisticsService.decrementQuestionCount(oldChapterId, 1, session);
             await statistics_service_1.StatisticsService.decrementTopicQuestionCount(oldTopicId, 1, session);
@@ -243,30 +239,31 @@ const updateQuestion = async (id, payload) => {
         session.endSession();
     }
 };
-/* =========================================================
-   DELETE QUESTION
-========================================================= */
 const deleteQuestion = async (id) => {
     const session = await mongoose_1.default.startSession();
     try {
         session.startTransaction();
-        const question = await question_model_1.Question.findByIdAndDelete(id, {
-            session,
-        });
+        console.log("STEP 1");
+        const question = await question_model_1.Question.findById(id).session(session);
+        console.log("STEP 2", question);
         if (!question) {
             throw new AppError_1.default(404, "Question not found");
         }
-        /*
-         * Only approved questions exist in statistics.
-         */
+        await question_model_1.Question.findByIdAndDelete(id).session(session);
         if (question.status === question_constant_1.QuestionStatus.APPROVED) {
-            await statistics_service_1.StatisticsService.decrementQuestionCount(question.chapterId.toString(), 1, session);
-            await statistics_service_1.StatisticsService.decrementTopicQuestionCount(question.topicId.toString(), 1, session);
+            if (question.chapterId) {
+                await statistics_service_1.StatisticsService.decrementQuestionCount(question.chapterId.toString(), 1, session);
+            }
+            if (question.topicId) {
+                await statistics_service_1.StatisticsService.decrementTopicQuestionCount(question.topicId.toString(), 1, session);
+            }
         }
         await session.commitTransaction();
+        console.log("STEP 7");
         return question;
     }
     catch (error) {
+        console.error(error);
         await session.abortTransaction();
         throw error;
     }

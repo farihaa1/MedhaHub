@@ -6,20 +6,30 @@ import { CheckCircle2, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
-import { IQuestion, IEntityRef } from "@/app/redux/api/questionsApi"
+import {
+  IQuestion,
+  IEntityRef,
+  IEntityValue,
+} from "@/app/redux/api/questionsApi"
 
 interface QuestionPreviewProps {
   question: IQuestion
 }
 
-function getTitle(value: string | IEntityRef | undefined) {
+function getTitle(
+  value: string | IEntityRef | IEntityValue | null | undefined
+) {
   if (!value) return "-"
 
   if (typeof value === "string") {
     return value
   }
 
-  return value.title
+  if (typeof value === "object" && "title" in value) {
+    return value.title
+  }
+
+  return "-"
 }
 
 export default function QuestionPreview({ question }: QuestionPreviewProps) {
@@ -145,18 +155,6 @@ export default function QuestionPreview({ question }: QuestionPreviewProps) {
       {/* ================= Footer ================= */}
 
       <div className="grid gap-5 md:grid-cols-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Marks</p>
-
-          <p className="font-semibold">{question.marks ?? 1}</p>
-        </div>
-
-        <div>
-          <p className="text-sm text-muted-foreground">Negative Marks</p>
-
-          <p className="font-semibold">{question.negativeMarks ?? 0}</p>
-        </div>
-
         <div>
           <p className="text-sm text-muted-foreground">Sources</p>
 

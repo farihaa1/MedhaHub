@@ -1,9 +1,10 @@
+
 import { ReactNode } from "react"
 import { baseApi } from "./baseApi"
 import { IApiResponse } from "@/app/features/auth/auth.type"
 
 /* ==========================================================
-   ENUMS
+ENUMS
 ========================================================== */
 
 export enum QuestionStatus {
@@ -37,28 +38,44 @@ export const QuestionSourceType = {
 } as const
 
 export type QuestionSourceType =
-  (typeof QuestionSourceType)[keyof typeof QuestionSourceType] 
+  (typeof QuestionSourceType)[keyof typeof QuestionSourceType]
 
-  export const QUESTION_SOURCE_OPTIONS = Object.entries(QuestionSourceType).map(
-    ([label, value]) => ({
-      label: label.replace(/_/g, " "),
-      value,
-    })
-  )
+export const QUESTION_SOURCE_OPTIONS = Object.entries(
+  QuestionSourceType,
+).map(([label, value]) => ({
+  label: label.replace(/_/g, " "),
+  value,
+}))
+
+/* ==========================================================
+ENTITY
+========================================================== */
+
 export interface IEntityRef {
   _id: string
   title: string
 }
 
-export type IEntityValue = string | IEntityRef | null
+export type IEntityValue =
+  | string
+  | IEntityRef
+  | null
+
+/* ==========================================================
+QUESTION OPTION
+========================================================== */
 
 export interface IQuestionOption {
   _id?: string
-  label?:string[]
+  label?: string
   text: string
   image?: string | null
   isCorrect: boolean
 }
+
+/* ==========================================================
+QUESTION SOURCE
+========================================================== */
 
 export interface IQuestionSource {
   type: QuestionSourceType
@@ -66,41 +83,49 @@ export interface IQuestionSource {
   year?: number
 }
 
-
 /* ==========================================================
-   QUESTION
+QUESTION
 ========================================================== */
 
 export interface IQuestion {
   confidence?: ReactNode
   questionNumber?: ReactNode
+
   _id: string
+
   subjectId: IEntityValue
   chapterId: IEntityValue
   topicId: IEntityValue
+
   type: QuestionType
+
   questionText: string
   questionImage?: string | null
+
   options: IQuestionOption[]
+
   correctAnswer?: string
+
   explanation?: string
   explanationImage?: string | null
+
   sources?: IQuestionSource[]
   tags?: string[]
+
   difficulty?: QuestionDifficulty
   status: QuestionStatus
+
   createdAt: string
   updatedAt: string
 }
+
 /* ==========================================================
-   REQUEST TYPES
+CREATE
 ========================================================== */
 
 export interface CreateQuestionPayload {
   subjectId: string
-
   chapterId: string
-
   topicId: string
 
   questionText: string
@@ -114,11 +139,9 @@ export interface CreateQuestionPayload {
   }[]
 
   explanation?: string
-
   explanationImage?: string | null
 
   difficulty: QuestionDifficulty
-
   type: QuestionType
 
   tags: string[]
@@ -130,24 +153,37 @@ export interface CreateQuestionPayload {
   }[]
 }
 
-export type UpdateQuestionPayload = Partial<CreateQuestionPayload>
+/* ==========================================================
+UPDATE
+========================================================== */
+
+export type UpdateQuestionPayload =
+  Partial<CreateQuestionPayload>
+
+/* ==========================================================
+QUERY
+========================================================== */
+
 export interface QuestionQuery {
   page?: number
   limit?: number
   searchTerm?: string
+
   subjectId?: string
   chapterId?: string
   topicId?: string
+
   difficulty?: QuestionDifficulty
   status?: QuestionStatus
   type?: QuestionType
   source?: QuestionSourceType
+
   sortBy?: string
   sortOrder?: "asc" | "desc"
 }
 
 /* ==========================================================
-   PAGINATION
+PAGINATION
 ========================================================== */
 
 export interface QuestionMeta {
@@ -163,7 +199,7 @@ export interface PaginatedQuestionResponse {
 }
 
 /* ==========================================================
-   STATS
+STATS
 ========================================================== */
 
 export interface IQuestionStats {
@@ -179,16 +215,19 @@ export interface IQuestionStats {
 
 export interface IQuestionStatsResponse {
   success: boolean
-
   data: IQuestionStats
 }
 
 /* ==========================================================
-   API
+API
 ========================================================== */
 
 export const questionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    /* ======================================================
+    GET QUESTIONS
+    ====================================================== */
+
     getQuestions: builder.query<
       IApiResponse<PaginatedQuestionResponse>,
       QuestionQuery | undefined
@@ -199,12 +238,34 @@ export const questionsApi = baseApi.injectEndpoints({
         params,
       }),
 
-      providesTags: ["Question"],
+      providesTags: (result) =>
+        result?.data?.data
+          ? [
+              ...result.data.data.map((question) => ({
+                type: "Question" as const,
+                id: question._id,
+              })),
+              {
+                type: "Question" as const,
+                id: "LIST",
+              },
+            ]
+          : [
+              {
+                type: "Question" as const,
+                id: "LIST",
+              },
+            ],
     }),
+
+    /* ======================================================
+    GET SINGLE QUESTION
+    ====================================================== */
 
     getQuestion: builder.query<IApiResponse<IQuestion>, string>({
       query: (id) => ({
         url: `/questions/${id}`,
+        method: "GET",
       }),
 
       providesTags: (_result, _error, id) => [
@@ -215,9 +276,14 @@ export const questionsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    /* ======================================================
+    GET QUESTIONS BY TOPIC
+    ====================================================== */
+
     getQuestionsByTopic: builder.query<IApiResponse<IQuestion[]>, string>({
       query: (topicId) => ({
         url: `/questions/topic/${topicId}`,
+        method: "GET",
       }),
 
       providesTags: (_result, _error, topicId) => [
@@ -227,6 +293,10 @@ export const questionsApi = baseApi.injectEndpoints({
         },
       ],
     }),
+
+    /* ======================================================
+    CREATE
+    ====================================================== */
 
     createQuestion: builder.mutation<
       IApiResponse<IQuestion>,
@@ -238,8 +308,12 @@ export const questionsApi = baseApi.injectEndpoints({
         body,
       }),
 
-      invalidatesTags: ["Question","Topic", "Chapter"],
+      invalidatesTags: ["Question", "Topic", "Chapter"],
     }),
+
+    /* ======================================================
+    BULK CREATE
+    ====================================================== */
 
     bulkCreateQuestions: builder.mutation<
       IApiResponse<IQuestion[]>,
@@ -253,6 +327,10 @@ export const questionsApi = baseApi.injectEndpoints({
 
       invalidatesTags: ["Question"],
     }),
+
+    /* ======================================================
+    UPDATE
+    ====================================================== */
 
     updateQuestion: builder.mutation<
       IApiResponse<IQuestion>,
@@ -268,13 +346,14 @@ export const questionsApi = baseApi.injectEndpoints({
       }),
 
       invalidatesTags: (_result, _error, { id }) => [
-        "Question",
-        {
-          type: "Question",
-          id,
-        },
+        { type: "Question", id },
+        { type: "Question", id: "LIST" },
       ],
     }),
+
+    /* ======================================================
+    DELETE
+    ====================================================== */
 
     deleteQuestion: builder.mutation<IApiResponse<IQuestion>, string>({
       query: (id) => ({
@@ -284,6 +363,10 @@ export const questionsApi = baseApi.injectEndpoints({
 
       invalidatesTags: ["Question"],
     }),
+
+    /* ======================================================
+    STATS
+    ====================================================== */
 
     getQuestionStats: builder.query<IQuestionStatsResponse, void>({
       query: () => ({
@@ -297,13 +380,19 @@ export const questionsApi = baseApi.injectEndpoints({
   overrideExisting: false,
 })
 
+/* ==========================================================
+HOOKS
+========================================================== */
+
 export const {
   useGetQuestionsQuery,
   useGetQuestionQuery,
   useGetQuestionsByTopicQuery,
+
   useCreateQuestionMutation,
   useBulkCreateQuestionsMutation,
   useUpdateQuestionMutation,
   useDeleteQuestionMutation,
+
   useGetQuestionStatsQuery,
 } = questionsApi

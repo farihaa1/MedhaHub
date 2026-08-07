@@ -21,8 +21,8 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/register",
         method: "POST",
         body,
+        credentials: "include",
       }),
-
       invalidatesTags: ["User", "Auth"],
     }),
 
@@ -35,6 +35,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/login",
         method: "POST",
         body,
+        credentials: "include",
       }),
 
       invalidatesTags: ["User", "Auth"],
@@ -47,6 +48,8 @@ export const authApi = baseApi.injectEndpoints({
     me: builder.query<IApiResponse<IUser>, void>({
       query: () => ({
         url: "/auth/me",
+        method: "GET",
+        credentials: "include",
       }),
 
       providesTags: ["User"],
@@ -62,6 +65,7 @@ export const authApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/auth/refresh-token",
         method: "POST",
+        credentials: "include",
       }),
     }),
 
@@ -73,6 +77,7 @@ export const authApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/auth/logout",
         method: "POST",
+        credentials: "include",
       }),
 
       invalidatesTags: ["User", "Auth"],
@@ -87,6 +92,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/profile",
         method: "PATCH",
         body,
+        credentials: "include",
       }),
 
       invalidatesTags: ["User"],
@@ -101,6 +107,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/change-password",
         method: "POST",
         body,
+        credentials: "include",
       }),
     }),
 
@@ -111,6 +118,8 @@ export const authApi = baseApi.injectEndpoints({
     isAdmin: builder.query<boolean, void>({
       query: () => ({
         url: "/users/is-admin",
+        method: "GET",
+        credentials: "include",
       }),
     }),
   }),

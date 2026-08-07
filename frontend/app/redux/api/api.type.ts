@@ -94,24 +94,14 @@ export interface ISubmitExamPayload {
 
 export interface IExamResult {
   sessionId: string
-
   totalQuestions: number
-
   attemptedQuestions: number
-
   correctAnswers: number
-
   wrongAnswers: number
-
   skippedQuestions: number
-
   obtainedMarks: number
-
   totalMarks: number
-
   percentage: number
-
   rank?: number
-
   submittedAt: string
 }

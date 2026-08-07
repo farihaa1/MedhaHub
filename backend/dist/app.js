@@ -40,12 +40,6 @@ app.get("/", (_req, res) => {
         message: "Quizzes API Running",
     });
 });
-app.get("/mongo", async (_req, res) => {
-    res.json({
-        readyState: mongoose_1.default.connection.readyState,
-        db: mongoose_1.default.connection.db?.databaseName ?? null,
-    });
-});
 app.use((error, _req, res, _next) => {
     if (error instanceof mongoose_1.default.Error.ValidationError) {
         return res.status(400).json({

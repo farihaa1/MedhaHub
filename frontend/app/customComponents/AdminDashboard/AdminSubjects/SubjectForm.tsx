@@ -8,29 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
-import { SubjectSlug } from "@/app/(dashboard)/subjects/subjects.type"
+export const subjectSchema = z.object({
+  title: z.string().min(2, "Title must be at least 2 characters"),
 
-const subjectSlugs = [
-  "current-affairs",
-  "bangla-grammar",
-  "english-language",
-  "general-science",
-  "international-affairs",
-  "ethics-values",
-  "mental-ability",
-  "registration-school",
-  "bangla-literature",
-  "english-literature",
-  "mathematical-reasoning",
-  "bangladesh-affairs",
-  "geography-disaster",
-  "ict",
-  "registration-college",
-] as const satisfies readonly SubjectSlug[]
+  slug: z.string().min(1, "Slug is required"),
 
-const subjectSchema = z.object({
-  title: z.string().min(2, "Title is required"),
-  slug: z.enum(subjectSlugs),
   url: z.string().min(1, "URL is required"),
 })
 
@@ -38,8 +20,16 @@ export type SubjectFormValues = z.infer<typeof subjectSchema>
 
 interface SubjectFormProps {
   defaultValues?: Partial<SubjectFormValues>
+
   onSubmit: (values: SubjectFormValues) => void | Promise<void>
+
   loading?: boolean
+}
+
+const initialValues: SubjectFormValues = {
+  title: "",
+  slug: "current-affairs",
+  url: "",
 }
 
 export default function SubjectForm({
@@ -54,62 +44,81 @@ export default function SubjectForm({
     formState: { errors },
   } = useForm<SubjectFormValues>({
     resolver: zodResolver(subjectSchema),
+
     defaultValues: {
-      title: "",
-      slug: "current-affairs",
-      url: "",
+      ...initialValues,
       ...defaultValues,
     },
   })
 
   useEffect(() => {
     reset({
-      title: "",
-      slug: "current-affairs",
-      url: "",
+      ...initialValues,
       ...defaultValues,
     })
   }, [defaultValues, reset])
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      {/* Title */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Subject Title</label>
+      {/* =========================
+          TITLE
+      ========================= */}
 
-        <Input placeholder="Mathematics" {...register("title")} />
+      <div className="space-y-2">
+        <label htmlFor="title" className="text-sm font-medium">
+          Subject Title
+        </label>
+
+        <Input
+          id="title"
+          placeholder="Mathematics"
+          disabled={loading}
+          {...register("title")}
+        />
 
         {errors.title && (
           <p className="text-sm text-destructive">{errors.title.message}</p>
         )}
       </div>
 
-      {/* Slug */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Subject Slug</label>
+      {/* =========================
+          SLUG
+      ========================= */}
 
-        <select
+      <div className="space-y-2">
+        <label htmlFor="slug" className="text-sm font-medium">
+          Subject Slug
+        </label>
+
+        <Input
+          id="slug"
+          placeholder="mathematical-reasoning"
+          disabled={loading}
           {...register("slug")}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          {subjectSlugs.map((slug) => (
-            <option key={slug} value={slug}>
-              {slug}
-            </option>
-          ))}
-        </select>
+        />
 
         {errors.slug && (
           <p className="text-sm text-destructive">{errors.slug.message}</p>
         )}
+
+        <p className="text-xs text-muted-foreground">
+          Example: current-affairs
+        </p>
       </div>
 
-      {/* URL */}
+      {/* =========================
+          URL
+      ========================= */}
+
       <div className="space-y-2">
-        <label className="text-sm font-medium">URL</label>
+        <label htmlFor="url" className="text-sm font-medium">
+          URL
+        </label>
 
         <Input
+          id="url"
           placeholder="/subjects/mathematical-reasoning"
+          disabled={loading}
           {...register("url")}
         />
 
@@ -117,6 +126,10 @@ export default function SubjectForm({
           <p className="text-sm text-destructive">{errors.url.message}</p>
         )}
       </div>
+
+      {/* =========================
+          SUBMIT
+      ========================= */}
 
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Saving..." : "Save Subject"}

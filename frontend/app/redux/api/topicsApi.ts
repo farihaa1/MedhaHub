@@ -3,20 +3,68 @@ import { baseApi } from "./baseApi"
 
 export enum TopicStatus {
   DRAFT = "draft",
-  APPROVED= "approved",
+  APPROVED = "approved",
 }
+
+
+import { ISubject } from "@/app/(dashboard)/subjects/subjects.type"
 
 export interface ITopic {
   _id: string
-  chapterId: string
-  subjectId?: string
+
+  subjectId: string | Pick<ISubject, "_id" | "title" | "slug">
+
+  chapterId:
+    | string
+    | {
+        _id: string
+        title: string
+        slug: string
+      }
+
   title: string
   slug: string
   order: number
   status: TopicStatus
+
   totalQuestions: number
   progress: number
 }
+
+export interface ITopic {
+  _id: string
+
+  subjectId:
+    | string
+    | Pick<ISubject, "_id" | "title" | "slug">
+
+  chapterId:
+    | string
+    | {
+        _id: string
+        title: string
+        slug: string
+      }
+
+  title: string
+  slug: string
+  order: number
+  status: TopicStatus
+
+  totalQuestions: number
+  progress: number
+}
+
+export interface CreateTopicPayload {
+  subjectId: string
+  chapterId: string
+  title: string
+  slug: string
+  order: number
+  status: TopicStatus
+}
+
+export type CreateBulkTopicPayload = CreateTopicPayload[]
 
 export const topicsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -50,9 +98,21 @@ export const topicsApi = baseApi.injectEndpoints({
     }),
 
     // Create topic
-    createTopic: builder.mutation<IApiResponse<ITopic>, Partial<ITopic>>({
+    createTopic: builder.mutation<IApiResponse<ITopic>, CreateTopicPayload>({
       query: (body) => ({
         url: "/topics",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Topic"],
+    }),
+
+    createBulkTopic: builder.mutation<
+      IApiResponse<ITopic[]>,
+      CreateBulkTopicPayload
+    >({
+      query: (body) => ({
+        url: "/topics/bulk",
         method: "POST",
         body,
       }),
@@ -103,7 +163,7 @@ export const topicsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Topic", "Question", "Chapter"],
     }),
-    
+
     // Delete topic
     deleteTopic: builder.mutation<IApiResponse<null>, string>({
       query: (id) => ({
@@ -126,4 +186,5 @@ export const {
   useDeleteTopicMutation,
   useMoveTopicMutation,
   useMergeTopicMutation,
+  useCreateBulkTopicMutation,
 } = topicsApi

@@ -8,7 +8,6 @@ import {
   ChevronDown,
   ChevronUp,
   Lightbulb,
-  Tag,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -18,29 +17,18 @@ import { IQuestion } from "@/app/redux/api/questionsApi"
 
 interface Props {
   question: IQuestion
-  index: number
 }
 
 const OPTION_LABELS = ["A", "B", "C", "D"]
 
-export default function QuestionCard({ question, index }: Props) {
+export default function QuestionCard({ question }: Props) {
   const [showAnswer, setShowAnswer] = useState(false)
 
-  const difficultyClasses = {
-    EASY: "bg-green-100 text-green-700 border-green-300",
-    MEDIUM: "bg-yellow-100 text-yellow-700 border-yellow-300",
-    HARD: "bg-red-100 text-red-700 border-red-300",
-  }
-
   return (
-    <article className="mx-auto rounded-xl border bg-card shadow-sm w-2xl">
+    <article className="overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-sm transition-colors">
       {/* Header */}
-
-      <div className="px-10 pt-6 py-3">
+      <div className="border-b bg-muted/30 px-8 py-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xs font-bold text-muted-foreground">
-            প্রশ্ন {(index + 1).toLocaleString("bn-BD")}
-          </h2>
 
           <p className="text-xs text-muted-foreground">
             {typeof question.subjectId === "object"
@@ -57,16 +45,12 @@ export default function QuestionCard({ question, index }: Props) {
           </p>
         </div>
 
-        {/* Sources */}
-
         {question.sources && question.sources.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {question.sources.map((source, i) => (
-              <Badge key={i} variant="secondary" className="gap-1 text-[10px]">
-                <BookOpen className="h-3 w-3" />
-
+              <Badge key={i} variant="outline" className="gap-1 bg-muted/40">
+                <BookOpen className="h-3.5 w-3.5" />
                 {source.name}
-
                 {source.year && ` • ${source.year}`}
               </Badge>
             ))}
@@ -74,42 +58,43 @@ export default function QuestionCard({ question, index }: Props) {
         )}
       </div>
 
-      {/* Question */}
+      {/* Body */}
+      <div className="space-y-6 p-8">
+        {/* Question */}
+        <div>
+          <h3 className="text-xl leading-8 font-semibold text-foreground">
+            {question.questionText}
+          </h3>
 
-      <div className="px-8 pt-2">
-        <h3 className="text-lg leading-8 font-semibold">
-          {question.questionText}
-        </h3>
-
-        {question.questionImage && (
-          <Image
-            src={question.questionImage}
-            alt="Question"
-            width={700}
-            height={400}
-            className="mt-5 rounded-lg border"
-          />
-        )}
+          {question.questionImage && (
+            <Image
+              src={question.questionImage}
+              alt="Question"
+              width={700}
+              height={400}
+              className="mt-5 rounded-xl border bg-background object-contain"
+            />
+          )}
+        </div>
 
         {/* Options */}
-
-        <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
+        <div className="grid gap-4 md:grid-cols-2">
           {question.options.map((option, i) => (
             <div
               key={option._id ?? option.text}
-              className={`rounded-sm border p-4 transition-all ${
+              className={`rounded-xl border p-4 transition-all duration-200 ${
                 showAnswer && option.isCorrect
-                  ? "border-green-500 bg-green-50"
-                  : "hover:bg-muted/40"
+                  ? "border-green-500/50 bg-green-500/10"
+                  : "hover:bg-muted"
               }`}
             >
-              <div className="flex items-start gap-2">
-                <div className="flex h-5 w-5  items-center justify-center rounded-full border bg-muted text-xs font-semibold">
+              <div className="flex items-start gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-muted text-xs font-semibold">
                   {OPTION_LABELS[i]}
                 </div>
 
-                <div className="flex-1 text-sm">
-                  <p>{option.text}</p>
+                <div className="flex-1">
+                  <p className="text-sm leading-6">{option.text}</p>
 
                   {option.image && (
                     <Image
@@ -117,13 +102,13 @@ export default function QuestionCard({ question, index }: Props) {
                       alt=""
                       width={300}
                       height={150}
-                      className="mt-3 rounded border"
+                      className="mt-4 rounded-lg border bg-background"
                     />
                   )}
                 </div>
 
                 {showAnswer && option.isCorrect && (
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                  <CheckCircle2 className="h-6 w-6 shrink-0 text-green-600 dark:text-green-400" />
                 )}
               </div>
             </div>
@@ -131,29 +116,20 @@ export default function QuestionCard({ question, index }: Props) {
         </div>
 
         {/* Tags */}
-
         {question.tags && question.tags.length > 0 && (
-          <div className="mt-4">
-            <div className="flex flex-wrap gap-2">
-              {question.tags.map((tag) => (
-                <Badge
-                  className="bg-green-100 px-3 py-2"
-                  key={tag}
-                  variant="outline"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {question.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="px-3 py-1">
+                {tag}
+              </Badge>
+            ))}
           </div>
         )}
 
         {/* Button */}
-
         <Button
           variant="outline"
-          size={"xs"}
-          className="mt-4 text-[9px] mb-6"
+          size="sm"
           onClick={() => setShowAnswer((prev) => !prev)}
         >
           {showAnswer ? (
@@ -169,18 +145,15 @@ export default function QuestionCard({ question, index }: Props) {
           )}
         </Button>
 
-       
-
         {/* Explanation */}
-
         {showAnswer && (
-          <div className="mb-5 rounded-xl border border-yellow-300 bg-yellow-50 p-5">
-            <h4 className="flex items-center gap-2 font-semibold text-yellow-800">
-              <Lightbulb className="h-5 w-5" />
+          <div className="rounded-xl border bg-muted/30 p-6">
+            <h4 className="flex items-center gap-2 text-base font-semibold">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
               Explanation
             </h4>
 
-            <p className="mt-3 leading-7 whitespace-pre-line text-sm">
+            <p className="mt-4 text-sm leading-7 whitespace-pre-line text-muted-foreground">
               {question.explanation || "No explanation available."}
             </p>
 
@@ -190,7 +163,7 @@ export default function QuestionCard({ question, index }: Props) {
                 alt="Explanation"
                 width={700}
                 height={400}
-                className="mt-5 rounded-lg border"
+                className="mt-5 rounded-xl border bg-background"
               />
             )}
           </div>

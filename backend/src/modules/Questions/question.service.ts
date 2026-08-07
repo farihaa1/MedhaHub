@@ -320,11 +320,6 @@ const updateQuestion = async (id: string, payload: Partial<IQuestion>) => {
       );
     }
 
-    /* =====================================================
-       CASE 3:
-       Approved → Pending/Rejected
-       ===================================================== */
-
     if (wasApproved && !isApproved) {
       await StatisticsService.decrementQuestionCount(oldChapterId, 1, session);
 
@@ -346,46 +341,52 @@ const updateQuestion = async (id: string, payload: Partial<IQuestion>) => {
   }
 };
 
-/* =========================================================
-   DELETE QUESTION
-========================================================= */
-
 const deleteQuestion = async (id: string) => {
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    const question = await Question.findByIdAndDelete(id, {
-      session,
-    });
+    console.log("STEP 1");
+
+    const question = await Question.findById(id).session(session);
+
+    console.log("STEP 2", question);
 
     if (!question) {
       throw new AppError(404, "Question not found");
     }
 
-    /*
-     * Only approved questions exist in statistics.
-     */
-    if (question.status === QuestionStatus.APPROVED) {
-      await StatisticsService.decrementQuestionCount(
-        question.chapterId.toString(),
-        1,
-        session,
-      );
+    await Question.findByIdAndDelete(id).session(session);
 
-      await StatisticsService.decrementTopicQuestionCount(
-        question.topicId.toString(),
-        1,
-        session,
-      );
+    if (question.status === QuestionStatus.APPROVED) {
+      if (question.chapterId) {
+        await StatisticsService.decrementQuestionCount(
+          question.chapterId.toString(),
+          1,
+          session,
+        );
+      }
+
+      if (question.topicId) {
+        await StatisticsService.decrementTopicQuestionCount(
+          question.topicId.toString(),
+          1,
+          session,
+        );
+      }
     }
 
     await session.commitTransaction();
 
+    console.log("STEP 7");
+
     return question;
   } catch (error) {
+    console.error(error);
+
     await session.abortTransaction();
+
     throw error;
   } finally {
     session.endSession();
@@ -435,8 +436,6 @@ const getQuestionStats = async (): Promise<IQuestionStats> => {
   };
 };
 
-
-
 export const QuestionService = {
   createQuestion,
   getAllQuestions,
@@ -446,5 +445,4 @@ export const QuestionService = {
   deleteQuestion,
   bulkCreateQuestions,
   getQuestionStats,
- 
 };

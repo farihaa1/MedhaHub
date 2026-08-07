@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation"
-import { cookies } from "next/headers"
-
 import Link from "next/link"
 import { FcGoogle } from "react-icons/fc"
 
@@ -28,15 +25,8 @@ interface LoginPageProps {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect: redirectTo } = await searchParams
 
-  const cookieStore = await cookies()
-
-  // User already has a refresh token
-  if (cookieStore.get("refreshToken")) {
-    redirect("/dashboard")
-  }
-
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden">
       <AuthBackgroundShape />
 
       <Card className="z-10 w-full max-w-lg gap-6 py-6">

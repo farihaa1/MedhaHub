@@ -32,7 +32,10 @@ const register = async (payload: IUser) => {
     provider: AuthProvider.CREDENTIAL,
   });
 
-  const tokens = generateAuthTokens(user);
+ const tokens = generateAuthTokens({
+   ...user.toObject(),
+   _id: user._id.toString(),
+ });
 
   const userObject = user.toObject();
 
@@ -61,7 +64,10 @@ const login = async (payload: { email: string; password: string }) => {
     throw new AppError(401, "Incorrect password");
   }
 
-  const tokens = generateAuthTokens(user);
+ const tokens = generateAuthTokens({
+   ...user.toObject(),
+   _id: user._id.toString(),
+ });
 
   const userObject = user.toObject();
 
@@ -154,7 +160,10 @@ const refreshToken = async (token: string) => {
     throw new AppError(403, "User is blocked");
   }
 
-  const tokens = generateAuthTokens(user);
+const tokens = generateAuthTokens({
+  ...user.toObject(),
+  _id: user._id.toString(),
+});
 
   return {
     accessToken: tokens.accessToken,

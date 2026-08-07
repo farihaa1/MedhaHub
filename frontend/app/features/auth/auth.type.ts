@@ -6,6 +6,9 @@ export interface IUser {
   email: string
   role: UserRole
   profileImage?: string
+  points: number
+  provider: string
+  status: string
   avatar?: string
   isVerified: boolean
   createdAt: string
@@ -38,7 +41,7 @@ export interface RegisterInput {
   email: string
   password: string
 }
-
+export type LoginData = IUser
 export interface ChangePasswordInput {
   oldPassword: string
   newPassword: string
@@ -67,10 +70,10 @@ export interface IApiResponse<T> {
   data: T
 }
 
-export interface LoginData {
-  accessToken: string
-  refreshToken?: string
-  user: IUser
-}
+// export interface LoginData {
+//   accessToken: string
+//   refreshToken?: string
+//   user: IUser
+// }
 
 export type AuthResponse = IApiResponse<LoginData>

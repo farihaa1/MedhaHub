@@ -4,27 +4,28 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
 
 import PageHeader from "@/app/customComponents/shared/PageHeader"
 import QuestionStats from "@/app/customComponents/AdminDashboard/Questions/QuestionStats"
 import QuestionToolbar from "@/app/customComponents/AdminDashboard/Questions/QuestionToolbar"
 import QuestionFilters from "@/app/customComponents/AdminDashboard/Questions/QuestionFilters"
 import QuestionTable from "@/app/customComponents/AdminDashboard/Questions/QuestionTable"
+import QuestionDetailsPanel from "@/app/customComponents/AdminDashboard/Questions/QuestionDetailsPanel"
 
 import {
-  useGetQuestionsQuery,
+  IQuestion,
   QuestionDifficulty,
+  QuestionSourceType,
   QuestionStatus,
   QuestionType,
-  QuestionSourceType,
+  useGetQuestionsQuery,
 } from "@/app/redux/api/questionsApi"
 
 export default function QuestionsPage() {
   const router = useRouter()
 
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
+  const [limit, setLimit] = useState(20)
 
   const [search, setSearch] = useState("")
 
@@ -39,9 +40,14 @@ export default function QuestionsPage() {
 
   const [sort, setSort] = useState("-createdAt")
 
+  const [selectedQuestion, setSelectedQuestion] = useState<IQuestion | null>(
+    null
+  )
+
   const { data, isLoading, isFetching } = useGetQuestionsQuery({
     page,
     limit,
+
     searchTerm: search || undefined,
 
     subjectId: subjectId || undefined,
@@ -60,74 +66,94 @@ export default function QuestionsPage() {
     sortOrder: sort === "-createdAt" ? "desc" : "asc",
   })
 
-  console.log("Questions API Response", data)
+  const questions = data?.data?.data ?? []
 
   return (
-    <div className="space-y-6 lg:px-16">
+    <div className="min-h-full space-y-6 pb-10">
+      {/* Header */}
       <PageHeader
         title="Questions"
-        description="Manage all questions"
+        description="Manage, review, and organize your question bank."
         action={
-          <div className="flex gap-4">
-            <Button onClick={() => router.push("/admin/questions/all-questions")}>
-              <Plus className="mr-2 h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="h-9 border-border bg-background hover:bg-muted"
+              onClick={() => router.push("/admin/questions/all-questions")}
+            >
               All Questions
             </Button>
-            <Button onClick={() => router.push("/admin/questions/create")}>
-              <Plus className="mr-2 h-4 w-4" />
+
+            <Button
+              className="h-9 shadow-sm"
+              onClick={() => router.push("/admin/questions/create")}
+            >
               Add Question
             </Button>
           </div>
         }
       />
-
+       {/* Stats */}
       <QuestionStats />
+
+     
+
+      {/* Filters */}
       <QuestionFilters
         subjectId={subjectId}
         setSubjectId={setSubjectId}
-
         chapterId={chapterId}
         setChapterId={setChapterId}
-
         topicId={topicId}
         setTopicId={setTopicId}
-
         difficulty={difficulty}
         setDifficulty={setDifficulty}
-
         status={status}
         setStatus={setStatus}
-
         type={type}
         setType={setType}
-
         source={source}
         setSource={setSource}
-
         sort={sort}
         setSort={setSort}
-
         setPage={setPage}
       />
 
+      {/* Toolbar */}
       <QuestionToolbar
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(value) => {
+          setSearch(value)
+          setPage(1)
+        }}
         onCreate={() => router.push("/admin/questions/create")}
         onImport={() => console.log("Import")}
         onExport={() => console.log("Export")}
       />
 
-      <QuestionTable
-        data={data?.data?.data ?? []}
-        loading={isLoading}
-        isFetching={isFetching}
-        pagination={data?.data?.meta}
-        page={page}
-        limit={limit}
-        onPageChange={setPage}
-        onLimitChange={setLimit}
-      />
+      {/* Main content */}
+      <div className="grid gap-6 grid-cols-12">
+        {/* Questions table */}
+        <div className="col-span-8 min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+          <QuestionTable
+            data={questions}
+            loading={isLoading}
+            isFetching={isFetching}
+            pagination={data?.data?.meta}
+            page={page}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+            selectedQuestion={selectedQuestion}
+            onSelectQuestion={setSelectedQuestion}
+          />
+        </div>
+
+        {/* Details */}
+        <div className="col-span-4 min-w-0 ">
+          <QuestionDetailsPanel question={selectedQuestion} />
+        </div>
+      </div>
     </div>
   )
 }

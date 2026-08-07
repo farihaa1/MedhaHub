@@ -25,30 +25,23 @@ export const subjectsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Subject"],
     }),
-
     updateSubject: builder.mutation<
       IApiResponse<ISubject>,
-      {
-        id: string
-        data: Partial<ISubject>
-      }
+      { slug: string; data: Partial<ISubject> }
     >({
-      query: ({ id, data }) => ({
-        url: `/subjects/${id}`,
+      query: ({ slug, data }) => ({
+        url: `/subjects/${slug}`,
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (_result, _error, { id }) => [
+      invalidatesTags: (_result, _error, { slug }) => [
         "Subject",
-        { type: "Subject", id },
+        { type: "Subject", id: slug },
       ],
     }),
 
     deleteSubject: builder.mutation<IApiResponse<null>, string>({
-      query: (id) => ({
-        url: `/subjects/${id}`,
-        method: "DELETE",
-      }),
+      query: (slug) => ({ url: `/subjects/${slug}`, method: "DELETE" }),
       invalidatesTags: ["Subject"],
     }),
   }),

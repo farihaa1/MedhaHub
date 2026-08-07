@@ -22,16 +22,13 @@ interface Props {
   chapter?: AcademicChapter
 }
 
-export default function CreateTopicDialog({ children }: Props) {
+export default function CreateTopicDialog({ children,chapter }: Props) {
 
 
   const [open, setOpen] = useState(false)
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children ?? (
           <Button>
@@ -41,13 +38,14 @@ export default function CreateTopicDialog({ children }: Props) {
         )}
       </DialogTrigger>
 
-      <DialogContent className="max-w-xl">
+      <DialogContent className="min-w-3xl">
         <DialogHeader>
           <DialogTitle>Create New Topic</DialogTitle>
         </DialogHeader>
 
         <TopicForm
           mode="create"
+          chapter={chapter}
           onSuccess={() => {
             setOpen(false)
           }}

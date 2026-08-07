@@ -5,10 +5,16 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 
 import { EyeIcon, EyeOffIcon } from "lucide-react"
+
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
 
 import { ILoginInput } from "@/app/features/auth/auth.type"
+
 import { useLoginMutation } from "@/app/redux/api/authApi"
+
+import { useAppDispatch } from "@/app/redux/hooks"
+
+import { setCredentials } from "@/app/redux/slices/authSlice"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -29,7 +35,10 @@ interface Props {
 export default function LoginForm({ redirect }: Props) {
   const router = useRouter()
 
+  const dispatch = useAppDispatch()
+
   const [showPassword, setShowPassword] = useState(false)
+
   const [serverError, setServerError] = useState("")
 
   const [login, { isLoading }] = useLoginMutation()
@@ -48,14 +57,17 @@ export default function LoginForm({ redirect }: Props) {
     try {
       setServerError("")
 
-      await login(values).unwrap()
+      const res = await login(values).unwrap()
 
-      // Give the browser a moment to receive
-      // the HttpOnly cookies.
-      router.refresh()
+      console.log("LOGIN RESPONSE:", res)
+
+      // res.data is IUser
+      dispatch(setCredentials(res.data))
 
       router.replace(redirect || "/dashboard")
     } catch (error) {
+      console.error("LOGIN ERROR:", error)
+
       if (isFetchBaseQueryError(error)) {
         const err = error.data as {
           message?: string
@@ -69,13 +81,15 @@ export default function LoginForm({ redirect }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
       <FieldGroup>
         {serverError && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             {serverError}
           </div>
         )}
+
+        {/* Email */}
 
         <Field>
           <FieldLabel>Email</FieldLabel>
@@ -93,6 +107,8 @@ export default function LoginForm({ redirect }: Props) {
             <p className="text-sm text-red-500">{errors.email.message}</p>
           )}
         </Field>
+
+        {/* Password */}
 
         <Field>
           <FieldLabel>Password</FieldLabel>
@@ -128,6 +144,8 @@ export default function LoginForm({ redirect }: Props) {
           )}
         </Field>
 
+        {/* Remember / Forgot */}
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Checkbox id="remember" />
@@ -141,6 +159,8 @@ export default function LoginForm({ redirect }: Props) {
             Forgot Password?
           </Button>
         </div>
+
+        {/* Submit */}
 
         <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? "Signing in..." : "Sign In"}

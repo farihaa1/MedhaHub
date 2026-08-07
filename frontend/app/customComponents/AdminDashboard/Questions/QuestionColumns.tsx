@@ -135,31 +135,15 @@ export const columns: ColumnDef<IQuestionRow>[] = [
     cell: ({ row }) => row.original.topic?.name ?? "-",
   },
 
-  {
-    accessorKey: "difficulty",
-    header: "Difficulty",
-    cell: ({ row }) => (
-      <Badge variant={difficultyVariant(row.original.difficulty)}>
-        {row.original.difficulty}
-      </Badge>
-    ),
-  },
-
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <Badge variant={statusVariant(row.original.status)}>
-        {row.original.status}
-      </Badge>
-    ),
-  },
-
-  {
-    accessorKey: "createdAt",
-    header: "Created",
-    cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
-  },
+  // {
+  //   accessorKey: "status",
+  //   header: "Status",
+  //   cell: ({ row }) => (
+  //     <Badge variant={statusVariant(row.original.status)}>
+  //       {row.original.status}
+  //     </Badge>
+  //   ),
+  // },
 
   {
     id: "actions",
