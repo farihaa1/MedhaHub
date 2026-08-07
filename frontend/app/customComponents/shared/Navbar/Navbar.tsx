@@ -195,7 +195,7 @@ export function Navbar({ className }: NavbarProps) {
                                 </Link>
                               </Button>
 
-                              <LogoutButton />
+                              <LogoutButton className="flex flex-col rounded-md border px-4 py-2" />
                             </>
                           ) : (
                             <>

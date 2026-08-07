@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChapterService = void 0;
+exports.ChapterService = exports.createBulkChapter = void 0;
 const chapter_model_1 = require("./chapter.model");
 const AppError_1 = __importDefault(require("../../error/AppError"));
 const http_status_1 = __importDefault(require("http-status"));
@@ -18,6 +18,11 @@ const createChapter = async (payload) => {
     const chapter = await chapter_model_1.Chapter.create(payload);
     return chapter.populate("subjectId", "title slug");
 };
+const createBulkChapter = async (payload) => {
+    const chapters = await chapter_model_1.Chapter.create(payload);
+    return chapters;
+};
+exports.createBulkChapter = createBulkChapter;
 const getAllChapters = async () => {
     return await chapter_model_1.Chapter.find()
         .populate("subjectId", "title slug")
@@ -63,6 +68,6 @@ exports.ChapterService = {
     getSingleChapter,
     updateChapter,
     deleteChapter,
-    getChaptersBySubject,
+    getChaptersBySubject, createBulkChapter: exports.createBulkChapter
 };
 //# sourceMappingURL=chapter.service.js.map

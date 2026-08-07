@@ -4,14 +4,19 @@ import { useEffect } from "react"
 
 import { useMeQuery } from "@/app/redux/api/authApi"
 import { useAppDispatch, useAppSelector } from "@/app/redux/hooks"
-import { setCredentials, clearCredentials } from "@/app/redux/slices/authSlice"
+
+import { clearCredentials, setCredentials } from "@/app/redux/slices/authSlice"
 
 export default function useCurrentUser() {
   const dispatch = useAppDispatch()
 
   const auth = useAppSelector((state) => state.auth)
 
-  const { data, isLoading, isFetching, isError } = useMeQuery(undefined)
+  const { data, isLoading, isFetching, isError } = useMeQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnReconnect: true,
+    refetchOnFocus: true,
+  })
 
   useEffect(() => {
     if (data?.data) {

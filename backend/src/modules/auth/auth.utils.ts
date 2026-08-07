@@ -13,12 +13,14 @@ interface TokenPayloadUser {
   email: string;
   role: UserRole;
 }
+const isProduction = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
   httpOnly: true,
-  secure: config.nodeEnv === "production",
-  sameSite: config.nodeEnv === "production" ? "none" : "lax",
+  secure: isProduction,
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
   path: "/",
-} as const;
+};
 export const setAuthCookies = (
   res: Response,
   accessToken: string,

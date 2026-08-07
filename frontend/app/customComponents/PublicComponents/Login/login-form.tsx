@@ -1,17 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
 
 import { EyeIcon, EyeOffIcon } from "lucide-react"
-
-import { useLoginMutation } from "@/app/redux/api/authApi"
-
-import { useAppDispatch } from "@/app/redux/hooks"
-import { setCredentials } from "@/app/redux/slices/authSlice"
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
 
 import { ILoginInput } from "@/app/features/auth/auth.type"
+import { useLoginMutation } from "@/app/redux/api/authApi"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -24,8 +21,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
-import { SerializedError } from "@reduxjs/toolkit"
+
 interface Props {
   redirect?: string
 }
@@ -33,36 +29,37 @@ interface Props {
 export default function LoginForm({ redirect }: Props) {
   const router = useRouter()
 
-  const dispatch = useAppDispatch()
-
   const [showPassword, setShowPassword] = useState(false)
-
   const [serverError, setServerError] = useState("")
 
   const [login, { isLoading }] = useLoginMutation()
-  function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
-    return typeof error === "object" && error != null && "status" in error
-  }
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<ILoginInput>()
 
+  function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
+    return typeof error === "object" && error !== null && "status" in error
+  }
+
   const onSubmit = async (values: ILoginInput) => {
     try {
       setServerError("")
 
-      const response = await login(values).unwrap()
+      await login(values).unwrap()
 
-      dispatch(setCredentials(response.data))
+      // Give the browser a moment to receive
+      // the HttpOnly cookies.
+      router.refresh()
 
       router.replace(redirect || "/dashboard")
-
-      router.refresh()
-    } catch (error: unknown) {
+    } catch (error) {
       if (isFetchBaseQueryError(error)) {
-        const err = error.data as { message?: string }
+        const err = error.data as {
+          message?: string
+        }
 
         setServerError(err?.message || "Invalid email or password.")
       } else {
@@ -73,9 +70,9 @@ export default function LoginForm({ redirect }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <FieldGroup className="gap-5">
+      <FieldGroup>
         {serverError && (
-          <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-600">
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
             {serverError}
           </div>
         )}
@@ -115,7 +112,7 @@ export default function LoginForm({ redirect }: Props) {
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? (
                   <EyeOffIcon className="h-4 w-4" />
@@ -134,17 +131,18 @@ export default function LoginForm({ redirect }: Props) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Checkbox id="remember" />
+
             <label htmlFor="remember" className="text-sm">
               Remember me
             </label>
           </div>
 
-          <Button type="button" variant="link" className="p-0">
+          <Button variant="link" type="button" className="p-0">
             Forgot Password?
           </Button>
         </div>
 
-        <Button className="w-full" disabled={isLoading} type="submit">
+        <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? "Signing in..." : "Sign In"}
         </Button>
       </FieldGroup>

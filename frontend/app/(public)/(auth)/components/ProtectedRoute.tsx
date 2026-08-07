@@ -2,7 +2,8 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAppSelector } from "@/app/redux/hooks"
+
+import useCurrentUser from "../hooks/useCurrentUser"
 
 interface Props {
   children: React.ReactNode
@@ -11,25 +12,30 @@ interface Props {
 export default function ProtectedRoute({ children }: Props) {
   const router = useRouter()
 
-  const { user, isLoading } = useAppSelector((state) => state.auth)
+  const { user, isAuthenticated, isLoading } = useCurrentUser()
 
   useEffect(() => {
     if (isLoading) return
 
-    if (!user) {
+    if (!isAuthenticated || !user) {
       router.replace("/login")
     }
-  }, [user, isLoading, router])
+  }, [isAuthenticated, user, isLoading, router])
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        Loading...
+        <div className="space-y-4 text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">
+            Checking authentication...
+          </p>
+        </div>
       </div>
     )
   }
 
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return null
   }
 

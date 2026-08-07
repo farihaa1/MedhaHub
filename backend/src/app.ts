@@ -1,57 +1,68 @@
 import express, { Application, NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+
 import router from "./router/router";
 import AppError from "./error/AppError";
-import cookieParser from "cookie-parser";
 
 const app: Application = express();
 
+const allowedOrigins: string[] = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
+
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      process.env.CLIENT_URL!,
-    ],
+    origin(origin, callback) {
+      // Allow Postman/server requests
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   }),
 );
+
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+
 app.use(express.json());
+
+app.use(express.urlencoded({ extended: true }));
+
 app.use("/api/v1", router);
 
-app.get("/mongo", async (_req, res) => {
-  try {
-    res.json({
-      readyState: mongoose.connection.readyState,
-      db: mongoose.connection.db?.databaseName ?? null,
-    });
-  } catch (err) {
-    res.json(err);
-  }
-});
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (_req, res) => {
   res.json({
     success: true,
-    message: "Quizzes api",
+    message: "Quizzes API Running",
   });
 });
 
+app.get("/mongo", async (_req, res) => {
+  res.json({
+    readyState: mongoose.connection.readyState,
+    db: mongoose.connection.db?.databaseName ?? null,
+  });
+});
 
-app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
-  void req;
-  void next;
-
+app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (error instanceof mongoose.Error.ValidationError) {
     return res.status(400).json({
       success: false,
       message: "Validation failed",
-      error: {
-        name: error.name,
-        errors: error.errors,
-      },
+      errors: error.errors,
     });
   }
 
@@ -71,7 +82,7 @@ app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
 
   return res.status(500).json({
     success: false,
-    message: "Something went wrong",
+    message: "Internal Server Error",
   });
 });
 

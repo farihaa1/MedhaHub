@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChapterController = void 0;
+exports.ChapterController = exports.createBulkChapter = void 0;
 const chapter_service_1 = require("./chapter.service");
 const sendResponse_1 = require("../../utils/sendResponse");
+const catchAsync_1 = require("../../utils/catchAsync");
 const createChapter = async (req, res) => {
     try {
         const result = await chapter_service_1.ChapterService.createChapter(req.body);
@@ -22,6 +23,15 @@ const createChapter = async (req, res) => {
         });
     }
 };
+exports.createBulkChapter = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const result = await chapter_service_1.ChapterService.createBulkChapter(req.body);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 201,
+        success: true,
+        message: "Chapters created successfully",
+        data: result,
+    });
+});
 const getAllChapters = async (_req, res) => {
     try {
         const result = await chapter_service_1.ChapterService.getAllChapters();
@@ -143,6 +153,6 @@ exports.ChapterController = {
     getSingleChapter,
     updateChapter,
     deleteChapter,
-    getChaptersBySubject,
+    getChaptersBySubject, createBulkChapter: exports.createBulkChapter
 };
 //# sourceMappingURL=chapter.controller.js.map

@@ -4,7 +4,9 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+
 import { Eye, EyeOff } from "lucide-react"
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
 
 import {
   registerSchema,
@@ -16,14 +18,14 @@ import { useRegisterMutation } from "@/app/redux/api/authApi"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
 
 type RegisterPayload = Omit<RegisterInput, "confirmPassword">
 
@@ -40,7 +42,9 @@ export default function RegisterForm({ redirect }: Props) {
   const router = useRouter()
 
   const [showPassword, setShowPassword] = useState(false)
+
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   const [serverError, setServerError] = useState("")
 
   const [registerUser, { isLoading }] = useRegisterMutation()
@@ -70,23 +74,24 @@ export default function RegisterForm({ redirect }: Props) {
       )
 
       router.refresh()
-    } catch (error: unknown) {
+    } catch (error) {
       const err = error as FetchBaseQueryError
 
       if ("data" in err) {
         const data = err.data as ErrorResponse
-        setServerError(data.message)
+
+        setServerError(data.message || "Registration failed.")
       } else {
-        setServerError("Registration failed.")
+        setServerError("Something went wrong.")
       }
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <FieldGroup className="gap-5">
+      <FieldGroup>
         {serverError && (
-          <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-600">
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
             {serverError}
           </div>
         )}
@@ -186,7 +191,7 @@ export default function RegisterForm({ redirect }: Props) {
           </FieldLabel>
         </Field>
 
-        <Button className="w-full" type="submit" disabled={isLoading}>
+        <Button className="w-full" disabled={isLoading} type="submit">
           {isLoading ? "Creating Account..." : "Create Account"}
         </Button>
       </FieldGroup>

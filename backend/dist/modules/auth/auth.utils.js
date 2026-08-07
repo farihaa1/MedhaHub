@@ -10,10 +10,11 @@ const crypto_1 = __importDefault(require("crypto"));
 const config_1 = __importDefault(require("../../config"));
 const AppError_1 = __importDefault(require("../../error/AppError"));
 const http_status_1 = __importDefault(require("http-status"));
+const isProduction = process.env.NODE_ENV === "production";
 const cookieOptions = {
     httpOnly: true,
-    secure: config_1.default.nodeEnv === "production",
-    sameSite: config_1.default.nodeEnv === "production" ? "none" : "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/",
 };
 const setAuthCookies = (res, accessToken, refreshToken) => {

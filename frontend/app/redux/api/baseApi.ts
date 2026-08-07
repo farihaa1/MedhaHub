@@ -6,7 +6,9 @@ import {
   fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react"
 
-const baseQuery = fetchBaseQuery({
+import { clearCredentials } from "../slices/authSlice"
+
+const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
   credentials: "include",
 })
@@ -16,12 +18,16 @@ const baseQueryWithReAuth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  let result = await baseQuery(args, api, extraOptions)
+  let result = await rawBaseQuery(args, api, extraOptions)
 
-  if (result.error?.status === 401) {
-    console.log("Access token expired. Trying refresh...")
+  // don't try refreshing if the refresh endpoint itself failed
+  const isRefreshRequest =
+    typeof args !== "string" && args.url?.includes("/auth/refresh-token")
 
-    const refreshResult = await baseQuery(
+  if (result.error?.status === 401 && !isRefreshRequest) {
+    console.log("401 received. Trying refresh...")
+
+    const refreshResult = await rawBaseQuery(
       {
         url: "/auth/refresh-token",
         method: "POST",
@@ -30,10 +36,13 @@ const baseQueryWithReAuth: BaseQueryFn<
       extraOptions
     )
 
-    console.log("Refresh result:", refreshResult)
+    console.log("Refresh Result:", refreshResult)
 
     if (refreshResult.data) {
-      result = await baseQuery(args, api, extraOptions)
+      result = await rawBaseQuery(args, api, extraOptions)
+    } else {
+      api.dispatch(clearCredentials())
+      api.dispatch(baseApi.util.resetApiState())
     }
   }
 
@@ -63,6 +72,10 @@ export const baseApi = createApi({
     "QuestionBankItem",
     "PdfImport",
   ],
+
+  refetchOnReconnect: true,
+
+  refetchOnFocus: true,
 
   endpoints: () => ({}),
 })

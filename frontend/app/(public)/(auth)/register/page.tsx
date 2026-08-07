@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 
+import Link from "next/link"
+import { FcGoogle } from "react-icons/fc"
+
 import RegisterForm from "@/app/customComponents/PublicComponents/Register/register-form"
 
-import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -11,12 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
 import AuthBackgroundShape from "@/public/svg/auth-backgrounf-shape"
-
-import Link from "next/link"
-import { FcGoogle } from "react-icons/fc"
 
 interface RegisterPageProps {
   searchParams: Promise<{
@@ -36,10 +37,8 @@ export default async function RegisterPage({
   }
 
   return (
-    <div className="relative flex items-center justify-center pt-20">
-      <div className="absolute">
-        <AuthBackgroundShape />
-      </div>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+      <AuthBackgroundShape />
 
       <Card className="z-10 w-full max-w-lg gap-6 py-6">
         <CardHeader className="text-center">
@@ -48,7 +47,7 @@ export default async function RegisterPage({
           </CardTitle>
 
           <CardDescription>
-            Join MedhaHub and start practicing today.
+            Join MedhaHub and start learning today.
           </CardDescription>
         </CardHeader>
 
@@ -58,10 +57,10 @@ export default async function RegisterPage({
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?
             <Link
+              className="ml-2 font-medium text-primary hover:underline"
               href={`/login${
                 redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""
               }`}
-              className="ml-2 font-medium text-primary hover:underline"
             >
               Sign In
             </Link>

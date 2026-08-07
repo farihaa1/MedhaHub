@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+
 import { IAuthState, IUser } from "@/app/features/auth/auth.type"
 
 const initialState: IAuthState = {
@@ -9,13 +10,14 @@ const initialState: IAuthState = {
 
 const authSlice = createSlice({
   name: "auth",
+
   initialState,
 
   reducers: {
     setCredentials: (state, action: PayloadAction<IUser>) => {
       state.user = action.payload
       state.isAuthenticated = true
-       state.isLoading = false
+      state.isLoading = false
     },
 
     clearCredentials: (state) => {
@@ -23,11 +25,23 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.isLoading = false
     },
+
     setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },}
+      state.isLoading = action.payload
+    },
+
+    updateUser: (state, action: PayloadAction<Partial<IUser>>) => {
+      if (!state.user) return
+
+      state.user = {
+        ...state.user,
+        ...action.payload,
+      }
+    },
+  },
 })
 
-export const { setCredentials, clearCredentials,setLoading } = authSlice.actions
+export const { setCredentials, clearCredentials, setLoading, updateUser } =
+  authSlice.actions
 
 export default authSlice.reducer

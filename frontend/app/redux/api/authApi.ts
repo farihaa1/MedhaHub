@@ -3,12 +3,11 @@ import { baseApi } from "./baseApi"
 
 import {
   AuthResponse,
+  ChangePasswordInput,
+  IApiResponse,
+  IUser,
   RegisterInput,
   UpdateProfileInput,
-  ChangePasswordInput,
-  IUser,
-  IApiResponse,
-  LoginData,
 } from "@/app/features/auth/auth.type"
 
 export const authApi = baseApi.injectEndpoints({
@@ -17,27 +16,42 @@ export const authApi = baseApi.injectEndpoints({
     // Register
     // ==========================
 
-    register: builder.mutation<IApiResponse<LoginData>, RegisterInput>({
+    register: builder.mutation<AuthResponse, RegisterInput>({
       query: (body) => ({
         url: "/auth/register",
         method: "POST",
         body,
       }),
+
+      invalidatesTags: ["User", "Auth"],
     }),
 
     // ==========================
     // Login
     // ==========================
 
-    login: builder.mutation<IApiResponse<IUser>, LoginInput>({
+    login: builder.mutation<AuthResponse, LoginInput>({
       query: (body) => ({
         url: "/auth/login",
         method: "POST",
         body,
-        credentials: "include",
       }),
 
       invalidatesTags: ["User", "Auth"],
+    }),
+
+    // ==========================
+    // Current User
+    // ==========================
+
+    me: builder.query<IApiResponse<IUser>, void>({
+      query: () => ({
+        url: "/auth/me",
+      }),
+
+      providesTags: ["User"],
+
+      keepUnusedDataFor: 300,
     }),
 
     // ==========================
@@ -48,38 +62,27 @@ export const authApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/auth/refresh-token",
         method: "POST",
-        credentials: "include",
       }),
     }),
 
     // ==========================
-    // Current User
+    // Logout
     // ==========================
 
-    me: builder.query<IApiResponse<IUser>, void>({
+    logout: builder.mutation<IApiResponse<null>, void>({
       query: () => ({
-        url: "/auth/me",
-        credentials: "include",
+        url: "/auth/logout",
+        method: "POST",
       }),
 
-      providesTags: ["User"],
-    }),
-
-    // ==========================
-    // Admin
-    // ==========================
-
-    isAdmin: builder.query<boolean, void>({
-      query: () => ({
-        url: "/users/is-admin",
-      }),
+      invalidatesTags: ["User", "Auth"],
     }),
 
     // ==========================
     // Update Profile
     // ==========================
 
-    updateProfile: builder.mutation<IUser, UpdateProfileInput>({
+    updateProfile: builder.mutation<IApiResponse<IUser>, UpdateProfileInput>({
       query: (body) => ({
         url: "/auth/profile",
         method: "PATCH",
@@ -90,28 +93,24 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // ==========================
-    // Logout
-    // ==========================
-
-    logout: builder.mutation<{ message: string }, void>({
-      query: () => ({
-        url: "/auth/logout",
-        method: "POST",
-        credentials: "include",
-      }),
-
-      invalidatesTags: ["User", "Auth"],
-    }),
-
-    // ==========================
     // Change Password
     // ==========================
 
-    changePassword: builder.mutation<{ message: string }, ChangePasswordInput>({
+    changePassword: builder.mutation<IApiResponse<null>, ChangePasswordInput>({
       query: (body) => ({
         url: "/auth/change-password",
         method: "POST",
         body,
+      }),
+    }),
+
+    // ==========================
+    // Is Admin
+    // ==========================
+
+    isAdmin: builder.query<boolean, void>({
+      query: () => ({
+        url: "/users/is-admin",
       }),
     }),
   }),
@@ -122,10 +121,10 @@ export const authApi = baseApi.injectEndpoints({
 export const {
   useRegisterMutation,
   useLoginMutation,
-  useRefreshTokenMutation,
   useMeQuery,
-  useIsAdminQuery,
-  useUpdateProfileMutation,
+  useRefreshTokenMutation,
   useLogoutMutation,
+  useUpdateProfileMutation,
   useChangePasswordMutation,
+  useIsAdminQuery,
 } = authApi

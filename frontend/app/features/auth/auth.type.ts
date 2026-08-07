@@ -12,14 +12,14 @@ export interface IUser {
   updatedAt: string
 }
 
-export interface AuthResponse {
-  success: boolean
-  message: string
-  data: {
-    accessToken: string
-    user: IUser
-  }
-}
+// export interface AuthResponse {
+//   success: boolean
+//   message: string
+//   data: {
+//     accessToken: string
+//     user: IUser
+//   }
+// }
 
 export interface JwtPayload {
   sub: string
@@ -66,8 +66,11 @@ export interface IApiResponse<T> {
   message: string
   data: T
 }
+
 export interface LoginData {
   accessToken: string
-  refreshToken: string
+  refreshToken?: string
   user: IUser
 }
+
+export type AuthResponse = IApiResponse<LoginData>

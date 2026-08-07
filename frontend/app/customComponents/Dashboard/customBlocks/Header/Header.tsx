@@ -15,8 +15,11 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 
 import ProfileDropdown from "@/app/customComponents/Dashboard/blocks/dropdown-profile"
 import { ThemeToggle } from "@/app/customComponents/shared/ThemeToggle"
+import { useAppSelector } from "@/app/redux/hooks"
 
 export default function Header() {
+
+  const { user } = useAppSelector((state) => state.auth)
   return (
     <header className="sticky top-0 z-50 border-b bg-card">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-2 sm:px-6">
@@ -24,10 +27,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <SidebarTrigger className="[&_svg]:size-5" />
 
-          <Separator
-            orientation="vertical"
-            className="hidden h-4 sm:block"
-          />
+          <Separator orientation="vertical" className="hidden h-4 sm:block" />
 
           <Breadcrumb className="hidden sm:block">
             <BreadcrumbList>
@@ -38,9 +38,7 @@ export default function Header() {
               <BreadcrumbSeparator />
 
               <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">
-                  Dashboard
-                </BreadcrumbLink>
+                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
               </BreadcrumbItem>
 
               <BreadcrumbSeparator />
@@ -60,8 +58,9 @@ export default function Header() {
             trigger={
               <Button variant="ghost" size="icon-lg">
                 <Avatar className="size-10">
-                  <AvatarImage src="https://cdn.shadcnstudio.com/ss-assets/avatar/avatar-1.png" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback className="bg-blue-600 font-semibold text-white">
+                    {user?.name?.charAt(0).toUpperCase() || "G"}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             }

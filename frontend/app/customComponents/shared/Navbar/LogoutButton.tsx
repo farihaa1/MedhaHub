@@ -1,18 +1,19 @@
 "use client"
 
-import { LogOut, Loader2 } from "lucide-react"
+import { Loader2, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
-
-import { Button } from "@/components/ui/button"
 
 import { useLogoutMutation } from "@/app/redux/api/authApi"
 import { baseApi } from "@/app/redux/api/baseApi"
 import { useAppDispatch } from "@/app/redux/hooks"
 import { clearCredentials } from "@/app/redux/slices/authSlice"
 
-export default function LogoutButton() {
-  const router = useRouter()
+type Props = {
+  className?: string
+}
 
+export default function LogoutButton({ className }: Props) {
+  const router = useRouter()
   const dispatch = useAppDispatch()
 
   const [logout, { isLoading }] = useLogoutMutation()
@@ -20,29 +21,25 @@ export default function LogoutButton() {
   const handleLogout = async () => {
     try {
       await logout().unwrap()
-    } catch (error) {
-      console.error(error)
+    } catch (err) {
+      console.error(err)
     } finally {
-      // Clear redux auth state
       dispatch(clearCredentials())
 
-      // Clear every RTK Query cache
       dispatch(baseApi.util.resetApiState())
 
-      // Redirect
       router.replace("/login")
 
-      // Refresh App Router
       router.refresh()
     }
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
+    <button
+      type="button"
       onClick={handleLogout}
       disabled={isLoading}
+      className={className}
     >
       {isLoading ? (
         <>
@@ -55,6 +52,6 @@ export default function LogoutButton() {
           Logout
         </>
       )}
-    </Button>
+    </button>
   )
 }
