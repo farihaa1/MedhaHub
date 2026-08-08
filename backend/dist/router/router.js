@@ -16,9 +16,9 @@ const result_route_1 = __importDefault(require("../modules/Result/result.route")
 const questionSubmission_route_1 = __importDefault(require("../modules/QuestionSubmission/questionSubmission.route"));
 const admin_route_1 = __importDefault(require("../modules/admin/admin.route"));
 const questionBankItem_route_1 = __importDefault(require("../modules/questionBankItems/questionBankItem.route"));
-const questionBank_route_1 = __importDefault(require("../modules/questionBank/questionBank.route"));
 const questionBanks_routes_1 = __importDefault(require("../modules/questionBanks/questionBanks.routes"));
 const upload_route_1 = __importDefault(require("../modules/Upload/upload.route"));
+const duplicateDetector_route_1 = __importDefault(require("../modules/duplicateDetector/duplicateDetector.route"));
 const router = (0, express_1.Router)();
 router.use("/auth", auth_route_1.default);
 router.use("/user", user_route_1.default);
@@ -31,9 +31,9 @@ router.use("/exam", examSession_route_1.default);
 router.use("/result", result_route_1.default);
 router.use("/question-submissions", questionSubmission_route_1.default);
 router.use("/admin", admin_route_1.default);
-router.use("/question-bank", questionBank_route_1.default);
 router.use("/question-bank-items", questionBankItem_route_1.default);
 router.use("/question-banks", questionBanks_routes_1.default);
 router.use("/upload", upload_route_1.default);
+router.use("/duplicate-detector", duplicateDetector_route_1.default);
 exports.default = router;
 //# sourceMappingURL=router.js.map

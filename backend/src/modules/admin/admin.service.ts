@@ -6,11 +6,11 @@ import { Subject } from "../Subjects/subject.model";
 import { Topic } from "../Topics/topic.model";
 import { User } from "../users/user.model";
 import { UserRole } from "../users/user.constants";
-import { QuestionBank } from "../questionBank/questionBank.model";
 import { PracticeSet } from "../PracticeSets/practiceSet.model";
 import { ModelTest } from "../ModelTests/modelTest.model";
 import { ExamSession } from "../examSession/examSession.model";
 import { ExamSessionStatus } from "../examSession/examSession.constant";
+import { QuestionBanks } from "../questionBanks/questionBanks.model";
 
 const getDashboard = async () => {
   const today = new Date();
@@ -52,7 +52,7 @@ const getDashboard = async () => {
 
     Question.countDocuments(),
 
-    QuestionBank.countDocuments(),
+    QuestionBanks.countDocuments(),
 
     PracticeSet.countDocuments(),
 

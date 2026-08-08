@@ -42,8 +42,8 @@ const mongoose_1 = __importStar(require("mongoose"));
 const questionBankItem_model_1 = require("./questionBankItem.model");
 const AppError_1 = __importDefault(require("../../error/AppError"));
 const question_model_1 = require("../Questions/question.model");
-const questionBank_model_1 = require("../questionBank/questionBank.model");
 const QueryBuilder_1 = __importDefault(require("../../middlewares/QueryBuilder"));
+const questionBanks_model_1 = require("../questionBanks/questionBanks.model");
 const addQuestionToBank = async (questionBankId, payload, user) => {
     const session = await mongoose_1.default.startSession();
     try {
@@ -51,7 +51,7 @@ const addQuestionToBank = async (questionBankId, payload, user) => {
         /**
          * Check Question Bank
          */
-        const bank = await questionBank_model_1.QuestionBank.findById(questionBankId).session(session);
+        const bank = await questionBanks_model_1.QuestionBanks.findById(questionBankId).session(session);
         if (!bank) {
             throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Question Bank not found");
         }
@@ -121,7 +121,7 @@ const bulkAddQuestions = async (questionBankId, questionIds, user) => {
         /**
          * Check Question Bank
          */
-        const bank = await questionBank_model_1.QuestionBank.findById(questionBankId).session(session);
+        const bank = await questionBanks_model_1.QuestionBanks.findById(questionBankId).session(session);
         if (!bank) {
             throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Question Bank not found");
         }
@@ -200,7 +200,7 @@ const syncQuestionBankTotalQuestions = async (questionBankId, session) => {
         questionBank: new mongoose_1.Types.ObjectId(questionBankId),
         isActive: true,
     }).session(session ?? null);
-    await questionBank_model_1.QuestionBank.findByIdAndUpdate(questionBankId, {
+    await questionBanks_model_1.QuestionBanks.findByIdAndUpdate(questionBankId, {
         $set: {
             totalQuestions,
         },
@@ -213,7 +213,7 @@ const getQuestionsByBank = async (questionBankId, query) => {
     /**
      * Check Question Bank
      */
-    const bank = await questionBank_model_1.QuestionBank.findById(questionBankId);
+    const bank = await questionBanks_model_1.QuestionBanks.findById(questionBankId);
     if (!bank) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Question Bank not found");
     }
@@ -260,7 +260,7 @@ const removeQuestionFromBank = async (questionBankId, questionId) => {
         /**
          * Check Question Bank
          */
-        const bank = await questionBank_model_1.QuestionBank.findById(questionBankId).session(session);
+        const bank = await questionBanks_model_1.QuestionBanks.findById(questionBankId).session(session);
         if (!bank) {
             throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Question Bank not found");
         }
@@ -304,7 +304,7 @@ const reorderQuestions = async (questionBankId, items) => {
         /**
          * Check Question Bank
          */
-        const bank = await questionBank_model_1.QuestionBank.findById(questionBankId).session(session);
+        const bank = await questionBanks_model_1.QuestionBanks.findById(questionBankId).session(session);
         if (!bank) {
             throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Question Bank not found");
         }
@@ -384,7 +384,7 @@ const updateQuestionBankItem = async (id, payload, user) => {
     }
 };
 const getQuestionBankOrThrow = async (id, session) => {
-    const questionBank = await questionBank_model_1.QuestionBank.findById(id).session(session ?? null);
+    const questionBank = await questionBanks_model_1.QuestionBanks.findById(id).session(session ?? null);
     if (!questionBank) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Question Bank not found");
     }

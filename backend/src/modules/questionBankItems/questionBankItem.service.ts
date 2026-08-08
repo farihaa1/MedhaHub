@@ -3,9 +3,9 @@ import mongoose, { Types } from "mongoose";
 import { QuestionBankItem } from "./questionBankItem.model";
 import AppError from "../../error/AppError";
 import { Question } from "../Questions/question.model";
-import { QuestionBank } from "../questionBank/questionBank.model";
 import { JwtPayload } from "jsonwebtoken";
 import QueryBuilder from "../../middlewares/QueryBuilder";
+import { QuestionBanks } from "../questionBanks/questionBanks.model";
 
 const addQuestionToBank = async (
   questionBankId: string,
@@ -25,7 +25,7 @@ const addQuestionToBank = async (
     /**
      * Check Question Bank
      */
-    const bank = await QuestionBank.findById(questionBankId).session(session);
+    const bank = await QuestionBanks.findById(questionBankId).session(session);
 
     if (!bank) {
       throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
@@ -118,7 +118,7 @@ const bulkAddQuestions = async (
     /**
      * Check Question Bank
      */
-    const bank = await QuestionBank.findById(questionBankId).session(session);
+    const bank = await QuestionBanks.findById(questionBankId).session(session);
 
     if (!bank) {
       throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
@@ -225,7 +225,7 @@ const syncQuestionBankTotalQuestions = async (
     isActive: true,
   }).session(session ?? null);
 
-  await QuestionBank.findByIdAndUpdate(
+  await QuestionBanks.findByIdAndUpdate(
     questionBankId,
     {
       $set: {
@@ -245,7 +245,7 @@ const getQuestionsByBank = async (
   /**
    * Check Question Bank
    */
-  const bank = await QuestionBank.findById(questionBankId);
+  const bank = await QuestionBanks.findById(questionBankId);
 
   if (!bank) {
     throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
@@ -306,7 +306,7 @@ const removeQuestionFromBank = async (
     /**
      * Check Question Bank
      */
-    const bank = await QuestionBank.findById(questionBankId).session(session);
+    const bank = await QuestionBanks.findById(questionBankId).session(session);
 
     if (!bank) {
       throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
@@ -370,7 +370,7 @@ const reorderQuestions = async (
     /**
      * Check Question Bank
      */
-    const bank = await QuestionBank.findById(questionBankId).session(session);
+    const bank = await QuestionBanks.findById(questionBankId).session(session);
 
     if (!bank) {
       throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");
@@ -478,7 +478,7 @@ const getQuestionBankOrThrow = async (
   id: string,
   session?: mongoose.ClientSession,
 ) => {
-  const questionBank = await QuestionBank.findById(id).session(session ?? null);
+  const questionBank = await QuestionBanks.findById(id).session(session ?? null);
 
   if (!questionBank) {
     throw new AppError(httpStatus.NOT_FOUND, "Question Bank not found");

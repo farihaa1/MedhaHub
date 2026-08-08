@@ -32,7 +32,7 @@ export default function DashboardHeader() {
 
             <Input
               placeholder="Search users, questions..."
-              className="w-full pl-9 sm:w-[260px]"
+              className="w-full pl-9 sm:w-65"
             />
           </div>
 

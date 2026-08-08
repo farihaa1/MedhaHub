@@ -12,10 +12,17 @@ const question_model_1 = require("../Questions/question.model");
 const user_model_1 = require("../users/user.model");
 const chapter_model_1 = require("../Chapters/chapter.model");
 const topic_model_1 = require("../Topics/topic.model");
+const duplicateDetector_service_1 = __importDefault(require("../duplicateDetector/duplicateDetector.service"));
 const approveSubmission = async (submissionId, adminId, reviewComment) => {
     const session = await mongoose_1.default.startSession();
+    let approvedQuestionId;
     try {
         await session.startTransaction();
+        /**
+         * ==========================================================
+         * FIND SUBMISSION
+         * ==========================================================
+         */
         const submission = await questionSubmission_model_1.QuestionSubmission.findById(submissionId).session(session);
         if (!submission) {
             throw new AppError_1.default(404, "Submission not found");
@@ -24,9 +31,9 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
             throw new AppError_1.default(400, "Submission already reviewed");
         }
         /**
-         * ----------------------------------------------------
-         * Resolve Chapter
-         * ----------------------------------------------------
+         * ==========================================================
+         * RESOLVE CHAPTER
+         * ==========================================================
          */
         let chapterId = submission.chapterId;
         if (!chapterId && submission.suggestedChapterTitle) {
@@ -43,7 +50,9 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
                         subjectId: submission.subjectId,
                         title: submission.suggestedChapterTitle,
                     },
-                ], { session });
+                ], {
+                    session,
+                });
                 chapterId = chapter._id;
             }
         }
@@ -51,9 +60,9 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
             throw new AppError_1.default(400, "Chapter not found");
         }
         /**
-         * ----------------------------------------------------
-         * Resolve Topic
-         * ----------------------------------------------------
+         * ==========================================================
+         * RESOLVE TOPIC
+         * ==========================================================
          */
         let topicId = submission.topicId;
         if (!topicId && submission.suggestedTopicTitle) {
@@ -70,59 +79,85 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
                         chapterId,
                         title: submission.suggestedTopicTitle,
                     },
-                ], { session });
+                ], {
+                    session,
+                });
                 topicId = topic._id;
             }
         }
         if (!topicId) {
             throw new AppError_1.default(400, "Topic not found");
         }
+        /**
+         * ==========================================================
+         * CONVERT OPTIONS
+         *
+         * Submission:
+         *
+         * {
+         *   label: "A",
+         *   text: "..."
+         * }
+         *
+         * Question:
+         *
+         * {
+         *   text: "...",
+         *   isCorrect: true
+         * }
+         * ==========================================================
+         */
         const questionOptions = submission.options.map((option) => ({
             text: option.text,
-            image: option.image || "",
+            image: option.image || null,
             isCorrect: option.label === submission.correctAnswer,
         }));
         /**
-         * ----------------------------------------------------
-         * NEW Submission
-         * ----------------------------------------------------
+         * ==========================================================
+         * NEW QUESTION
+         * ==========================================================
          */
         let question;
         if (submission.submissionType === questionSubmission_constant_1.SubmissionType.NEW) {
-            // [question] = await Question.create(
-            //   [
-            //     {
-            //       subjectId: submission.subjectId,
-            //       chapterId,
-            //       topicId,
-            //       questionText: submission.questionText,
-            //       options: questionOptions,
-            //       correctAnswer: submission.correctAnswer,
-            //       explanation: submission.explanation,
-            //       tags: submission.tags,
-            //       createdBy: submission.submittedBy,
-            //     },
-            //   ],
-            //   {
-            //     session,
-            //   },
-            // );
+            const [createdQuestion] = await question_model_1.Question.create([
+                {
+                    subjectId: submission.subjectId,
+                    chapterId,
+                    topicId,
+                    questionText: submission.questionText,
+                    options: questionOptions,
+                    explanation: submission.explanation || "",
+                    tags: submission.tags || [],
+                    createdBy: submission.submittedBy,
+                    approvedBy: adminId,
+                    approvedAt: new Date(),
+                },
+            ], {
+                session,
+            });
+            question = createdQuestion;
         }
         /**
-         * ----------------------------------------------------
-         * UPDATE Submission
-         * ----------------------------------------------------
+         * ==========================================================
+         * UPDATE QUESTION
+         * ==========================================================
          */
         if (submission.submissionType === questionSubmission_constant_1.SubmissionType.UPDATE) {
+            if (!submission.existingQuestionId) {
+                throw new AppError_1.default(400, "Existing question ID is required");
+            }
             question = await question_model_1.Question.findByIdAndUpdate(submission.existingQuestionId, {
-                subjectId: submission.subjectId,
-                chapterId,
-                topicId,
-                questionText: submission.questionText,
-                options: submission.options,
-                correctAnswer: submission.correctAnswer,
-                explanation: submission.explanation,
-                tags: submission.tags,
+                $set: {
+                    subjectId: submission.subjectId,
+                    chapterId,
+                    topicId,
+                    questionText: submission.questionText,
+                    options: questionOptions,
+                    explanation: submission.explanation || "",
+                    tags: submission.tags || [],
+                    approvedBy: adminId,
+                    approvedAt: new Date(),
+                },
             }, {
                 new: true,
                 runValidators: true,
@@ -132,10 +167,14 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
                 throw new AppError_1.default(404, "Question not found");
             }
         }
+        if (!question) {
+            throw new AppError_1.default(500, "Question could not be created or updated");
+        }
+        approvedQuestionId = question._id;
         /**
-         * ----------------------------------------------------
-         * Update Submission
-         * ----------------------------------------------------
+         * ==========================================================
+         * UPDATE SUBMISSION
+         * ==========================================================
          */
         submission.status = questionSubmission_constant_1.SubmissionStatus.APPROVED;
         submission.reviewedBy = adminId;
@@ -148,9 +187,9 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
             session,
         });
         /**
-         * ----------------------------------------------------
-         * Reward Contributor
-         * ----------------------------------------------------
+         * ==========================================================
+         * REWARD CONTRIBUTOR
+         * ==========================================================
          */
         await user_model_1.User.findByIdAndUpdate(submission.submittedBy, {
             $inc: {
@@ -159,7 +198,36 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
         }, {
             session,
         });
+        /**
+         * ==========================================================
+         * COMMIT DATABASE TRANSACTION
+         * ==========================================================
+         */
         await session.commitTransaction();
+        /**
+         * ==========================================================
+         * DUPLICATE DETECTION
+         *
+         * We intentionally run this AFTER the transaction.
+         *
+         * DuplicateDetector uses its own database operations.
+         * ==========================================================
+         */
+        let duplicateDetection = null;
+        try {
+            duplicateDetection = await duplicateDetector_service_1.default.indexQuestion(question._id.toString());
+        }
+        catch (duplicateError) {
+            console.error("Duplicate detection failed:", duplicateError);
+            duplicateDetection = {
+                error: "Duplicate detection failed after approval",
+            };
+        }
+        /**
+         * ==========================================================
+         * POPULATE
+         * ==========================================================
+         */
         await submission.populate([
             {
                 path: "subjectId",
@@ -185,10 +253,13 @@ const approveSubmission = async (submissionId, adminId, reviewComment) => {
             reward: questionSubmission_constant_1.CONTRIBUTOR_REWARD,
             submission,
             question,
+            duplicateDetection,
         };
     }
     catch (error) {
-        await session.abortTransaction();
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
         throw error;
     }
     finally {

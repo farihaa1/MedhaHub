@@ -19,17 +19,9 @@ interface Props {
 
 export default function QuestionBankInfo({ bank, totalQuestions }: Props) {
   return (
-    <Card className="p-6">
+    <Card className="px-12">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline">{bank.year}</Badge>
-
-            <Badge variant="secondary">
-              <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-              {bank.status}
-            </Badge>
-          </div>
 
           <h1 className="text-3xl font-bold tracking-tight">{bank.title}</h1>
 

@@ -9,11 +9,11 @@ const subject_model_1 = require("../Subjects/subject.model");
 const topic_model_1 = require("../Topics/topic.model");
 const user_model_1 = require("../users/user.model");
 const user_constants_1 = require("../users/user.constants");
-const questionBank_model_1 = require("../questionBank/questionBank.model");
 const practiceSet_model_1 = require("../PracticeSets/practiceSet.model");
 const modelTest_model_1 = require("../ModelTests/modelTest.model");
 const examSession_model_1 = require("../examSession/examSession.model");
 const examSession_constant_1 = require("../examSession/examSession.constant");
+const questionBanks_model_1 = require("../questionBanks/questionBanks.model");
 const getDashboard = async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -31,7 +31,7 @@ const getDashboard = async () => {
         chapter_model_1.Chapter.countDocuments(),
         topic_model_1.Topic.countDocuments(),
         question_model_1.Question.countDocuments(),
-        questionBank_model_1.QuestionBank.countDocuments(),
+        questionBanks_model_1.QuestionBanks.countDocuments(),
         practiceSet_model_1.PracticeSet.countDocuments(),
         modelTest_model_1.ModelTest.countDocuments(),
         examSession_model_1.ExamSession.countDocuments({

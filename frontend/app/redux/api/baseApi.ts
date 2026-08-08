@@ -124,6 +124,7 @@ export const baseApi = createApi({
     "QuestionBanks",
     "QuestionBankItem",
     "PdfImport",
+    "DuplicateDetector",
   ],
   endpoints: () => ({}),
 })

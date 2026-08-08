@@ -1,15 +1,17 @@
 import { Request, Response } from "express";
 
 import { catchAsync } from "../../utils/catchAsync";
+
 import { sendResponse } from "../../utils/sendResponse";
 
 import { QuestionSubmissionService } from "./questionSubmission.service";
 
 /**
- * ----------------------------------------
- * Create Submission
- * ----------------------------------------
+ * ============================================================
+ * CREATE
+ * ============================================================
  */
+
 const createSubmission = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!._id;
 
@@ -20,33 +22,41 @@ const createSubmission = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     success: true,
+
     statusCode: 201,
+
     message: "Question submitted successfully",
+
     data: result,
   });
 });
 
 /**
- * ----------------------------------------
- * Admin - Get All
- * ----------------------------------------
+ * ============================================================
+ * ADMIN - GET ALL
+ * ============================================================
  */
+
 const getAllSubmissions = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionSubmissionService.getAllSubmissions(req.query);
 
   sendResponse(res, {
     success: true,
+
     statusCode: 200,
+
     message: "Question submissions retrieved successfully",
+
     data: result,
   });
 });
 
 /**
- * ----------------------------------------
- * User - Get My Submissions
- * ----------------------------------------
+ * ============================================================
+ * USER - MY SUBMISSIONS
+ * ============================================================
  */
+
 const getMySubmissions = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!._id;
 
@@ -54,17 +64,21 @@ const getMySubmissions = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     success: true,
+
     statusCode: 200,
+
     message: "My submissions retrieved successfully",
+
     data: result,
   });
 });
 
 /**
- * ----------------------------------------
- * Get Single Submission
- * ----------------------------------------
+ * ============================================================
+ * SINGLE
+ * ============================================================
  */
+
 const getSingleSubmission = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionSubmissionService.getSingleSubmission(
     req.params.id as string,
@@ -72,68 +86,87 @@ const getSingleSubmission = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     success: true,
+
     statusCode: 200,
+
     message: "Question submission retrieved successfully",
+
     data: result,
   });
 });
 
 /**
- * ----------------------------------------
- * Delete Submission
- * ----------------------------------------
+ * ============================================================
+ * DELETE
+ * ============================================================
  */
+
 const deleteSubmission = catchAsync(async (req: Request, res: Response) => {
   await QuestionSubmissionService.deleteSubmission(req.params.id as string);
 
   sendResponse(res, {
     success: true,
+
     statusCode: 200,
+
     message: "Question submission deleted successfully",
+
     data: null,
   });
 });
 
 /**
- * ----------------------------------------
- * Approve Submission
- * ----------------------------------------
+ * ============================================================
+ * APPROVE
+ * ============================================================
  */
+
 const approve = catchAsync(async (req: Request, res: Response) => {
   const adminId = req.user!._id;
 
   const result = await QuestionSubmissionService.approveSubmission(
     req.params.id as string,
+
     adminId,
+
     req.body.reviewComment,
   );
 
   sendResponse(res, {
     success: true,
+
     statusCode: 200,
+
     message: "Question approved successfully",
+
     data: result,
   });
 });
 
 /**
- * ----------------------------------------
- * Reject Submission
- * ----------------------------------------
+ * ============================================================
+ * REJECT
+ * ============================================================
  */
+
 const reject = catchAsync(async (req: Request, res: Response) => {
   const adminId = req.user!._id;
 
   const result = await QuestionSubmissionService.rejectSubmission(
     req.params.id as string,
+
     adminId,
+
     req.body.reviewComment,
   );
 
   sendResponse(res, {
     success: true,
+
     statusCode: 200,
+
     message: "Question rejected successfully",
+
     data: result,
   });
 });

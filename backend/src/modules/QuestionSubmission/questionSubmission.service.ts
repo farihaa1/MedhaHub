@@ -4,15 +4,19 @@ import AppError from "../../error/AppError";
 
 import { QuestionSubmission } from "./questionSubmission.model";
 
-import {
-  IQuestionSubmission,
-  TCreateSubmissionPayload,
-} from "./questionSubmission.interface";
+import { TCreateSubmissionPayload } from "./questionSubmission.interface";
 
 import { approveSubmission } from "./approval.service";
+
 import { rejectSubmission } from "./rejection.service";
 
 import { SubmissionStatus } from "./questionSubmission.constant";
+
+/**
+ * ============================================================
+ * CREATE
+ * ============================================================
+ */
 
 const createSubmission = async (
   payload: TCreateSubmissionPayload,
@@ -20,6 +24,7 @@ const createSubmission = async (
 ) => {
   const submission = await QuestionSubmission.create({
     ...payload,
+
     submittedBy: userId,
   });
 
@@ -32,13 +37,13 @@ const createSubmission = async (
 };
 
 /**
- * ---------------------------------------
- * Admin
- * ---------------------------------------
+ * ============================================================
+ * ADMIN - GET ALL
+ * ============================================================
  */
 
 const getAllSubmissions = async (query: Record<string, any>) => {
-const filter: Record<string, any> = {};
+  const filter: Record<string, any> = {};
 
   if (query.status) {
     filter.status = query.status;
@@ -63,6 +68,7 @@ const filter: Record<string, any> = {};
     .populate("submittedBy")
     .populate("reviewedBy")
     .populate("approvedQuestionId")
+    .populate("existingQuestionId")
     .sort({
       createdAt: -1,
     });
@@ -71,9 +77,9 @@ const filter: Record<string, any> = {};
 };
 
 /**
- * ---------------------------------------
- * User
- * ---------------------------------------
+ * ============================================================
+ * USER - MY SUBMISSIONS
+ * ============================================================
  */
 
 const getMySubmissions = async (userId: Types.ObjectId) => {
@@ -85,18 +91,23 @@ const getMySubmissions = async (userId: Types.ObjectId) => {
     .populate("topicId")
     .populate("reviewedBy")
     .populate("approvedQuestionId")
+    .populate("existingQuestionId")
     .sort({
       createdAt: -1,
     });
 };
 
 /**
- * ---------------------------------------
- * Single
- * ---------------------------------------
+ * ============================================================
+ * SINGLE
+ * ============================================================
  */
 
 const getSingleSubmission = async (id: string) => {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new AppError(400, "Invalid submission ID");
+  }
+
   const submission = await QuestionSubmission.findById(id)
     .populate("subjectId")
     .populate("chapterId")
@@ -114,12 +125,16 @@ const getSingleSubmission = async (id: string) => {
 };
 
 /**
- * ---------------------------------------
- * Delete
- * ---------------------------------------
+ * ============================================================
+ * DELETE
+ * ============================================================
  */
 
 const deleteSubmission = async (id: string) => {
+  if (!Types.ObjectId.isValid(id)) {
+    throw new AppError(400, "Invalid submission ID");
+  }
+
   const submission = await QuestionSubmission.findById(id);
 
   if (!submission) {
@@ -134,6 +149,12 @@ const deleteSubmission = async (id: string) => {
 
   return null;
 };
+
+/**
+ * ============================================================
+ * EXPORT
+ * ============================================================
+ */
 
 export const QuestionSubmissionService = {
   createSubmission,

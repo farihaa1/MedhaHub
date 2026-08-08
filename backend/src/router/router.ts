@@ -11,9 +11,9 @@ import ResultRoutes from "../modules/Result/result.route";
 import QuestionSubmissionRoutes from "../modules/QuestionSubmission/questionSubmission.route";
 import AdminDashboardRoutes from "../modules/admin/admin.route";
 import QuestionBankItemRoutes from "../modules/questionBankItems/questionBankItem.route";
-import QuestionBankRoutes from "../modules/questionBank/questionBank.route";
 import QuestionBanksRoutes from "../modules/questionBanks/questionBanks.routes";
 import UploadRoutes from "../modules/Upload/upload.route";
+import duplicateRoutes from "../modules/duplicateDetector/duplicateDetector.route";
 
 const router = Router();
 
@@ -28,11 +28,10 @@ router.use("/exam", ExamSessionRoutes);
 router.use("/result", ResultRoutes);
 router.use("/question-submissions", QuestionSubmissionRoutes);
 router.use("/admin",AdminDashboardRoutes)
-router.use("/question-bank", QuestionBankRoutes);
 router.use("/question-bank-items", QuestionBankItemRoutes);
 router.use("/question-banks", QuestionBanksRoutes);
 
 router.use("/upload", UploadRoutes);
-
+router.use("/duplicate-detector", duplicateRoutes);
 
 export default router;

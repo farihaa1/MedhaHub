@@ -11,28 +11,42 @@ const questionSubmission_controller_1 = require("./questionSubmission.controller
 const questionSubmission_validation_1 = require("./questionSubmission.validation");
 const QuestionSubmissionRoutes = (0, express_1.Router)();
 /**
- * =========================================
- * User Routes
- * =========================================
+ * ============================================================
+ * USER ROUTES
+ * ============================================================
  */
-// Create Submission
+/**
+ * Create Submission
+ */
 QuestionSubmissionRoutes.post("/", (0, auth_1.default)(user_constants_1.UserRole.USER, user_constants_1.UserRole.ADMIN), (0, validateRequest_1.default)(questionSubmission_validation_1.QuestionSubmissionValidation.createQuestionSubmissionValidationSchema), questionSubmission_controller_1.QuestionSubmissionController.createSubmission);
-// My Submissions
+/**
+ * My Submissions
+ */
 QuestionSubmissionRoutes.get("/my-submissions", (0, auth_1.default)(user_constants_1.UserRole.USER, user_constants_1.UserRole.ADMIN), questionSubmission_controller_1.QuestionSubmissionController.getMySubmissions);
 /**
- * =========================================
- * Admin Routes
- * =========================================
+ * ============================================================
+ * ADMIN ROUTES
+ * ============================================================
  */
-// Get All Submissions
+/**
+ * Get All
+ */
 QuestionSubmissionRoutes.get("/", (0, auth_1.default)(user_constants_1.UserRole.ADMIN), questionSubmission_controller_1.QuestionSubmissionController.getAllSubmissions);
-// Get Single Submission
+/**
+ * Get Single
+ */
 QuestionSubmissionRoutes.get("/:id", (0, auth_1.default)(user_constants_1.UserRole.ADMIN), questionSubmission_controller_1.QuestionSubmissionController.getSingleSubmission);
-// Delete Submission
+/**
+ * Delete
+ */
 QuestionSubmissionRoutes.delete("/:id", (0, auth_1.default)(user_constants_1.UserRole.ADMIN), questionSubmission_controller_1.QuestionSubmissionController.deleteSubmission);
-// Approve Submission
+/**
+ * Approve
+ */
 QuestionSubmissionRoutes.patch("/:id/approve", (0, auth_1.default)(user_constants_1.UserRole.ADMIN), questionSubmission_controller_1.QuestionSubmissionController.approve);
-// Reject Submission
+/**
+ * Reject
+ */
 QuestionSubmissionRoutes.patch("/:id/reject", (0, auth_1.default)(user_constants_1.UserRole.ADMIN), (0, validateRequest_1.default)(questionSubmission_validation_1.QuestionSubmissionValidation.rejectSubmissionValidationSchema), questionSubmission_controller_1.QuestionSubmissionController.reject);
 exports.default = QuestionSubmissionRoutes;
 //# sourceMappingURL=questionSubmission.route.js.map

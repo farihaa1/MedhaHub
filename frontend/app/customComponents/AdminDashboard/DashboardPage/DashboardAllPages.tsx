@@ -15,6 +15,7 @@ import {
   Bell,
   Database,
   ChevronRight,
+  ScanSearch,
 } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -63,10 +64,9 @@ const pages = [
     icon: Users,
   },
   {
-    title: "Question Review",
-    description: "Pending approvals",
-    href: "/admin/review",
-    icon: ShieldCheck,
+    title: "Duplicate Detector",
+    href: "/admin/duplicate-detector",
+    icon: ScanSearch,
   },
   {
     title: "Analytics",

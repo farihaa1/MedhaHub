@@ -1,11 +1,37 @@
 import { Schema, model } from "mongoose";
+
 import { IQuestionSubmission } from "./questionSubmission.interface";
+
 import {
   SubmissionStatus,
   SubmissionType,
 } from "./questionSubmission.constant";
 
-const questionSubmissionSchema = new Schema<IQuestionSubmission>(
+const submissionOptionSchema = new Schema(
+  {
+    label: {
+      type: String,
+      enum: ["A", "B", "C", "D"],
+      required: true,
+    },
+
+    text: {
+      type: String,
+      required: [true, "অপশনের লেখা আবশ্যক।"],
+      trim: true,
+    },
+
+    image: {
+      type: String,
+      default: null,
+    },
+  },
+  {
+    _id: true,
+  },
+);
+
+const questionSubmissionSchema = new Schema(
   {
     submissionType: {
       type: String,
@@ -56,35 +82,14 @@ const questionSubmissionSchema = new Schema<IQuestionSubmission>(
     },
 
     options: {
-      type: [
+      type: [submissionOptionSchema],
+      required: true,
+      validate: [
         {
-          _id: false,
-
-          label: {
-            type: String,
-            enum: ["A", "B", "C", "D"],
-            required: true,
-          },
-
-          text: {
-            type: String,
-            required: true,
-            trim: true,
-          },
-
-          image: {
-            type: String,
-            default: "",
-          },
+          validator: (value: unknown[]) => value.length === 4,
+          message: "A question must contain exactly 4 options.",
         },
       ],
-      required: true,
-      validate: {
-        validator(value: any[]) {
-          return value.length === 4;
-        },
-        message: "Question must contain exactly 4 options.",
-      },
     },
 
     correctAnswer: {
@@ -137,13 +142,14 @@ const questionSubmissionSchema = new Schema<IQuestionSubmission>(
 );
 
 /**
- * ====================================
- * Custom Validation
- * ====================================
+ * ============================================================
+ * CUSTOM VALIDATION
+ * ============================================================
  */
+
 questionSubmissionSchema.pre("validate", function () {
   /**
-   * UPDATE submission
+   * UPDATE
    */
   if (
     this.submissionType === SubmissionType.UPDATE &&
@@ -153,28 +159,28 @@ questionSubmissionSchema.pre("validate", function () {
   }
 
   /**
-   * NEW submission
+   * NEW
    */
   if (this.submissionType === SubmissionType.NEW && this.existingQuestionId) {
     throw new Error("existingQuestionId is only allowed for UPDATE submission");
   }
 
   /**
-   * Chapter validation
+   * Chapter
    */
   if (!this.chapterId && !this.suggestedChapterTitle) {
     throw new Error("Either chapterId or suggestedChapterTitle is required");
   }
 
   /**
-   * Topic validation
+   * Topic
    */
   if (!this.topicId && !this.suggestedTopicTitle) {
     throw new Error("Either topicId or suggestedTopicTitle is required");
   }
 
   /**
-   * Prevent both existing and suggested chapter
+   * Cannot provide both chapter options
    */
   if (this.chapterId && this.suggestedChapterTitle) {
     throw new Error(
@@ -183,7 +189,7 @@ questionSubmissionSchema.pre("validate", function () {
   }
 
   /**
-   * Prevent both existing and suggested topic
+   * Cannot provide both topic options
    */
   if (this.topicId && this.suggestedTopicTitle) {
     throw new Error("Provide either topicId or suggestedTopicTitle, not both.");
@@ -191,34 +197,29 @@ questionSubmissionSchema.pre("validate", function () {
 });
 
 /**
- * ====================================
- * Indexes
- * ====================================
+ * ============================================================
+ * INDEXES
+ * ============================================================
  */
 
-// Admin dashboard
 questionSubmissionSchema.index({
   status: 1,
   createdAt: -1,
 });
 
-// User dashboard
 questionSubmissionSchema.index({
   submittedBy: 1,
   createdAt: -1,
 });
 
-// Search by subject
 questionSubmissionSchema.index({
   subjectId: 1,
 });
 
-// Search by question
 questionSubmissionSchema.index({
   existingQuestionId: 1,
 });
 
-// Approved mapping
 questionSubmissionSchema.index({
   approvedQuestionId: 1,
 });

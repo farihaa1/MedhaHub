@@ -4,11 +4,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestionSubmissionService = void 0;
+const mongoose_1 = require("mongoose");
 const AppError_1 = __importDefault(require("../../error/AppError"));
 const questionSubmission_model_1 = require("./questionSubmission.model");
 const approval_service_1 = require("./approval.service");
 const rejection_service_1 = require("./rejection.service");
 const questionSubmission_constant_1 = require("./questionSubmission.constant");
+/**
+ * ============================================================
+ * CREATE
+ * ============================================================
+ */
 const createSubmission = async (payload, userId) => {
     const submission = await questionSubmission_model_1.QuestionSubmission.create({
         ...payload,
@@ -22,9 +28,9 @@ const createSubmission = async (payload, userId) => {
     ]);
 };
 /**
- * ---------------------------------------
- * Admin
- * ---------------------------------------
+ * ============================================================
+ * ADMIN - GET ALL
+ * ============================================================
  */
 const getAllSubmissions = async (query) => {
     const filter = {};
@@ -47,15 +53,16 @@ const getAllSubmissions = async (query) => {
         .populate("submittedBy")
         .populate("reviewedBy")
         .populate("approvedQuestionId")
+        .populate("existingQuestionId")
         .sort({
         createdAt: -1,
     });
     return submissions;
 };
 /**
- * ---------------------------------------
- * User
- * ---------------------------------------
+ * ============================================================
+ * USER - MY SUBMISSIONS
+ * ============================================================
  */
 const getMySubmissions = async (userId) => {
     return questionSubmission_model_1.QuestionSubmission.find({
@@ -66,16 +73,20 @@ const getMySubmissions = async (userId) => {
         .populate("topicId")
         .populate("reviewedBy")
         .populate("approvedQuestionId")
+        .populate("existingQuestionId")
         .sort({
         createdAt: -1,
     });
 };
 /**
- * ---------------------------------------
- * Single
- * ---------------------------------------
+ * ============================================================
+ * SINGLE
+ * ============================================================
  */
 const getSingleSubmission = async (id) => {
+    if (!mongoose_1.Types.ObjectId.isValid(id)) {
+        throw new AppError_1.default(400, "Invalid submission ID");
+    }
     const submission = await questionSubmission_model_1.QuestionSubmission.findById(id)
         .populate("subjectId")
         .populate("chapterId")
@@ -90,11 +101,14 @@ const getSingleSubmission = async (id) => {
     return submission;
 };
 /**
- * ---------------------------------------
- * Delete
- * ---------------------------------------
+ * ============================================================
+ * DELETE
+ * ============================================================
  */
 const deleteSubmission = async (id) => {
+    if (!mongoose_1.Types.ObjectId.isValid(id)) {
+        throw new AppError_1.default(400, "Invalid submission ID");
+    }
     const submission = await questionSubmission_model_1.QuestionSubmission.findById(id);
     if (!submission) {
         throw new AppError_1.default(404, "Submission not found");
@@ -105,6 +119,11 @@ const deleteSubmission = async (id) => {
     await submission.deleteOne();
     return null;
 };
+/**
+ * ============================================================
+ * EXPORT
+ * ============================================================
+ */
 exports.QuestionSubmissionService = {
     createSubmission,
     getAllSubmissions,

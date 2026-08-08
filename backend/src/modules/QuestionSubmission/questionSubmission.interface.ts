@@ -1,16 +1,24 @@
 import { Types } from "mongoose";
+
 import {
   TSubmissionStatus,
   TSubmissionType,
 } from "./questionSubmission.constant";
 
+export interface ISubmissionOption {
+  _id?: Types.ObjectId;
+  label: "A" | "B" | "C" | "D";
+  text: string;
+  image?: string | null;
+}
+
 export interface IQuestionSubmission {
   _id: Types.ObjectId;
 
-  submissionType?: TSubmissionType;
+  submissionType: TSubmissionType;
 
   /**
-   * Required when submissionType === UPDATE
+   * Required only for UPDATE
    */
   existingQuestionId?: Types.ObjectId;
 
@@ -29,11 +37,7 @@ export interface IQuestionSubmission {
 
   questionText: string;
 
-  options: {
-    label: "A" | "B" | "C" | "D";
-    text: string;
-    image?: string;
-  }[];
+  options: ISubmissionOption[];
 
   correctAnswer: "A" | "B" | "C" | "D";
 
