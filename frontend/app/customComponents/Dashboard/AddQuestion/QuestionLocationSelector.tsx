@@ -1,8 +1,13 @@
 "use client"
+
 import { useEffect, useState } from "react"
+
 import { Controller, useForm, useWatch } from "react-hook-form"
+
 import { skipToken } from "@reduxjs/toolkit/query"
+
 import { Input } from "@/components/ui/input"
+
 import {
   Select,
   SelectContent,
@@ -10,9 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
 import { Button } from "@/components/ui/button"
+
+import { BookOpen, FolderTree, ListTree, Plus } from "lucide-react"
+
 import { useGetSubjectsQuery } from "@/app/redux/api/subjectsApi"
+
 import { useGetChaptersBySubjectQuery } from "@/app/redux/api/chaptersApi"
+
 import { useGetTopicsByChapterQuery } from "@/app/redux/api/topicsApi"
 
 export interface QuestionLocation {
@@ -33,77 +44,64 @@ interface Props {
   onChange: (value: QuestionLocation) => void
 }
 
-export default function QuestionLocationSelector({
-  value,
-
-  onChange,
-}: Props) {
+export default function QuestionLocationSelector({ value, onChange }: Props) {
   const [chapterMode, setChapterMode] = useState<"existing" | "new">("existing")
 
   const [topicMode, setTopicMode] = useState<"existing" | "new">("existing")
 
-  const {
-    control,
-
-    setValue,
-  } = useForm<QuestionLocation>({
+  const { control, setValue } = useForm({
     defaultValues: value,
   })
 
   useEffect(() => {
     setValue("subjectId", value.subjectId)
-
     setValue("chapterId", value.chapterId || "")
-
     setValue("topicId", value.topicId || "")
   }, [value, setValue])
 
   const subjectId = useWatch({
     control,
-
     name: "subjectId",
   })
 
   const chapterId = useWatch({
     control,
-
     name: "chapterId",
   })
 
-  const {
-    data: subjectsData,
+  const { data: subjectsData, isLoading: subjectLoading } =
+    useGetSubjectsQuery()
 
-    isLoading: subjectLoading,
-  } = useGetSubjectsQuery()
+  const { data: chaptersData, isLoading: chapterLoading } =
+    useGetChaptersBySubjectQuery(subjectId || skipToken)
 
-  const {
-    data: chaptersData,
-
-    isLoading: chapterLoading,
-  } = useGetChaptersBySubjectQuery(subjectId || skipToken)
-
-  const {
-    data: topicsData,
-
-    isLoading: topicLoading,
-  } = useGetTopicsByChapterQuery(chapterId || skipToken)
+  const { data: topicsData, isLoading: topicLoading } =
+    useGetTopicsByChapterQuery(chapterId || skipToken)
 
   const updateLocation = (data: Partial<QuestionLocation>) => {
-    const updated = {
+    onChange({
       ...value,
-
       ...data,
-    }
-
-    onChange(updated)
+    })
   }
 
   return (
-    <div className="space-y-5 py-5">
+    <div className="grid gap-6 lg:grid-cols-3">
       {/* SUBJECT */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <BookOpen className="size-4" />
+          </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Subject</label>
+          <div>
+            <label className="text-xs font-semibold">বিষয়</label>
+
+            <p className="text-xs text-muted-foreground">
+              প্রশ্নের বিষয় নির্বাচন করুন
+            </p>
+          </div>
+        </div>
 
         <Controller
           control={control}
@@ -113,31 +111,31 @@ export default function QuestionLocationSelector({
               value={field.value}
               onValueChange={(v) => {
                 field.onChange(v)
+
                 setValue("chapterId", "")
                 setValue("topicId", "")
+
                 updateLocation({
                   subjectId: v,
                   chapterId: "",
                   topicId: "",
+                  suggestedChapterTitle: "",
+                  suggestedTopicTitle: "",
                 })
               }}
             >
-              <SelectTrigger className="w-full text-sm">
-                <SelectValue placeholder="Select Subject" />
+              <SelectTrigger className="h-11 w-full">
+                <SelectValue placeholder="বিষয় নির্বাচন করুন" />
               </SelectTrigger>
 
               <SelectContent>
                 {subjectLoading ? (
                   <SelectItem value="loading" disabled>
-                    Loading...
+                    বিষয় লোড হচ্ছে...
                   </SelectItem>
                 ) : (
                   subjectsData?.data?.map((subject) => (
-                    <SelectItem
-                      key={subject._id}
-
-                      value={subject._id}
-                    >
+                    <SelectItem key={subject._id} value={subject._id}>
                       {subject.title}
                     </SelectItem>
                   ))
@@ -149,17 +147,27 @@ export default function QuestionLocationSelector({
       </div>
 
       {/* CHAPTER */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <FolderTree className="size-4" />
+          </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Chapter</label>
+          <div>
+            <label className="text-xs font-semibold">অধ্যায়</label>
 
-        <div className="flex gap-2 pt-2">
+            <p className="text-xs text-muted-foreground">
+              অধ্যায় নির্বাচন বা প্রস্তাব করুন
+            </p>
+          </div>
+        </div>
+
+        <div className="flex rounded-lg border bg-muted/40 p-1">
           <Button
             type="button"
-            size="xs"
-            className="text-[8px]"
-            variant={chapterMode === "existing" ? "default" : "outline"}
-
+            size="sm"
+            variant={chapterMode === "existing" ? "default" : "ghost"}
+            className="flex-1"
             onClick={() => {
               setChapterMode("existing")
 
@@ -168,15 +176,14 @@ export default function QuestionLocationSelector({
               })
             }}
           >
-            Existing
+            বিদ্যমান
           </Button>
 
           <Button
             type="button"
-            size="xs"
-            className="text-[8px]"
-            variant={chapterMode === "new" ? "default" : "outline"}
-
+            size="sm"
+            variant={chapterMode === "new" ? "default" : "ghost"}
+            className="flex-1 gap-1"
             onClick={() => {
               setChapterMode("new")
 
@@ -184,80 +191,98 @@ export default function QuestionLocationSelector({
 
               updateLocation({
                 chapterId: "",
-
                 topicId: "",
+                suggestedChapterTitle: "",
               })
             }}
           >
-            Suggest New
+            <Plus className="size-3.5" />
+            নতুন
           </Button>
         </div>
 
         {chapterMode === "existing" ? (
           <Controller
             control={control}
-
             name="chapterId"
-
             render={({ field }) => (
               <Select
                 value={field.value}
-
                 disabled={!subjectId || chapterLoading}
-
                 onValueChange={(v) => {
                   field.onChange(v)
 
                   updateLocation({
                     chapterId: v,
-
                     topicId: "",
+                    suggestedTopicTitle: "",
                   })
                 }}
               >
-                <SelectTrigger className="w-full text-sm">
-                  <SelectValue placeholder="Select Chapter" />
+                <SelectTrigger className="h-11 w-full">
+                  <SelectValue
+                    placeholder={
+                      !subjectId
+                        ? "প্রথমে বিষয় নির্বাচন করুন"
+                        : chapterLoading
+                          ? "অধ্যায় লোড হচ্ছে..."
+                          : "অধ্যায় নির্বাচন করুন"
+                    }
+                  />
                 </SelectTrigger>
 
                 <SelectContent>
-                  {chaptersData?.data?.map((chapter) => (
-                    <SelectItem
-                      key={chapter._id}
-
-                      value={chapter._id}
-                    >
-                      {chapter.title}
+                  {chaptersData?.data?.length ? (
+                    chaptersData.data.map((chapter) => (
+                      <SelectItem key={chapter._id} value={chapter._id}>
+                        {chapter.title}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      কোনো অধ্যায় পাওয়া যায়নি
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             )}
           />
         ) : (
           <Input
-            placeholder="Enter new chapter name"
-
-            onChange={(e) => {
+            className="h-11"
+            placeholder="নতুন অধ্যায়ের নাম লিখুন"
+            value={value.suggestedChapterTitle || ""}
+            onChange={(e) =>
               updateLocation({
                 suggestedChapterTitle: e.target.value,
               })
-            }}
+            }
           />
         )}
       </div>
 
       {/* TOPIC */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <ListTree className="size-4" />
+          </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium ">Topic</label>
+          <div>
+            <label className="text-sm font-semibold">টপিক</label>
 
-        <div className="flex gap-2 pt-2">
+            <p className="text-xs text-muted-foreground">
+              টপিক নির্বাচন বা প্রস্তাব করুন
+            </p>
+          </div>
+        </div>
+
+        <div className="flex rounded-lg border bg-muted/40 p-1">
           <Button
             type="button"
-            size="xs"
-            className="text-[8px]"
-            variant={topicMode === "existing" ? "default" : "outline"}
-
+            size="sm"
+            variant={topicMode === "existing" ? "default" : "ghost"}
+            className="flex-1"
             onClick={() => {
               setTopicMode("existing")
 
@@ -266,15 +291,14 @@ export default function QuestionLocationSelector({
               })
             }}
           >
-            Existing
+            বিদ্যমান
           </Button>
 
           <Button
             type="button"
-            size="xs"
-            className="text-[8px]"
-            variant={topicMode === "new" ? "default" : "outline"}
-
+            size="sm"
+            variant={topicMode === "new" ? "default" : "ghost"}
+            className="flex-1 gap-1"
             onClick={() => {
               setTopicMode("new")
 
@@ -282,25 +306,23 @@ export default function QuestionLocationSelector({
 
               updateLocation({
                 topicId: "",
+                suggestedTopicTitle: "",
               })
             }}
           >
-            Suggest New
+            <Plus className="size-3.5" />
+            নতুন
           </Button>
         </div>
 
         {topicMode === "existing" ? (
           <Controller
             control={control}
-
             name="topicId"
-
             render={({ field }) => (
               <Select
                 value={field.value}
-
                 disabled={!chapterId || topicLoading}
-
                 onValueChange={(v) => {
                   field.onChange(v)
 
@@ -309,33 +331,44 @@ export default function QuestionLocationSelector({
                   })
                 }}
               >
-                <SelectTrigger className="w-full text-sm">
-                  <SelectValue placeholder="Select Topic" />
+                <SelectTrigger className="h-11 w-full">
+                  <SelectValue
+                    placeholder={
+                      !chapterId
+                        ? "প্রথমে অধ্যায় নির্বাচন করুন"
+                        : topicLoading
+                          ? "টপিক লোড হচ্ছে..."
+                          : "টপিক নির্বাচন করুন"
+                    }
+                  />
                 </SelectTrigger>
 
                 <SelectContent>
-                  {topicsData?.data?.map((topic) => (
-                    <SelectItem
-                      key={topic._id}
-
-                      value={topic._id}
-                    >
-                      {topic.title}
+                  {topicsData?.data?.length ? (
+                    topicsData.data.map((topic) => (
+                      <SelectItem key={topic._id} value={topic._id}>
+                        {topic.title}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      কোনো টপিক পাওয়া যায়নি
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             )}
           />
         ) : (
           <Input
-            placeholder="Enter new topic name"
-
-            onChange={(e) => {
+            className="h-11"
+            placeholder="নতুন টপিকের নাম লিখুন"
+            value={value.suggestedTopicTitle || ""}
+            onChange={(e) =>
               updateLocation({
                 suggestedTopicTitle: e.target.value,
               })
-            }}
+            }
           />
         )}
       </div>

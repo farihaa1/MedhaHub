@@ -128,8 +128,9 @@ export interface CreateQuestionPayload {
   chapterId: string
   topicId: string
 
-  questionText: string
+  type?: QuestionType
 
+  questionText: string
   questionImage?: string | null
 
   options: {
@@ -142,7 +143,6 @@ export interface CreateQuestionPayload {
   explanationImage?: string | null
 
   difficulty: QuestionDifficulty
-  type: QuestionType
 
   tags: string[]
 
@@ -151,6 +151,8 @@ export interface CreateQuestionPayload {
     name: string
     year?: number
   }[]
+
+  status?: QuestionStatus
 }
 
 /* ==========================================================

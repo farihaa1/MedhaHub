@@ -1,15 +1,4 @@
 import { Auth, Logo, MenuItem } from "@/app/type"
-import {
-  BookOpen,
-  ClipboardCheck,
-  Trophy,
-  Users,
-  GraduationCap,
-  FileQuestion,
-  BarChart3,
-  Newspaper,
-  Library,
-} from "lucide-react"
 
 export const logo: Logo = {
   url: "/",
@@ -19,18 +8,16 @@ export const logo: Logo = {
 }
 
 export const menu: MenuItem[] = [
-  
-
   // ─────────────────────────────────────
-  // Practice
+  // বিষয়সমূহ
   // ─────────────────────────────────────
   {
-    title: "অনুশীলন",
-    url: "/practice",
+    title: "বিষয়সমূহ",
+    url: "/subjects",
   },
 
   // ─────────────────────────────────────
-  // Question Banks
+  // প্রশ্নব্যাংক
   // ─────────────────────────────────────
   {
     title: "প্রশ্নব্যাংক",
@@ -38,31 +25,20 @@ export const menu: MenuItem[] = [
   },
 
   // ─────────────────────────────────────
-  // Mock Exams
-  // ─────────────────────────────────────
-  {
-    title: "মডেল পরীক্ষা",
-    url: "/mock-exams",
-  },
-
-  // ─────────────────────────────────────
-  // Current Affairs
+  // সাম্প্রতিক তথ্য
   // ─────────────────────────────────────
   {
     title: "সাম্প্রতিক তথ্য",
-    url: "/current-affairs",
+    url: "/subject/current-affairs",
   },
 
-  
-  { title: "ড্যাশবোর্ড", url: "/dashboard" },
-
   // ─────────────────────────────────────
-  // Pricing
+  // ড্যাশবোর্ড
   // ─────────────────────────────────────
-  // {
-  //   title: "মূল্য পরিকল্পনা",
-  //   url: "/pricing",
-  // },
+  {
+    title: "ড্যাশবোর্ড",
+    url: "/dashboard",
+  },
 ]
 
 export const auth: Auth = {
@@ -70,8 +46,9 @@ export const auth: Auth = {
     title: "লগইন",
     url: "/login",
   },
+
   signup: {
-    title: "signup",
+    title: "নিবন্ধন",
     url: "/signup",
   },
 }

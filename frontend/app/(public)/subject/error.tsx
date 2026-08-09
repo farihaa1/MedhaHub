@@ -18,10 +18,10 @@ export default function Error({ error, reset }: ErrorProps) {
           <AlertCircle className="h-7 w-7 text-destructive" />
         </div>
 
-        <h1 className="mt-5 text-2xl font-bold">Failed to load chapter</h1>
+        <h1 className="mt-5 text-2xl font-bold">Failed to load subject</h1>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          We couldn&apos;t load the topics for this chapter.
+          We couldn&apos;t load the chapters for this subject.
         </p>
 
         {process.env.NODE_ENV === "development" && (

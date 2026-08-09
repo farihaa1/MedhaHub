@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertCircle, RefreshCw, ArrowLeft } from "lucide-react"
+import { AlertCircle, RefreshCw, Home } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface ErrorProps {
@@ -18,10 +18,10 @@ export default function Error({ error, reset }: ErrorProps) {
           <AlertCircle className="h-7 w-7 text-destructive" />
         </div>
 
-        <h1 className="mt-5 text-2xl font-bold">Failed to load chapter</h1>
+        <h1 className="mt-5 text-2xl font-bold">Unable to load page</h1>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          We couldn&apos;t load the topics for this chapter.
+          Something went wrong while loading this page.
         </p>
 
         {process.env.NODE_ENV === "development" && (
@@ -40,11 +40,11 @@ export default function Error({ error, reset }: ErrorProps) {
           </button>
 
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/")}
             className="inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 font-medium hover:bg-muted"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back
+            <Home className="h-4 w-4" />
+            Home
           </button>
         </div>
       </div>

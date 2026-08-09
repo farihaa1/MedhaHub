@@ -11,13 +11,12 @@ const app: Application = express();
 const allowedOrigins: string[] = [
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://medhahub-frontend.vercel.app/",
+  "https://medhahub-frontend.vercel.app",
 ];
 
 if (process.env.CLIENT_URL) {
-  allowedOrigins.push(process.env.CLIENT_URL);
+  allowedOrigins.push(process.env.CLIENT_URL.replace(/\/$/, ""));
 }
-
 app.use(
   cors({
     origin(origin, callback) {
@@ -50,8 +49,6 @@ app.get("/", (_req, res) => {
     message: "Quizzes API Running",
   });
 });
-
-
 
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (error instanceof mongoose.Error.ValidationError) {

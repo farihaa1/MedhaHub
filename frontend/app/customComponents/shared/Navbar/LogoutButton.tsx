@@ -48,8 +48,10 @@ export default function LogoutButton({ className }: Props) {
         </>
       ) : (
         <>
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          <div className="flex items-center font-bold">
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </div>
         </>
       )}
     </button>

@@ -67,17 +67,13 @@ export default function ConfigureExamPage() {
   }
  
   const handleStart = async () => {
-   console.log(questionCount)
     if (!selectedTopics.length) return
 
     try {
       const response = await startExam({
         examType: "topic",
-
         topicIds,
-
         count: Math.min(questionCount, MAX_QUESTIONS),
-
         userId: user?._id,
       }).unwrap()
 

@@ -1,246 +1,399 @@
-
 "use client"
 
 import { useState } from "react"
 
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+
 import { toast } from "sonner"
 
-import { useCreateQuestionSubmissionMutation } from "@/app/redux/api/questionSubmissionApi"
+import {
+  useCreateQuestionMutation,
+  QuestionDifficulty,
+  QuestionType,
+  QuestionSourceType,
+  CreateQuestionPayload,
+} from "@/app/redux/api/questionsApi"
+
 import { QuestionLocation } from "./QuestionLocationSelector"
+
+import { Braces, ClipboardPaste, Send, Info, CircleHelp } from "lucide-react"
 
 interface Props {
   location: QuestionLocation
 }
 
-type OptionLabel = "A" | "B" | "C" | "D"
+/* =========================================================
+   JSON TYPES
+========================================================= */
 
 interface JsonQuestionOption {
-  label: OptionLabel
   text: string
+  image?: string | null
+  isCorrect: boolean
+}
+
+interface JsonQuestionSource {
+  type: QuestionSourceType
+  name: string
+  year?: number
 }
 
 interface JsonQuestion {
   questionText: string
+
+  questionImage?: string | null
+
   options: JsonQuestionOption[]
-  correctAnswer: OptionLabel
+
   explanation?: string
-  tags?: string[]
+
+  explanationImage?: string | null
+
+  difficulty: QuestionDifficulty
+
+  type: QuestionType
+
+  tags: string[]
+
+  sources: JsonQuestionSource[]
 }
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 export default function JsonQuestionsCreateForm({ location }: Props) {
   const [json, setJson] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const [createSubmission] = useCreateQuestionSubmissionMutation()
+  const [createQuestion] = useCreateQuestionMutation()
+
+  /* =======================================================
+     SUBMIT
+  ======================================================= */
 
   const submit = async () => {
+    /* -----------------------------------------------------
+       JSON EMPTY
+    ----------------------------------------------------- */
+
     if (!json.trim()) {
-      toast.error("Please paste JSON questions first")
+      toast.error("প্রথমে JSON প্রশ্ন পেস্ট করুন।")
+      return
+    }
+
+    /* -----------------------------------------------------
+       LOCATION VALIDATION
+    ----------------------------------------------------- */
+
+    if (!location.subjectId) {
+      toast.error("প্রথমে বিষয় নির্বাচন করুন।")
+      return
+    }
+
+    if (!location.chapterId) {
+      toast.error("প্রথমে অধ্যায় নির্বাচন করুন।")
+      return
+    }
+
+    if (!location.topicId) {
+      toast.error("প্রথমে টপিক নির্বাচন করুন।")
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // ---------------------------------------
-      // 1. Parse JSON
-      // ---------------------------------------
+      /* ===================================================
+         1. PARSE JSON
+      =================================================== */
+
       const parsed: unknown = JSON.parse(json)
 
       if (!Array.isArray(parsed)) {
-        toast.error("JSON must be an array of questions")
+        toast.error("JSON অবশ্যই একটি Array হতে হবে।")
+        return
+      }
+
+      if (parsed.length === 0) {
+        toast.error("JSON-এ কোনো প্রশ্ন পাওয়া যায়নি।")
         return
       }
 
       const questions = parsed as JsonQuestion[]
 
-      if (questions.length === 0) {
-        toast.error("No questions found in JSON")
-        return
-      }
+      /* ===================================================
+         2. PROCESS QUESTIONS
+      =================================================== */
 
-      // ---------------------------------------
-      // 2. Validate and submit questions
-      // ---------------------------------------
       for (let index = 0; index < questions.length; index++) {
         const question = questions[index]
 
+        const number = index + 1
+
+        /* -------------------------------------------------
+           QUESTION TEXT
+        ------------------------------------------------- */
+
         if (!question.questionText?.trim()) {
-          toast.error(`Question ${index + 1}: questionText is required`)
+          toast.error(`প্রশ্ন ${number}: questionText প্রয়োজন।`)
           return
         }
 
-        if (
-          !Array.isArray(question.options) ||
-          question.options.length !== 4
-        ) {
-          toast.error(
-            `Question ${index + 1}: exactly 4 options are required`
-          )
+        /* -------------------------------------------------
+           OPTIONS
+        ------------------------------------------------- */
+
+        if (!Array.isArray(question.options) || question.options.length !== 4) {
+          toast.error(`প্রশ্ন ${number}: ঠিক ৪টি options থাকতে হবে।`)
           return
         }
 
-        const expectedLabels: OptionLabel[] = ["A", "B", "C", "D"]
-
-        const labels = question.options.map((option) => option.label)
-
-        const hasValidLabels = expectedLabels.every((label) =>
-          labels.includes(label)
-        )
-
-        if (!hasValidLabels) {
-          toast.error(
-            `Question ${index + 1}: options must contain A, B, C and D`
-          )
-          return
-        }
-
-        if (!["A", "B", "C", "D"].includes(question.correctAnswer)) {
-          toast.error(
-            `Question ${index + 1}: correctAnswer must be A, B, C or D`
-          )
-          return
-        }
+        /* -------------------------------------------------
+           EMPTY OPTION
+        ------------------------------------------------- */
 
         const hasEmptyOption = question.options.some(
           (option) => !option.text?.trim()
         )
 
         if (hasEmptyOption) {
+          toast.error(`প্রশ্ন ${number}: কোনো option খালি রাখা যাবে না।`)
+          return
+        }
+
+        /* -------------------------------------------------
+           IS CORRECT VALIDATION
+        ------------------------------------------------- */
+
+        const correctOptions = question.options.filter(
+          (option) => option.isCorrect === true
+        )
+
+        if (correctOptions.length !== 1) {
           toast.error(
-            `Question ${index + 1}: option text cannot be empty`
+            `প্রশ্ন ${number}: ঠিক একটি option-এর isCorrect true হতে হবে।`
           )
           return
         }
 
-        // ---------------------------------------
-        // 3. Convert JSON options
-        //    into backend IQuestionOption format
-        // ---------------------------------------
+        /* -------------------------------------------------
+           DIFFICULTY
+        ------------------------------------------------- */
+
+        if (!Object.values(QuestionDifficulty).includes(question.difficulty)) {
+          toast.error(`প্রশ্ন ${number}: difficulty সঠিক নয়।`)
+          return
+        }
+
+        /* -------------------------------------------------
+           TYPE
+        ------------------------------------------------- */
+
+        if (question.type !== QuestionType.MCQ) {
+          toast.error(`প্রশ্ন ${number}: type অবশ্যই MCQ হতে হবে।`)
+          return
+        }
+
+        /* -------------------------------------------------
+           TAGS
+        ------------------------------------------------- */
+
+        if (!Array.isArray(question.tags)) {
+          toast.error(`প্রশ্ন ${number}: tags অবশ্যই Array হতে হবে।`)
+          return
+        }
+
+        /* -------------------------------------------------
+           SOURCES
+        ------------------------------------------------- */
+
+        if (!Array.isArray(question.sources)) {
+          toast.error(`প্রশ্ন ${number}: sources অবশ্যই Array হতে হবে।`)
+          return
+        }
+
+        /* =================================================
+           3. BUILD OPTIONS
+        ================================================= */
+
         const options = question.options.map((option) => ({
-          label: option.label,
-          text: option.text,
-          isCorrect: option.label === question.correctAnswer,
+          text: option.text.trim(),
+
+          image: option.image?.trim() || null,
+
+          isCorrect: option.isCorrect,
         }))
 
-        // ---------------------------------------
-        // 4. Create API payload
-        // ---------------------------------------
-        const payload = {
+        /* =================================================
+           4. BUILD PAYLOAD
+        ================================================= */
+
+        const payload: CreateQuestionPayload = {
           subjectId: location.subjectId,
 
-          chapterId: location.chapterId || undefined,
+          chapterId: location.chapterId,
 
-          topicId: location.topicId || undefined,
-
-          suggestedChapterTitle:
-            location.suggestedChapterTitle || undefined,
-
-          suggestedTopicTitle:
-            location.suggestedTopicTitle || undefined,
+          topicId: location.topicId,
 
           questionText: question.questionText.trim(),
 
-          options,
+          questionImage: question.questionImage?.trim() || null,
 
-          correctAnswer: question.correctAnswer,
+          options,
 
           explanation: question.explanation?.trim() || "",
 
-          tags: question.tags || [],
+          explanationImage: question.explanationImage?.trim() || null,
+
+          difficulty: question.difficulty,
+
+          type: question.type,
+
+          tags: question.tags.map((tag) => tag.trim()).filter(Boolean),
+
+          sources: question.sources,
         }
 
-        // ---------------------------------------
-        // 5. Submit
-        // ---------------------------------------
-        await createSubmission(payload).unwrap()
+        /* =================================================
+           5. API
+        ================================================= */
+
+        await createQuestion(payload).unwrap()
       }
 
-      // ---------------------------------------
-      // 6. Success
-      // ---------------------------------------
-      toast.success(
-        `${questions.length} question${
-          questions.length > 1 ? "s" : ""
-        } submitted for review`
-      )
+      /* ===================================================
+         SUCCESS
+      =================================================== */
+
+      toast.success(`${questions.length}টি প্রশ্ন সফলভাবে যোগ হয়েছে।`)
 
       setJson("")
     } catch (error: unknown) {
-      console.error("JSON question submission error:", error)
-
-      /*
-       * JSON.parse errors come here, but API errors can also
-       * come here because of createSubmission().unwrap().
-       */
+      console.error("JSON question creation error:", error)
 
       if (error instanceof SyntaxError) {
-        toast.error("Invalid JSON format")
+        toast.error("JSON ফরম্যাট সঠিক নয়।")
       } else {
-        toast.error("Failed to submit questions")
+        toast.error("প্রশ্ন যোগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।")
       }
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold">
-          JSON Question Import
-        </h3>
+  /* =======================================================
+     UI
+  ======================================================= */
 
-        <p className="mt-1 text-sm text-muted-foreground">
-          Generate questions from ChatGPT and paste them here.
-          The selected location above will apply to every question.
-        </p>
+  return (
+    <div className="space-y-4 text-xs">
+      {/* HEADER */}
+
+      <div className="flex items-start gap-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Braces className="size-4" />
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold">JSON দিয়ে প্রশ্ন যোগ করুন</h2>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            AI থেকে তৈরি প্রশ্নের JSON এখানে পেস্ট করুন।
+          </p>
+        </div>
       </div>
 
-      <Textarea
-        className="min-h-80 resize-y font-mono text-sm"
-        placeholder={`[
+      {/* INFO */}
+
+      <div className="flex gap-2 rounded-lg border bg-muted/40 p-3">
+        <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+
+        <div className="text-xs">
+          <p className="font-medium">গুরুত্বপূর্ণ</p>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            নির্বাচিত বিষয়, অধ্যায় এবং টপিক সব প্রশ্নে স্বয়ংক্রিয়ভাবে
+            প্রয়োগ হবে।
+          </p>
+        </div>
+      </div>
+
+      {/* JSON */}
+
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <ClipboardPaste className="size-3.5 text-muted-foreground" />
+
+          <label className="text-xs font-medium">JSON</label>
+        </div>
+
+        <Textarea
+          value={json}
+          onChange={(e) => setJson(e.target.value)}
+          disabled={isSubmitting}
+          className="min-h-[420px] resize-y rounded-lg bg-muted/20 font-mono text-xs leading-5"
+          placeholder={`[
   {
-    "questionText": "বাংলা ভাষার প্রথম ব্যাকরণ রচয়িতা কে?",
+    "questionText": "বাংলা ভাষার প্রথম ব্যাকরণ রচয়িতা কে?",
     "options": [
       {
-        "label": "A",
-        "text": "রাজা রামমোহন রায়"
+        "text": "রাজা রামমোহন রায়",
+        "isCorrect": false
       },
       {
-        "label": "B",
-        "text": "নাথানিয়েল ব্রাসি হ্যালহেড"
+        "text": "নাথানিয়েল ব্রাসি হ্যালহেড",
+        "isCorrect": true
       },
       {
-        "label": "C",
-        "text": "ঈশ্বরচন্দ্র বিদ্যাসাগর"
+        "text": "ঈশ্বরচন্দ্র বিদ্যাসাগর",
+        "isCorrect": false
       },
       {
-        "label": "D",
-        "text": "বঙ্কিমচন্দ্র"
+        "text": "বঙ্কিমচন্দ্র চট্টোপাধ্যায়",
+        "isCorrect": false
       }
     ],
-    "correctAnswer": "B",
-    "explanation": "নাথানিয়েল ব্রাসি হ্যালহেড বাংলা ভাষার প্রথম ব্যাকরণ রচনা করেন।",
-    "tags": [
-      "BCS",
-      "Bangla"
+    "explanation": "নাথানিয়েল ব্রাসি হ্যালহেড বাংলা ভাষার প্রথম ব্যাকরণ রচনা করেন।",
+    "difficulty": "EASY",
+    "type": "MCQ",
+    "tags": ["BCS", "বাংলা"],
+    "sources": [
+      {
+        "type": "bcs",
+        "name": "BCS Preliminary",
+        "year": 46
+      }
     ]
   }
 ]`}
-        value={json}
-        onChange={(e) => setJson(e.target.value)}
-        disabled={isSubmitting}
-      />
+        />
 
-      <div className="flex justify-end">
+        <div className="flex items-start gap-2 text-xs text-muted-foreground">
+          <CircleHelp className="mt-0.5 size-3.5 shrink-0" />
+
+          <p className="text-xs">
+            একটি Array দিন। প্রতিটি প্রশ্নে ৪টি option এবং ঠিক একটি option-এ{" "}
+            <code className="rounded bg-muted px-1">isCorrect: true</code> থাকতে
+            হবে।
+          </p>
+        </div>
+      </div>
+
+      {/* BUTTON */}
+
+      <div className="flex justify-end border-t pt-4">
         <Button
+          type="button"
           onClick={submit}
           disabled={isSubmitting || !json.trim()}
+          size="sm"
+          className="h-8 gap-2 text-xs"
         >
-          {isSubmitting ? "Submitting..." : "Submit JSON Questions"}
+          <Send className="size-3.5" />
+
+          {isSubmitting ? "প্রশ্ন যোগ হচ্ছে..." : "প্রশ্ন যোগ করুন"}
         </Button>
       </div>
     </div>
