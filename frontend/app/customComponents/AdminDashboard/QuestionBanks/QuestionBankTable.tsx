@@ -37,7 +37,6 @@ export default function QuestionBankTable({
   onDelete,
   onManageQuestions,
 }: QuestionBankTableProps) {
-  console.log(data)
   if (loading) {
     return <div className="rounded-lg border p-10 text-center">Loading...</div>
   }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-
+import { useAppSelector } from "@/app/redux/hooks"
 import {
   CheckCircle2,
   FileQuestion,
@@ -11,22 +11,19 @@ import {
   AlertCircle,
   Hash,
 } from "lucide-react"
-
 import { useGetTopicsQuery } from "@/app/redux/api/topicsApi"
 import { useStartExamMutation } from "@/app/redux/api/examEngineApi"
-import useCurrentUser from "@/app/(public)/(auth)/hooks/useCurrentUser"
 
 export default function ConfigureExamPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const { user, isLoading: userLoading } = useCurrentUser()
-
+ const { user, isLoading: userLoading } = useAppSelector((state) => state.auth)
   const { data: topicResponse, isLoading: topicsLoading } = useGetTopicsQuery()
 
   const [startExam, { isLoading: startLoading }] = useStartExamMutation()
 
-  const topics = topicResponse?.data ?? []
+  const topics = useMemo(() => topicResponse?.data ?? [], [topicResponse?.data])
 
   const topicString = searchParams.get("topics") ?? ""
 

@@ -1,65 +1,117 @@
-"use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { Question } from "@/app/type"
-import { ExamSession } from "@/lib/exam/type"
-import { calculateResult } from "@/lib/utils"
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
-interface UseExamProps {
-  exam: ExamSession
-  questions: Question[]
+import { IQuestion } from "@/app/redux/api/questionsApi"
+
+// ==========================================================
+// CLASSNAME UTILITY
+// ==========================================================
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
 }
 
-export function useExam({ exam, questions }: UseExamProps) {
-  const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [submitted, setSubmitted] = useState(false)
+// ==========================================================
+// EXAM RESULT
+// ==========================================================
 
-  const [timeLeft, setTimeLeft] = useState(exam.totalQuestions * 60)
+export interface ExamResult {
+  total: number
+  correct: number
+  wrong: number
+  skipped: number
+  score: number
+  percentage: number
+}
 
-  useEffect(() => {
-    if (submitted) return
+// ==========================================================
+// CALCULATE EXAM RESULT
+// ==========================================================
 
-    if (timeLeft <= 0) {
-      submitExam()
+export function calculateResult(
+  questions: IQuestion[],
+  answers: Record<string, string>
+): ExamResult {
+  let correct = 0
+  let wrong = 0
+  let skipped = 0
+
+  questions.forEach((question) => {
+    // The key is the question's MongoDB _id
+    const selectedOptionId = answers[question._id]
+
+    // No answer selected
+    if (!selectedOptionId) {
+      skipped++
       return
     }
 
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => prev - 1)
-    }, 1000)
+    // Find the selected option
+    const selectedOption = question.options.find(
+      (option) => option._id === selectedOptionId
+    )
 
-    return () => clearInterval(interval)
-  }, [submitted, timeLeft])
+    // Check whether the selected option is correct
+    if (selectedOption?.isCorrect === true) {
+      correct++
+    } else {
+      wrong++
+    }
+  })
 
-  const answeredCount = useMemo(() => Object.keys(answers).length, [answers])
+  const total = questions.length
 
-  function handleAnswer(questionId: string, optionId: string) {
-    if (submitted) return
+  const score = correct
 
-    if (answers[questionId]) return
-
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: optionId,
-    }))
-  }
-
-  const result = useMemo(() => {
-    return calculateResult(questions, answers)
-  }, [questions, answers])
-
-  function submitExam() {
-    setSubmitted(true)
-  }
+  const percentage =
+    total === 0
+      ? 0
+      : Math.round((correct / total) * 100)
 
   return {
-    answers,
-    submitted,
-    result,
-    answeredCount,
-    handleAnswer,
-    submitExam,
-    minutes: Math.floor(timeLeft / 60),
-    seconds: timeLeft % 60,
+    total,
+    correct,
+    wrong,
+    skipped,
+    score,
+    percentage,
   }
 }
+
+// ==========================================================
+// DATE FORMAT
+// ==========================================================
+
+export function formatDate(
+  date: Date | string,
+  locale = "en-US"
+) {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+  }).format(new Date(date))
+}
+
+// ==========================================================
+// DATE + TIME FORMAT
+// ==========================================================
+
+export function formatDateTime(
+  date: Date | string,
+  locale = "en-US"
+) {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(date))
+}
+
+// ==========================================================
+// SLEEP
+// ==========================================================
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+ 

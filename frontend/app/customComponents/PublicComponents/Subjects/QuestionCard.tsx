@@ -17,6 +17,7 @@ import { IQuestion } from "@/app/redux/api/questionsApi"
 
 interface Props {
   question: IQuestion
+  index?:number
 }
 
 const OPTION_LABELS = ["A", "B", "C", "D"]

@@ -19,6 +19,7 @@ export interface IChapter {
   title: string
   slug: string
   order: number
+  progress?: number
   status: ChapterStatus
   totalTopics: number
   totalQuestions: number

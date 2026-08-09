@@ -4,14 +4,6 @@ import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 
 import { Input } from "@/components/ui/input"
 
@@ -123,7 +115,7 @@ export default function SelectedQuestionsTable({
                   </p>
 
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {item.question.subjectId.title}
+                    {item?.question?.subjectId?.title}
                   </p>
                 </div>
 

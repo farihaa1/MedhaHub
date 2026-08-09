@@ -1,54 +1,54 @@
-"use client"
+// "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
-import QuestionBankActions from "./items/QuestionBankItemActions"
+// import { ColumnDef } from "@tanstack/react-table"
+// import QuestionBankActions from "./QuestionBankActions"
 
-export type QuestionBank = {
-  _id: string
-  title: string
-  category: string
-  year?: number
-  totalQuestions: number
-  visibility: string
-  isPublished: boolean
-}
+// export type QuestionBank = {
+//   _id: string
+//   title: string
+//   category: string
+//   year?: number
+//   totalQuestions: number
+//   visibility: string
+//   isPublished: boolean
+// }
 
-export const questionBankColumns: ColumnDef<QuestionBank>[] = [
-  {
-    accessorKey: "title",
-    header: "Title",
-  },
+// export const questionBankColumns: ColumnDef<QuestionBank>[] = [
+//   {
+//     accessorKey: "title",
+//     header: "Title",
+//   },
 
-  {
-    accessorKey: "category",
-    header: "Category",
-  },
+//   {
+//     accessorKey: "category",
+//     header: "Category",
+//   },
 
-  {
-    accessorKey: "year",
-    header: "Year",
-  },
+//   {
+//     accessorKey: "year",
+//     header: "Year",
+//   },
 
-  {
-    accessorKey: "totalQuestions",
-    header: "Questions",
-  },
+//   {
+//     accessorKey: "totalQuestions",
+//     header: "Questions",
+//   },
 
-  {
-    accessorKey: "visibility",
-    header: "Visibility",
-  },
+//   {
+//     accessorKey: "visibility",
+//     header: "Visibility",
+//   },
 
-  {
-    accessorKey: "isPublished",
-    header: "Published",
-    cell: ({ row }) => (row.original.isPublished ? "Yes" : "No"),
-  },
+//   {
+//     accessorKey: "isPublished",
+//     header: "Published",
+//     cell: ({ row }) => (row.original.isPublished ? "Yes" : "No"),
+//   },
 
-  {
-    id: "actions",
-    header: "Actions",
+//   {
+//     id: "actions",
+//     header: "Actions",
 
-    cell: ({ row }) => <QuestionBankActions id={row.original._id} />,
-  },
-]
+//     cell: ({ row }) => <QuestionBankActions id={row.original._id} />,
+//   },
+// ]

@@ -125,11 +125,11 @@ function ChapterItem({
             </div>
 
             <div className="mt-5 flex items-center gap-3">
-              <div className="h-2 w-56 overflow-hidden rounded-full bg-white/10">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className={`${color.progress} h-full rounded-full`}
                   style={{
-                    width: `${chapter.progress}%`,
+                    width: `${Math.min(Math.max(chapter.progress ?? 0, 0), 100)}%`,
                   }}
                 />
               </div>

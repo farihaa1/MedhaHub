@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
@@ -22,21 +23,47 @@ import { useGetSingleQuestionBankQuery } from "@/app/redux/api/questionBanksApi"
 
 export default function ManageQuestionBankPage() {
   const router = useRouter()
+
   const { id } = useParams<{ id: string }>()
 
-  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([])
+  const [selectedQuestionIds, setSelectedQuestionIds] =
+    useState<string[]>([])
 
-  const { data: bankData, isLoading: loadingBank } =
-    useGetSingleQuestionBankQuery(id)
+  /* ==========================================================
+     QUESTION BANK
+  ========================================================== */
 
-  const { data, isLoading, refetch } = useGetQuestionsByBankQuery({
+  const {
+    data: bankData,
+    isLoading: loadingBank,
+  } = useGetSingleQuestionBankQuery(id)
+
+  /* ==========================================================
+     QUESTIONS ALREADY IN BANK
+  ========================================================== */
+
+  const {
+    data,
+    isLoading,
+    refetch,
+  } = useGetQuestionsByBankQuery({
     questionBankId: id,
     page: 1,
     limit: 100,
   })
 
-  const [bulkAddQuestions, { isLoading: adding }] =
-    useBulkAddQuestionsMutation()
+  /* ==========================================================
+     BULK ADD
+  ========================================================== */
+
+  const [
+    bulkAddQuestions,
+    { isLoading: adding },
+  ] = useBulkAddQuestionsMutation()
+
+  /* ==========================================================
+     ADD SELECTED QUESTIONS
+  ========================================================== */
 
   const handleAdd = async () => {
     if (selectedQuestionIds.length === 0) {
@@ -47,16 +74,19 @@ export default function ManageQuestionBankPage() {
     try {
       await bulkAddQuestions({
         questionBankId: id,
+
         data: {
           questionIds: selectedQuestionIds,
         },
       }).unwrap()
 
-      toast.success("Questions added successfully")
+      toast.success(
+        "Questions added successfully",
+      )
 
       setSelectedQuestionIds([])
 
-      refetch()
+      await refetch()
     } catch (error) {
       const err = error as FetchBaseQueryError & {
         data?: {
@@ -64,72 +94,131 @@ export default function ManageQuestionBankPage() {
         }
       }
 
-      toast.error(err.data?.message || "Failed to add questions")
+      toast.error(
+        err.data?.message ||
+          "Failed to add questions",
+      )
     }
   }
 
+  /* ==========================================================
+     LOADING
+  ========================================================== */
+
   if (loadingBank) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <main className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading question bank...</span>
+        </div>
+      </main>
     )
   }
 
+  /* ==========================================================
+     PAGE
+  ========================================================== */
+
   return (
-    <div className="space-y-6 p-6">
-      <Button variant="outline" onClick={() => router.back()}>
+    <main className="space-y-6 p-6">
+      {/* Back */}
+
+      <Button
+        variant="outline"
+        onClick={() => router.back()}
+      >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
 
+      {/* Header */}
+
       <PageHeader
         title="Manage Question Bank"
-        description={bankData?.data.title}
+        description={
+          bankData?.data?.title ||
+          "Manage questions"
+        }
       />
 
       <Separator />
 
-      <div className="flex items-center justify-between">
+      {/* Selected / Add */}
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="font-semibold">
-            Selected: {selectedQuestionIds.length}
+            Selected:{" "}
+            {selectedQuestionIds.length}
           </h3>
+
+          <p className="text-sm text-muted-foreground">
+            Select questions from the available
+            questions list.
+          </p>
         </div>
 
         <Button
           onClick={handleAdd}
-          disabled={adding || selectedQuestionIds.length === 0}
+          disabled={
+            adding ||
+            selectedQuestionIds.length === 0
+          }
         >
-          Add Selected
+          {adding
+            ? "Adding..."
+            : "Add Selected"}
         </Button>
       </div>
 
+      {/* Two-column layout */}
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="rounded-lg border">
-          <div className="border-b p-4 font-semibold">Available Questions</div>
+        {/* Available Questions */}
+
+        <div className="rounded-lg border bg-card">
+          <div className="border-b p-4">
+            <h2 className="font-semibold">
+              Available Questions
+            </h2>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              Select questions to add to this bank.
+            </p>
+          </div>
 
           <div className="p-4">
             <QuestionSelectorTable
-              bankId={id}
               onSelect={setSelectedQuestionIds}
             />
           </div>
         </div>
 
-        <div className="rounded-lg border">
-          <div className="border-b p-4 font-semibold">Questions in Bank</div>
+        {/* Questions Already In Bank */}
+
+        <div className="rounded-lg border bg-card">
+          <div className="border-b p-4">
+            <h2 className="font-semibold">
+              Questions in Bank
+            </h2>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              Questions currently belonging to
+              this question bank.
+            </p>
+          </div>
 
           <div className="p-4">
             <SelectedQuestionsTable
               loading={isLoading}
-              data={data?.data.data ?? []}
+              data={data?.data?.data ?? []}
               bankId={id}
               onRefresh={refetch}
             />
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

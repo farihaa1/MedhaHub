@@ -3,7 +3,6 @@
 import Link from "next/link"
 
 import { getSubjectColorBySlug } from "@/app/data/colorPalete"
-import { getSubjectProgress } from "@/app/data/userData"
 import { ISubject } from "../../subjects.type"
 
 interface Props {
@@ -12,7 +11,7 @@ interface Props {
 
 export default function SubjectCard({ subject }: Props) {
   const color = getSubjectColorBySlug(subject.slug)
-  const progress = getSubjectProgress(subject.slug)
+const progress =0;
 
   return (
     <Link href={subject.url} className="block h-full">

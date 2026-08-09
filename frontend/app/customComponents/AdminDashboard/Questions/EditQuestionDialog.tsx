@@ -43,12 +43,11 @@ const mapQuestionToForm = (question: IQuestion): QuestionFormValues => ({
   questionText: question.questionText,
   questionImage: question.questionImage ?? null,
 
-  options:
-    question.options?.map((option) => ({
-      text: option.text,
-      image: option.image ?? null,
-      isCorrect: option.isCorrect,
-    })) ?? [],
+  options: question.options?.map((option) => ({
+    text: option.text,
+    image: option.image ?? null,
+    isCorrect: option.isCorrect ?? false,
+  })),
 
   explanation: question.explanation ?? "",
   explanationImage: question.explanationImage ?? null,

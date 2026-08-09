@@ -20,15 +20,15 @@ export default function QuestionBankQuestionCard({ item, index }: Props) {
 
       <div className="grid gap-2 text-sm md:grid-cols-3">
         <div>
-          <strong>Subject:</strong> {question.subjectId.title}
+          <strong>Subject:</strong> {question?.subjectId?.title}
         </div>
 
         <div>
-          <strong>Chapter:</strong> {question.chapterId.title}
+          <strong>Chapter:</strong> {question?.chapterId?.title}
         </div>
 
         <div>
-          <strong>Topic:</strong> {question.topicId.title}
+          <strong>Topic:</strong> {question?.topicId?.title}
         </div>
       </div>
     </div>

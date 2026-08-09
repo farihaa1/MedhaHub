@@ -1,27 +1,38 @@
+
 import AllExamsTable from "@/app/customComponents/Dashboard/AllExams/AllExamsTable"
 import ExamHeader from "@/app/customComponents/Dashboard/AllExams/ExamHeader"
 import FilterSection from "@/app/customComponents/Dashboard/AllExams/FilterSection"
-import { mockExams } from "@/app/data/data"
 
 export default function ExamsPage() {
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6">
-      <ExamHeader></ExamHeader>
+    <div className="w-full">
       {/* Content View */}
-      <main className="mx-auto w-full max-w-7xl space-y-6 p-6">
+      <main className="space-y-6 p-6">
         {/* Breadcrumb Header */}
-        <div>
-          <h1 className="text-xl font-semibold text-white">সকল পরীক্ষা</h1>
-          <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">
+            সকল পরীক্ষা
+          </h1>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>হোম</span>
             <span>&gt;</span>
-            <span className="text-gray-400">সকল পরীক্ষা</span>
+            <span>সকল পরীক্ষা</span>
           </div>
         </div>
 
-        {/* Configuration and Data components */}
+        {/* Exam Header */}
+        <ExamHeader />
+
+        {/* Filters */}
         <FilterSection />
-        <AllExamsTable exams={mockExams} />
+
+        {/* 
+          No mock data is used here.
+          The AllExamsTable currently receives an empty list
+          until a real "get all exams" API is connected.
+        */}
+        <AllExamsTable exams={[]} />
       </main>
     </div>
   )

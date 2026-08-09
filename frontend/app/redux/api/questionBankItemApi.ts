@@ -1,12 +1,11 @@
 import { baseApi } from "./baseApi"
 
-import {
+import type {
   IAddQuestionToBankPayload,
   IApiResponse,
   IBulkAddQuestionsPayload,
   IPaginatedResponse,
   IQuestionBankItem,
-  IQuestionBankQuestion,
   IReorderQuestion,
 } from "../types/questionBank.types"
 
@@ -24,7 +23,7 @@ export const questionBankItemApi = baseApi.injectEndpoints({
     ========================================================== */
 
     getQuestionsByBank: builder.query<
-      IApiResponse<IPaginatedResponse<IQuestionBankQuestion>>,
+      IApiResponse<IPaginatedResponse<IQuestionBankItem>>,
       GetQuestionsByBankParams
     >({
       query: ({ questionBankId, ...params }) => ({

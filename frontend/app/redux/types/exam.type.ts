@@ -25,6 +25,7 @@ export interface SessionQuestion {
 }
 
 export interface ExamSession {
+  _id: any
   id: string
 
   duration: number

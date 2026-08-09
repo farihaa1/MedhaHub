@@ -13,11 +13,7 @@ interface Props {
 export default async function SubjectPage({ params }: Props) {
   const { subjectSlug } = await params
 
-  // const subject = subjectDetails.find((item) => item.slug === subjectSlug)
-
-  // if (!subject) {
-  //   notFound()
-  // }
+ 
 
   const color: color = getSubjectColorBySlug(subjectSlug)
 console.log(subjectSlug)

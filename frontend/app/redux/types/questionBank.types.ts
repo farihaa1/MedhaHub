@@ -1,6 +1,6 @@
 /* ============================================================
  * Category
- * ========================================================== */
+ * ============================================================ */
 
 export const QuestionBanksCategory = {
   BCS: "bcs",
@@ -18,10 +18,9 @@ export const QuestionBanksCategory = {
 export type TQuestionBankCategory =
   (typeof QuestionBanksCategory)[keyof typeof QuestionBanksCategory]
 
-
 /* ============================================================
  * Paper
- * ========================================================== */
+ * ============================================================ */
 
 export const QuestionBankPaper = {
   PRELIMINARY: "PRELIMINARY",
@@ -36,7 +35,7 @@ export type TQuestionBankPaper =
 
 /* ============================================================
  * Visibility
- * ========================================================== */
+ * ============================================================ */
 
 export const QuestionBankVisibility = {
   PUBLIC: "PUBLIC",
@@ -48,7 +47,7 @@ export type TQuestionBankVisibility =
 
 /* ============================================================
  * Status
- * ========================================================== */
+ * ============================================================ */
 
 export const QuestionBankStatus = {
   REVIEW: "REVIEW",
@@ -61,14 +60,18 @@ export type TQuestionBankStatus =
   (typeof QuestionBankStatus)[keyof typeof QuestionBankStatus]
 
 /* ============================================================
- * Base
- * ========================================================== */
+ * User Reference
+ * ============================================================ */
 
 export interface IUserRef {
   _id: string
   name: string
   email: string
 }
+
+/* ============================================================
+ * Question Bank
+ * ============================================================ */
 
 export interface IQuestionBank {
   _id: string
@@ -105,8 +108,8 @@ export interface IQuestionBank {
 }
 
 /* ============================================================
- * Payload
- * ========================================================== */
+ * Question Bank Payload
+ * ============================================================ */
 
 export interface IQuestionBankPayload {
   title: string
@@ -135,8 +138,8 @@ export type IQuestionBankForm = IQuestionBankPayload & {
 }
 
 /* ============================================================
- * Filters
- * ========================================================== */
+ * Question Bank Filters
+ * ============================================================ */
 
 export interface IQuestionBankFilters {
   page?: number
@@ -164,8 +167,8 @@ export interface IQuestionBankFilters {
 }
 
 /* ============================================================
- * Table
- * ========================================================== */
+ * Question Bank Table
+ * ============================================================ */
 
 export type IQuestionBankTable = Pick<
   IQuestionBank,
@@ -182,17 +185,59 @@ export type IQuestionBankTable = Pick<
 >
 
 /* ============================================================
- * Question Bank Item
- * ========================================================== */
+ * Question Bank Item Status
+ * ============================================================ */
 
 export type TQuestionBankItemStatus = "PENDING" | "APPROVED" | "REJECTED"
+
+/* ============================================================
+ * Populated Question
+ *
+ * This is the question returned when the backend populates
+ * the question reference.
+ * ============================================================ */
+
+export interface IQuestionBankPopulatedQuestion {
+  _id: string
+
+  questionText: string
+
+  difficulty: string
+
+  type: string
+
+  status: string
+
+  subjectId?: {
+    _id: string
+    title: string
+  }
+
+  chapterId?: {
+    _id: string
+    title: string
+  }
+
+  topicId?: {
+    _id: string
+    title: string
+  }
+}
+
+/* ============================================================
+ * Question Bank Item
+ *
+ * This is the item returned by:
+ *
+ * GET /question-bank-items/:questionBankId/questions
+ *
+ * The question is populated.
+ * ============================================================ */
 
 export interface IQuestionBankItem {
   _id: string
 
   questionBank: string
-
-  question: string
 
   order: number
 
@@ -209,58 +254,22 @@ export interface IQuestionBankItem {
   createdAt: string
 
   updatedAt: string
+
+  question: IQuestionBankPopulatedQuestion
 }
 
 /* ============================================================
- * Question inside Bank
- * ========================================================== */
+ * Alias
+ *
+ * Keep this if other existing components already import
+ * IQuestionBankQuestion.
+ * ============================================================ */
 
-export interface IQuestionBankQuestion {
-  _id: string
-
-  questionBank: string
-
-  order: number
-
-  marks: number
-
-  negativeMarks: number
-
-  isActive: boolean
-
-  status: TQuestionBankItemStatus
-
-  question: {
-    _id: string
-
-    questionText: string
-
-    difficulty: string
-
-    type: string
-
-    status: string
-
-    subjectId: {
-      _id: string
-      title: string
-    }
-
-    chapterId: {
-      _id: string
-      title: string
-    }
-
-    topicId: {
-      _id: string
-      title: string
-    }
-  }
-}
+export type IQuestionBankQuestion = IQuestionBankItem
 
 /* ============================================================
  * Payloads
- * ========================================================== */
+ * ============================================================ */
 
 export interface IAddQuestionToBankPayload {
   question: string
@@ -284,13 +293,17 @@ export interface IReorderQuestion {
 
 /* ============================================================
  * API Response
- * ========================================================== */
+ * ============================================================ */
 
 export interface IApiResponse<T> {
   success: boolean
   message: string
   data: T
 }
+
+/* ============================================================
+ * Pagination
+ * ============================================================ */
 
 export interface IPaginationMeta {
   page: number

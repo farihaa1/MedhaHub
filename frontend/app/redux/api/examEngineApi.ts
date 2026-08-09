@@ -1,9 +1,53 @@
-import { ExamSessionResponse, ResultResponse } from "../types/exam.type"
+
+import {
+  ExamSessionResponse,
+  ResultResponse,
+} from "../types/exam.type"
+
 import { baseApi } from "./baseApi"
+
+// ==========================================================
+// REQUEST TYPES
+// ==========================================================
+
+export interface StartExamPayload {
+  examType: string
+
+  topicIds?: string[]
+  chapterIds?: string[]
+  subjectIds?: string[]
+
+  count?: number
+
+  userId?: string
+}
+
+
+export interface SubmitAnswerPayload {
+  sessionId: string
+  questionId: string
+  selectedOption: "A" | "B" | "C" | "D"
+}
+
+
+export interface SubmitExamPayload {
+  sessionId: string
+}
+
+// ==========================================================
+// API
+// ==========================================================
 
 export const examEngineApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    startExam: builder.mutation({
+    // ======================================================
+    // START EXAM
+    // ======================================================
+
+    startExam: builder.mutation<
+      ExamSessionResponse,
+      StartExamPayload
+    >({
       query: (data) => ({
         url: "/exam-engine/start",
         method: "POST",
@@ -12,14 +56,28 @@ export const examEngineApi = baseApi.injectEndpoints({
       }),
     }),
 
-    getExamSession: builder.query<ExamSessionResponse, string>({
+    // ======================================================
+    // GET EXAM SESSION
+    // ======================================================
+
+    getExamSession: builder.query<
+      ExamSessionResponse,
+      string
+    >({
       query: (sessionId) => ({
         url: `/exam/${sessionId}`,
         method: "GET",
       }),
     }),
 
-    submitAnswer: builder.mutation({
+    // ======================================================
+    // SUBMIT ANSWER
+    // ======================================================
+
+    submitAnswer: builder.mutation<
+      unknown,
+      SubmitAnswerPayload
+    >({
       query: (data) => ({
         url: `/exam/${data.sessionId}/answer`,
         method: "POST",
@@ -27,12 +85,23 @@ export const examEngineApi = baseApi.injectEndpoints({
       }),
     }),
 
-    submitExam: builder.mutation({
-      query: (data) => ({
-        url: `/exam/${data.sessionId}/submit`,
+    // ======================================================
+    // SUBMIT EXAM
+    // ======================================================
+
+    submitExam: builder.mutation<
+      unknown,
+      SubmitExamPayload
+    >({
+      query: ({ sessionId }) => ({
+        url: `/exam/${sessionId}/submit`,
         method: "POST",
       }),
     }),
+
+    // ======================================================
+    // GET RESULT
+    // ======================================================
 
     getResult: builder.query<ResultResponse, string>({
       query: (sessionId) => ({
@@ -42,6 +111,10 @@ export const examEngineApi = baseApi.injectEndpoints({
     }),
   }),
 })
+
+// ==========================================================
+// HOOKS
+// ==========================================================
 
 export const {
   useStartExamMutation,

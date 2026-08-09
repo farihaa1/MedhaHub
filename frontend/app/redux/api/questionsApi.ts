@@ -70,7 +70,7 @@ export interface IQuestionOption {
   label?: string
   text: string
   image?: string | null
-  isCorrect: boolean
+  isCorrect?: boolean
 }
 
 /* ==========================================================

@@ -9,7 +9,6 @@ import {
   useSubmitExamMutation,
 } from "@/app/redux/api/examEngineApi"
 import Image from "next/image"
-import { constants } from "node:buffer"
 
 export default function ExamPage() {
   const params = useParams()
