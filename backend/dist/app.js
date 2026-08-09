@@ -13,6 +13,7 @@ const app = (0, express_1.default)();
 const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "https://medhahub-frontend.vercel.app/",
 ];
 if (process.env.CLIENT_URL) {
     allowedOrigins.push(process.env.CLIENT_URL);
