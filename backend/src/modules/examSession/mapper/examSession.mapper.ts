@@ -1,45 +1,67 @@
-import { HydratedDocument } from "mongoose";
-import { IExamSession } from "../examSession.interface";
-import { ExamSessionStatus } from "../examSession.constant";
-import { calculateRemainingTime } from "../examSession.utils";
-import { IExamSessionDTO } from "../dto/examSession.dto";
+import type { IExamSession } from "../examSession.model";
 
-export const mapExamSession = (
-  session: HydratedDocument<IExamSession>,
-): IExamSessionDTO => {
+// ============================================================
+// MAP SESSION
+// ============================================================
+
+const mapExamSession = (session: IExamSession) => {
   return {
-    id: session.id,
+    _id: session._id.toString(),
 
-    status: session.status,
+    userId: session.userId.toString(),
+
+    examType: session.examType,
 
     duration: session.duration,
 
-    remainingTime: calculateRemainingTime(session.startTime, session.duration),
+    totalMarks: session.totalMarks,
 
-    questions: session.questions.map((q: any) => ({
-      order: q.order,
+    negativeMark: session.negativeMark,
 
-      question: {
-        id: q.questionId._id.toString(),
+    startTime: session.startTime,
 
-        questionText: q.questionId.questionText,
+    submittedAt: session.submittedAt,
 
-        options: q.questionId.options.map((option: any, index: number) => ({
-          _id: option._id.toString(),
-          label: ["A", "B", "C", "D"][index] as "A" | "B" | "C" | "D",
-          text: option.text,
-          image: option.image ?? null,
-          isCorrect:
-            session.status === ExamSessionStatus.SUBMITTED
-              ? option.isCorrect
-              : false,
-        })),
+    endTime: session.endTime,
 
-        explanation:
-          session.status === ExamSessionStatus.SUBMITTED
-            ? q.questionId.explanation
-            : undefined,
-      },
+    settings: session.settings,
+
+    answers: session.answers.map((answer) => ({
+      questionId: answer.questionId.toString(),
+
+      selectedOption: answer.selectedOption,
+
+      correctOption: answer.correctOption,
+
+      isCorrect: answer.isCorrect,
+
+      timeTaken: answer.timeTaken,
     })),
+
+    questions: session.questions
+      .map((item: any) => {
+        const question = item.questionId;
+
+        if (!question || typeof question !== "object") {
+          return null;
+        }
+
+        return {
+          _id: question._id.toString(),
+
+          order: item.order,
+
+          questionText: question.questionText,
+
+          image: question.questionImage ?? question.image ?? null,
+
+          options: question.options ?? [],
+
+          explanation: question.explanation ?? null,
+        };
+      })
+      .filter(Boolean),
   };
 };
+
+export { mapExamSession };

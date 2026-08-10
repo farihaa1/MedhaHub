@@ -2,9 +2,8 @@ import SubjectGrid from "@/app/(dashboard)/subjects/subjectComponents/SubjectsCh
 import SubjectHeader from "@/app/(dashboard)/subjects/subjectComponents/SubjectsChoose/SubjectHero"
 
 export default function ChooseSubject() {
-  
   return (
-    <section className="space-y-6 rounded-3xl bg-black p-8 text-white">
+    <section className="space-y-6 p-8">
       <SubjectHeader />
       <SubjectGrid />
     </section>

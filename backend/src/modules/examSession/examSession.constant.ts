@@ -8,4 +8,3 @@ export const ExamSessionStatus = {
 
 export type TExamSessionStatus =
   (typeof ExamSessionStatus)[keyof typeof ExamSessionStatus];
-

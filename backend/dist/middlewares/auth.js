@@ -21,7 +21,11 @@ const auth = (...requiredRoles) => async (req, _res, next) => {
         if (requiredRoles.length && !requiredRoles.includes(user.role)) {
             throw new AppError_1.default(403, "Forbidden");
         }
-        req.user = decoded;
+        req.user = {
+            id: user._id.toString(),
+            email: user.email,
+            role: user.role,
+        };
         next();
     }
     catch (error) {

@@ -11,7 +11,5 @@ const validateRequest_1 = __importDefault(require("../../utils/validateRequest")
 const user_constants_1 = require("../users/user.constants");
 const ExamEngineRoutes = express_1.default.Router();
 ExamEngineRoutes.post("/start", (0, auth_1.default)(user_constants_1.UserRole.USER, user_constants_1.UserRole.ADMIN), (0, validateRequest_1.default)(examEngine_validation_1.startExamValidationSchema), examEngine_controller_1.ExamEngineController.startExam);
-// ExamEngineRoutes.post("/start", ExamEngineController.startExam);
-// ExamEngineRoutes.post("/preview", ExamEngineController.previewExam);
 exports.default = ExamEngineRoutes;
 //# sourceMappingURL=examEngine.route.js.map

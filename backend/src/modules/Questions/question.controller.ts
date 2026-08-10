@@ -4,6 +4,10 @@ import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
 
 const createQuestion = catchAsync(async (req: Request, res: Response) => {
+  const payload = {
+    ...req.body,
+    createdBy: req.user!.id,
+  };
   const result = await QuestionService.createQuestion(req.body);
 
   sendResponse(res, {
@@ -107,5 +111,5 @@ export const QuestionController = {
   updateQuestion,
   deleteQuestion,
   bulkCreateQuestions,
-  getQuestionStats
+  getQuestionStats,
 };

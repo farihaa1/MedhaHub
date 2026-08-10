@@ -10,11 +10,17 @@ import {
   UpdateProfileInput,
 } from "@/app/features/auth/auth.type"
 
+import {
+  clearCredentials,
+  setAuthLoading,
+  setCredentials,
+} from "../slices/authSlice"
+
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ==========================
-    // Register
-    // ==========================
+    // =========================================================
+    // REGISTER
+    // =========================================================
 
     register: builder.mutation<AuthResponse, RegisterInput>({
       query: (body) => ({
@@ -23,12 +29,29 @@ export const authApi = baseApi.injectEndpoints({
         body,
         credentials: "include",
       }),
+
       invalidatesTags: ["User", "Auth"],
+
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        dispatch(setAuthLoading(true))
+
+        try {
+          const { data } = await queryFulfilled
+
+          if (data?.data) {
+            dispatch(setCredentials(data.data))
+          } else {
+            dispatch(clearCredentials())
+          }
+        } catch {
+          dispatch(clearCredentials())
+        }
+      },
     }),
 
-    // ==========================
-    // Login
-    // ==========================
+    // =========================================================
+    // LOGIN
+    // =========================================================
 
     login: builder.mutation<AuthResponse, LoginInput>({
       query: (body) => ({
@@ -39,11 +62,27 @@ export const authApi = baseApi.injectEndpoints({
       }),
 
       invalidatesTags: ["User", "Auth"],
+
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        dispatch(setAuthLoading(true))
+
+        try {
+          const { data } = await queryFulfilled
+
+          if (data?.data) {
+            dispatch(setCredentials(data.data))
+          } else {
+            dispatch(clearCredentials())
+          }
+        } catch {
+          dispatch(clearCredentials())
+        }
+      },
     }),
 
-    // ==========================
-    // Current User
-    // ==========================
+    // =========================================================
+    // CURRENT USER
+    // =========================================================
 
     me: builder.query<IApiResponse<IUser>, void>({
       query: () => ({
@@ -55,11 +94,27 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["User"],
 
       keepUnusedDataFor: 300,
+
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        dispatch(setAuthLoading(true))
+
+        try {
+          const { data } = await queryFulfilled
+
+          if (data?.data) {
+            dispatch(setCredentials(data.data))
+          } else {
+            dispatch(clearCredentials())
+          }
+        } catch {
+          dispatch(clearCredentials())
+        }
+      },
     }),
 
-    // ==========================
-    // Refresh Token
-    // ==========================
+    // =========================================================
+    // REFRESH TOKEN
+    // =========================================================
 
     refreshToken: builder.mutation<AuthResponse, void>({
       query: () => ({
@@ -67,11 +122,23 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         credentials: "include",
       }),
+
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+
+          if (data?.data) {
+            dispatch(setCredentials(data.data))
+          }
+        } catch {
+          dispatch(clearCredentials())
+        }
+      },
     }),
 
-    // ==========================
-    // Logout
-    // ==========================
+    // =========================================================
+    // LOGOUT
+    // =========================================================
 
     logout: builder.mutation<IApiResponse<null>, void>({
       query: () => ({
@@ -81,11 +148,19 @@ export const authApi = baseApi.injectEndpoints({
       }),
 
       invalidatesTags: ["User", "Auth"],
+
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+        } finally {
+          dispatch(clearCredentials())
+        }
+      },
     }),
 
-    // ==========================
-    // Update Profile
-    // ==========================
+    // =========================================================
+    // UPDATE PROFILE
+    // =========================================================
 
     updateProfile: builder.mutation<IApiResponse<IUser>, UpdateProfileInput>({
       query: (body) => ({
@@ -96,11 +171,23 @@ export const authApi = baseApi.injectEndpoints({
       }),
 
       invalidatesTags: ["User"],
+
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+
+          if (data?.data) {
+            dispatch(setCredentials(data.data))
+          }
+        } catch {
+          // Keep existing auth state if profile update fails.
+        }
+      },
     }),
 
-    // ==========================
-    // Change Password
-    // ==========================
+    // =========================================================
+    // CHANGE PASSWORD
+    // =========================================================
 
     changePassword: builder.mutation<IApiResponse<null>, ChangePasswordInput>({
       query: (body) => ({
@@ -111,9 +198,9 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    // ==========================
-    // Is Admin
-    // ==========================
+    // =========================================================
+    // IS ADMIN
+    // =========================================================
 
     isAdmin: builder.query<boolean, void>({
       query: () => ({
@@ -121,6 +208,8 @@ export const authApi = baseApi.injectEndpoints({
         method: "GET",
         credentials: "include",
       }),
+
+      providesTags: ["User"],
     }),
   }),
 

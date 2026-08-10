@@ -50,40 +50,110 @@ export function Navbar({ className }: NavbarProps) {
     (state) => state.auth
   )
 
+  /*
+   * During authentication loading:
+   *
+   * Server:
+   * isLoading = true
+   *
+   * First client render:
+   * isLoading = true
+   *
+   * Therefore the HTML is identical.
+   */
+  const showAuthUI = !isLoading
+
   return (
     <section className={cn("", className)}>
-      <div className="container">
-        {/* ================= Desktop ================= */}
+      {/* =========================================================
+          DESKTOP
+      ========================================================= */}
 
-        <nav className="hidden items-center justify-between lg:flex">
-          <div className="flex items-center gap-6">
-            <Link href={logo.url}>
-              <Image
-                src={logo.src}
-                alt={logo.title}
-                width={120}
-                height={120}
-                className="h-auto w-auto"
-                loading="eager"
-                priority
-              />
-            </Link>
+      <nav className="hidden items-center justify-between lg:flex">
+        <div className="flex items-center gap-6">
+          {/* Logo */}
 
-            <NavigationMenu>
-              <NavigationMenuList>
-                {menu.map(renderMenuItem)}
-              </NavigationMenuList>
-            </NavigationMenu>
-          </div>
+          <Link href={logo.url}>
+            <Image
+              src={logo.src}
+              alt={logo.title}
+              width={120}
+              height={120}
+              className="h-auto w-auto"
+              priority
+            />
+          </Link>
+
+          {/* Navigation */}
+
+          <NavigationMenu>
+            <NavigationMenuList>{menu.map(renderMenuItem)}</NavigationMenuList>
+          </NavigationMenu>
+        </div>
+
+        {/* Right side */}
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+
+          {showAuthUI && (
+            <>
+              {isAuthenticated ? (
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link href="/profile">{user?.name ?? "Profile"}</Link>
+                  </Button>
+
+                  <LogoutButton />
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={auth.login.url}
+                    className="flex h-9 items-center rounded-md px-3 text-sm font-medium hover:bg-muted"
+                  >
+                    {auth.login.title}
+                  </Link>
+
+                  <Button asChild size="sm">
+                    <Link href={auth.signup.url}>{auth.signup.title}</Link>
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </nav>
+
+      {/* =========================================================
+          MOBILE
+      ========================================================= */}
+
+      <div className="block lg:hidden">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+
+          <Link href={logo.url}>
+            <Image
+              src={logo.src}
+              alt={logo.title}
+              width={180}
+              height={180}
+              className="h-10 w-auto"
+              priority
+            />
+          </Link>
+
+          {/* Right */}
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
 
-            {!isLoading && (
+            {showAuthUI && (
               <>
                 {isAuthenticated ? (
                   <>
-                    <Button variant="ghost" asChild>
+                    <Button variant="outline" size="sm" asChild>
                       <Link href="/profile">{user?.name ?? "Profile"}</Link>
                     </Button>
 
@@ -91,136 +161,92 @@ export function Navbar({ className }: NavbarProps) {
                   </>
                 ) : (
                   <>
-                    <Link
-                      href={auth.login.url}
-                      className="flex h-9 items-center rounded-md px-3 text-sm font-medium hover:bg-muted"
-                    >
-                      {auth.login.title}
-                    </Link>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={auth.login.url}>{auth.login.title}</Link>
+                    </Button>
 
-                    <Button asChild size="sm">
+                    <Button asChild size="sm" className="hidden sm:inline-flex">
                       <Link href={auth.signup.url}>{auth.signup.title}</Link>
                     </Button>
                   </>
                 )}
               </>
             )}
-          </div>
-        </nav>
 
-        {/* ================= Mobile ================= */}
+            {/* Mobile menu */}
 
-        <div className="block lg:hidden">
-          <div className="flex items-center justify-between">
-            <Link href={logo.url}>
-              <Image
-                src={logo.src}
-                alt={logo.title}
-                width={180}
-                height={180}
-                className="h-10 w-auto"
-                loading="eager"
-                priority
-              />
-            </Link>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" aria-label="Open menu">
+                  <Menu className="size-4" />
+                </Button>
+              </SheetTrigger>
 
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
+              <SheetContent className="overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle>
+                    <Link href={logo.url}>
+                      <Image
+                        src={logo.src}
+                        alt={logo.title}
+                        width={160}
+                        height={160}
+                        className="h-10 w-auto"
+                        priority
+                      />
+                    </Link>
+                  </SheetTitle>
+                </SheetHeader>
 
-              {!isLoading && (
-                <>
-                  {isAuthenticated ? (
-                    <>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/profile">{user?.name ?? "Profile"}</Link>
-                      </Button>
+                <div className="mt-6">
+                  <Accordion type="single" collapsible>
+                    {menu.map(renderMobileMenuItem)}
+                  </Accordion>
 
-                      <LogoutButton />
-                    </>
-                  ) : (
-                    <>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={auth.login.url}>{auth.login.title}</Link>
-                      </Button>
+                  <div className="mt-6 flex flex-col gap-2">
+                    {showAuthUI && (
+                      <>
+                        {isAuthenticated ? (
+                          <>
+                            <Button asChild>
+                              <Link href="/profile">
+                                {user?.name ?? "Profile"}
+                              </Link>
+                            </Button>
 
-                      <Button
-                        asChild
-                        size="sm"
-                        className="hidden sm:inline-flex"
-                      >
-                        <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                      </Button>
-                    </>
-                  )}
-                </>
-              )}
+                            <LogoutButton className="flex flex-col rounded-md border px-4 py-2" />
+                          </>
+                        ) : (
+                          <>
+                            <Button variant="outline" asChild>
+                              <Link href={auth.login.url}>
+                                {auth.login.title}
+                              </Link>
+                            </Button>
 
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Menu className="size-4" />
-                  </Button>
-                </SheetTrigger>
-
-                <SheetContent className="overflow-y-auto">
-                  <SheetHeader>
-                    <SheetTitle>
-                      <Link href={logo.url}>
-                        <Image
-                          src={logo.src}
-                          alt={logo.title}
-                          width={160}
-                          height={160}
-                          className="h-10 w-auto"
-                          loading="eager"
-                          priority
-                        />
-                      </Link>
-                    </SheetTitle>
-                  </SheetHeader>
-
-                  <div className="mt-6">
-                    <Accordion type="single" collapsible>
-                      {menu.map(renderMobileMenuItem)}
-                    </Accordion>
-
-                    <div className="mt-6 flex flex-col gap-2">
-                      {!isLoading && (
-                        <>
-                          {isAuthenticated ? (
-                            <>
-                              <Button asChild>
-                                <Link href="/profile">
-                                  {user?.name ?? "Profile"}
-                                </Link>
-                              </Button>
-
-                              <LogoutButton className="flex flex-col rounded-md border px-4 py-2" />
-                            </>
-                          ) : (
-                            <>
-                              <Button variant="outline" asChild>
-                                <Link href="/login">Login</Link>
-                              </Button>
-
-                              <Button asChild>
-                                <Link href="/signup">Signup</Link>
-                              </Button>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
+                            <Button asChild>
+                              <Link href={auth.signup.url}>
+                                {auth.signup.title}
+                              </Link>
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    )}
                   </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
     </section>
   )
 }
+
+/* =========================================================
+   DESKTOP MENU ITEM
+========================================================= */
 
 function renderMenuItem(item: MenuItem) {
   if (item.items) {
@@ -229,11 +255,13 @@ function renderMenuItem(item: MenuItem) {
         <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
 
         <NavigationMenuContent>
-          {item.items.map((subItem) => (
-            <NavigationMenuLink key={subItem.title} asChild className="w-80">
-              <SubMenuLink item={subItem} />
-            </NavigationMenuLink>
-          ))}
+          <div className="grid gap-2 p-2">
+            {item.items.map((subItem) => (
+              <NavigationMenuLink key={subItem.title} asChild className="w-80">
+                <SubMenuLink item={subItem} />
+              </NavigationMenuLink>
+            ))}
+          </div>
         </NavigationMenuContent>
       </NavigationMenuItem>
     )
@@ -241,15 +269,21 @@ function renderMenuItem(item: MenuItem) {
 
   return (
     <NavigationMenuItem key={item.title}>
-      <NavigationMenuLink
-        href={item.url}
-        className="group inline-flex h-10 items-center rounded-md px-4 text-sm font-medium hover:bg-muted"
-      >
-        {item.title}
+      <NavigationMenuLink asChild>
+        <Link
+          href={item.url}
+          className="inline-flex h-9 items-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+        >
+          {item.title}
+        </Link>
       </NavigationMenuLink>
     </NavigationMenuItem>
   )
 }
+
+/* =========================================================
+   MOBILE MENU ITEM
+========================================================= */
 
 function renderMobileMenuItem(item: MenuItem) {
   if (item.items) {
@@ -258,25 +292,39 @@ function renderMobileMenuItem(item: MenuItem) {
         <AccordionTrigger>{item.title}</AccordionTrigger>
 
         <AccordionContent>
-          {item.items.map((subItem) => (
-            <SubMenuLink key={subItem.title} item={subItem} />
-          ))}
+          <div className="flex flex-col gap-1">
+            {item.items.map((subItem) => (
+              <SubMenuLink key={subItem.title} item={subItem} />
+            ))}
+          </div>
         </AccordionContent>
       </AccordionItem>
     )
   }
 
   return (
-    <Link key={item.title} href={item.url} className="block py-2 font-medium">
-      {item.title}
-    </Link>
+    <div key={item.title} className="py-1">
+      <Link
+        href={item.url}
+        className="block rounded-md px-3 py-2 text-sm font-medium hover:bg-muted"
+      >
+        {item.title}
+      </Link>
+    </div>
   )
 }
 
+/* =========================================================
+   SUB MENU LINK
+========================================================= */
+
 function SubMenuLink({ item }: { item: MenuItem }) {
   return (
-    <Link href={item.url} className="flex gap-4 rounded-md p-3 hover:bg-muted">
-      <div>{item.icon}</div>
+    <Link
+      href={item.url}
+      className="flex items-start gap-3 rounded-md p-3 hover:bg-muted"
+    >
+      {item.icon && <span className="mt-0.5 shrink-0">{item.icon}</span>}
 
       <div>
         <div className="font-semibold">{item.title}</div>

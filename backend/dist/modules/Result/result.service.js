@@ -1,4 +1,5 @@
 "use strict";
+// modules/Result/result.service.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,27 +8,38 @@ exports.ResultService = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const AppError_1 = __importDefault(require("../../error/AppError"));
 const examSession_model_1 = require("../examSession/examSession.model");
+const examSession_constant_1 = require("../examSession/examSession.constant");
 const result_model_1 = require("./result.model");
-const scoring_service_1 = require("../ExamEngine/services/scoring.service");
+const question_model_1 = require("../Questions/question.model");
+// ============================================================
+// OPTION LABELS
+// ============================================================
+const OPTION_LABELS = ["A", "B", "C", "D"];
+// ============================================================
+// CREATE RESULT
+// ============================================================
 const createResult = async (sessionId) => {
     const session = await examSession_model_1.ExamSession.findById(sessionId);
-    console.log(session);
     if (!session) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Exam session not found");
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Exam session not found.");
+    }
+    if (session.status !== examSession_constant_1.ExamSessionStatus.SUBMITTED &&
+        session.status !== examSession_constant_1.ExamSessionStatus.EXPIRED) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam has not been submitted.");
     }
     const totalQuestions = session.questions.length;
-    const correct = session.answers.filter((answer) => answer.isCorrect).length;
     const attempted = session.answers.length;
-    const wrong = attempted - correct;
-    const skipped = totalQuestions - attempted;
-    const score = scoring_service_1.ScoringService.calculateScore({
-        correct,
-        wrong,
-        skipped,
-        total: totalQuestions,
-        negativeMark: session.negativeMark,
-    });
-    const result = await result_model_1.Result.create({
+    const correct = session.answers.filter((answer) => answer.isCorrect === true).length;
+    const wrong = session.answers.filter((answer) => answer.isCorrect === false).length;
+    const skipped = Math.max(0, totalQuestions - attempted);
+    const score = correct - wrong * session.negativeMark;
+    const accuracy = attempted === 0 ? 0 : Number(((correct / attempted) * 100).toFixed(2));
+    // ----------------------------------------------------------
+    // Upsert Result
+    // ----------------------------------------------------------
+    const result = await result_model_1.Result.findOneAndUpdate({
+        sessionId: session._id,
+    }, {
         sessionId: session._id,
         userId: session.userId,
         totalQuestions,
@@ -35,48 +47,108 @@ const createResult = async (sessionId) => {
         correct,
         wrong,
         skipped,
-        score: score.score,
-        accuracy: score.accuracy,
+        score,
+        accuracy,
         negativeMark: session.negativeMark,
+    }, {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
     });
+    // ----------------------------------------------------------
+    // Persist result in session
+    // ----------------------------------------------------------
+    session.result = {
+        score,
+        correct,
+        wrong,
+        skipped,
+        accuracy,
+    };
+    await session.save();
     return result;
 };
-const getResult = async (sessionId) => {
-    const session = await examSession_model_1.ExamSession.findById(sessionId).populate("questions.questionId");
+// ============================================================
+// RESULT REVIEW
+// ============================================================
+const getResultReview = async (sessionId, userId) => {
+    const session = await examSession_model_1.ExamSession.findOne({
+        _id: sessionId,
+        userId,
+    });
     if (!session) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Session not found");
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Exam session not found.");
     }
     const result = await result_model_1.Result.findOne({
         sessionId,
+        userId,
     });
     if (!result) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Result not found");
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Result not found.");
     }
-    const questions = session.questions.map((item) => {
-        const question = item.questionId;
-        const answer = session.answers.find((a) => a.questionId.toString() === question._id.toString());
+    // ----------------------------------------------------------
+    // Get Questions
+    // ----------------------------------------------------------
+    const questionIds = session.questions.map((question) => question.questionId);
+    const questions = await question_model_1.Question.find({
+        _id: {
+            $in: questionIds,
+        },
+    })
+        .select("questionText questionImage options explanation explanationImage")
+        .lean();
+    const answerMap = new Map(session.answers.map((answer) => [answer.questionId.toString(), answer]));
+    const questionMap = new Map(questions.map((question) => [question._id.toString(), question]));
+    // ----------------------------------------------------------
+    // Review Questions
+    // ----------------------------------------------------------
+    const reviewQuestions = session.questions
+        .map((sessionQuestion) => {
+        const question = questionMap.get(sessionQuestion.questionId.toString());
+        if (!question) {
+            return null;
+        }
+        const answer = answerMap.get(sessionQuestion.questionId.toString());
+        // ----------------------------------------------------
+        // Find correct option
+        // ----------------------------------------------------
+        const correctIndex = question.options.findIndex((option) => option.isCorrect === true);
+        const correctOption = correctIndex >= 0 ? OPTION_LABELS[correctIndex] : undefined;
         return {
-            id: question._id,
-            order: item.order,
+            id: question._id.toString(),
+            order: sessionQuestion.order,
             questionText: question.questionText,
-            options: question.options.map((o, index) => ({
-                label: ["A", "B", "C", "D"][index],
-                text: o.text,
-                isCorrect: o.isCorrect,
+            questionImage: question.questionImage ?? undefined,
+            options: question.options.map((option, index) => ({
+                label: OPTION_LABELS[index],
+                text: option.text,
+                image: option.image ?? undefined,
+                isCorrect: option.isCorrect,
             })),
             selectedOption: answer?.selectedOption,
-            correctOption: ["A", "B", "C", "D"][question.options.findIndex((o) => o.isCorrect)],
+            correctOption,
             isCorrect: answer?.isCorrect ?? false,
             explanation: question.explanation,
+            explanationImage: question.explanationImage ?? undefined,
         };
-    });
+    })
+        .filter((question) => question !== null);
     return {
-        result,
-        questions,
+        result: {
+            totalQuestions: result.totalQuestions,
+            attempted: result.attempted,
+            correct: result.correct,
+            wrong: result.wrong,
+            skipped: result.skipped,
+            score: result.score,
+            accuracy: result.accuracy,
+            negativeMark: result.negativeMark,
+        },
+        questions: reviewQuestions,
     };
 };
 exports.ResultService = {
     createResult,
-    getResult,
+    getResultReview,
 };
 //# sourceMappingURL=result.service.js.map

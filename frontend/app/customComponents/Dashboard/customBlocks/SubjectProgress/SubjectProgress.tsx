@@ -12,7 +12,7 @@ import SubjectProgressItem from "./SubjectProgressItem"
 
 export default function SubjectProgress() {
   return (
-    <Card className="w-full">
+    <Card className="w-full mb-8">
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">

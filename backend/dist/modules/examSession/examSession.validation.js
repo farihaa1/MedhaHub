@@ -1,18 +1,28 @@
 "use strict";
+// modules/examSession/examSession.validation.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.submitAnswerValidationSchema = exports.submitSessionValidationSchema = exports.getSessionValidationSchema = void 0;
 const zod_1 = require("zod");
 const objectId = zod_1.z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid ObjectId");
+// ============================================================
+// GET SESSION
+// ============================================================
 exports.getSessionValidationSchema = zod_1.z.object({
     params: zod_1.z.object({
         id: objectId,
     }),
 });
+// ============================================================
+// SUBMIT SESSION
+// ============================================================
 exports.submitSessionValidationSchema = zod_1.z.object({
     params: zod_1.z.object({
         id: objectId,
     }),
 });
+// ============================================================
+// SUBMIT ANSWER
+// ============================================================
 exports.submitAnswerValidationSchema = zod_1.z.object({
     params: zod_1.z.object({
         id: objectId,

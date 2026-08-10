@@ -1,25 +1,18 @@
-import { BaseExamStrategy } from "./base.strategy";
+import { IStartExamPayload } from "../examEngine.interface";
 
-import { IExamStrategy } from "./strategy.interface";
-
-import { IExamConfiguration, IStartExamPayload } from "../examEngine.interface";
+import { buildExamConfiguration } from "./base.strategy";
 
 import { QuestionSelectorService } from "../services/questionSelector.service";
 
-export class DailyQuizStrategy
-  extends BaseExamStrategy
-  implements IExamStrategy
-{
-  async generateExam(_payload: IStartExamPayload): Promise<IExamConfiguration> {
-    const questions = await QuestionSelectorService.selectQuestions({
-      count: 10,
-    });
+export const dailyQuizStrategy = async (_payload: IStartExamPayload) => {
+  const questions = await QuestionSelectorService.selectQuestions({
+    count: 10,
+  });
 
-    return this.buildConfiguration(
-      questions.map((q) => q._id!),
-      {
-        duration: 10,
-      },
-    );
-  }
-}
+  return buildExamConfiguration(
+    questions.map((question) => question._id!),
+    {
+      duration: 10,
+    },
+  );
+};

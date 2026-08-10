@@ -1,4 +1,10 @@
+// modules/Result/result.controller.ts
+
 import { Request, Response } from "express";
+
+import httpStatus from "http-status";
+
+import AppError from "../../error/AppError";
 
 import { catchAsync } from "../../utils/catchAsync";
 
@@ -6,20 +12,24 @@ import { sendResponse } from "../../utils/sendResponse";
 
 import { ResultService } from "./result.service";
 
-const getResult = catchAsync(async (req: Request, res: Response) => {
-  const result = await ResultService.getResult(req.params.sessionId as string);
+const getResultReview = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Authentication required.");
+  }
+
+  const result = await ResultService.getResultReview(
+    req.params.sessionId as string,
+    req.user.id,
+  );
 
   sendResponse(res, {
     success: true,
-
-    statusCode: 200,
-
-    message: "Result retrieved successfully",
-
+    statusCode: httpStatus.OK,
+    message: "Result retrieved successfully.",
     data: result,
   });
 });
 
 export const ResultController = {
-  getResult,
+  getResultReview,
 };

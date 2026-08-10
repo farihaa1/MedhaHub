@@ -1,8 +1,12 @@
 interface IScoreInput {
   correct: number;
+
   wrong: number;
+
   skipped: number;
+
   total: number;
+
   negativeMark: number;
 }
 

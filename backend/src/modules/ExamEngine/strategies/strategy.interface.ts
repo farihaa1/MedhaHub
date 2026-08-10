@@ -1,5 +1,5 @@
-import { IStartExamPayload, IExamConfiguration } from "../examEngine.interface";
+import { IExamConfiguration, IStartExamPayload } from "../examEngine.interface";
 
-export interface IExamStrategy {
-  generateExam(payload: IStartExamPayload): Promise<IExamConfiguration>;
-}
+export type ExamStrategy = (
+  payload: IStartExamPayload,
+) => Promise<IExamConfiguration>;

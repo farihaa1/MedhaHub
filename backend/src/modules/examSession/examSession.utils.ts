@@ -1,22 +1,49 @@
-import { ExamSessionStatus } from "./examSession.constant";
+// modules/examSession/examSession.utils.ts
 
-export const isSessionRunning = (status: string) =>
-  status === ExamSessionStatus.RUNNING;
+// ============================================================
+// END TIME
+// ============================================================
 
-export const isSessionCompleted = (status: string) =>
-  status === ExamSessionStatus.SUBMITTED ||
-  status === ExamSessionStatus.EXPIRED;
+export const calculateEndTime = (startTime: Date, duration: number): Date => {
+  return new Date(startTime.getTime() + duration * 60 * 1000);
+};
+
+// ============================================================
+// EXPIRATION
+// ============================================================
+
 export const hasSessionExpired = (
   startTime: Date,
   duration: number,
 ): boolean => {
-  const endTime = startTime.getTime() + duration * 60 * 1000;
+  const endTime = calculateEndTime(startTime, duration);
 
-  return Date.now() >= endTime;
+  return Date.now() >= endTime.getTime();
 };
 
-export const calculateRemainingTime = (startTime: Date, duration: number) => {
-  const elapsed = Math.floor((Date.now() - startTime.getTime()) / 1000);
+// ============================================================
+// REMAINING TIME
+// ============================================================
 
-  return Math.max(duration * 60 - elapsed, 0);
+export const calculateRemainingTime = (
+  startTime: Date,
+  duration: number,
+): number => {
+  const endTime = calculateEndTime(startTime, duration);
+
+  const remainingMilliseconds = endTime.getTime() - Date.now();
+
+  return Math.max(0, Math.ceil(remainingMilliseconds / 1000));
+};
+
+// ============================================================
+// SESSION COMPLETION
+// ============================================================
+
+export const isSessionSubmitted = (submittedAt?: Date): boolean => {
+  return Boolean(submittedAt);
+};
+
+export const isSessionEnded = (endTime?: Date): boolean => {
+  return Boolean(endTime);
 };

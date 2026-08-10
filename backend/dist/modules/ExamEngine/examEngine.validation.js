@@ -13,8 +13,9 @@ exports.startExamValidationSchema = zod_1.z.object({
         topicIds: zod_1.z.array(objectId).optional(),
         sourceId: objectId.optional(),
         source: zod_1.z.string().optional(),
-        year: zod_1.z.number().optional(),
+        year: zod_1.z.number().int().positive().optional(),
         questionCount: zod_1.z.number().int().positive().optional(),
+        tags: zod_1.z.array(zod_1.z.string()).optional(),
     })
         .superRefine((data, ctx) => {
         switch (data.examType) {

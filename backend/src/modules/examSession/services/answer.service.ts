@@ -1,54 +1,86 @@
-import { Question } from "../../Questions/question.model";
-import { HydratedDocument } from "mongoose";
-import { IExamSession } from "../examSession.interface";
-import { ISubmitAnswerPayload } from "../examSession.interface";
-import AppError from "../../../error/AppError";
+// modules/examSession/services/answer.service.ts
+
 import httpStatus from "http-status";
 
-type ExamSessionDocument = HydratedDocument<IExamSession>;
+import AppError from "../../../error/AppError";
 
-const saveAnswer = async (
-  session: ExamSessionDocument,
-  payload: ISubmitAnswerPayload,
-) => {
-  const question = await Question.findById(payload.questionId);
+import { Question } from "../../Questions/question.model";
 
-  if (!question) {
-    throw new AppError(httpStatus.NOT_FOUND, "Question not found");
-  }
+import { ISubmitAnswerPayload, TOptionLabel } from "../examSession.interface";
 
-  const optionIndex = {
-    A: 0,
-    B: 1,
-    C: 2,
-    D: 3,
-  }[payload.selectedOption];
+import { ExamSession } from "../examSession.model";
 
-  const selectedOption = question.options[optionIndex];
+const OPTION_LABELS: TOptionLabel[] = ["A", "B", "C", "D"];
 
-  const isCorrect = selectedOption?.isCorrect ?? false;
+// ============================================================
+// SAVE ANSWER
+// ============================================================
 
-  const existingAnswer = session.answers.find(
-    (a) => a.questionId.toString() === payload.questionId,
+const saveAnswer = async (session: any, payload: ISubmitAnswerPayload) => {
+  const questionExists = session.questions.some(
+    (item: any) => item.questionId.toString() === payload.questionId,
   );
 
-  if (existingAnswer) {
-    existingAnswer.selectedOption = payload.selectedOption;
-    existingAnswer.isCorrect = isCorrect;
-    existingAnswer.timeTaken = payload.timeTaken ?? 0;
+  if (!questionExists) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "This question does not belong to this exam.",
+    );
+  }
+
+  const question = await Question.findById(payload.questionId)
+    .select("options")
+    .lean();
+
+  if (!question) {
+    throw new AppError(httpStatus.NOT_FOUND, "Question not found.");
+  }
+
+  const selectedIndex = OPTION_LABELS.indexOf(payload.selectedOption);
+
+  if (selectedIndex === -1) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Invalid option.");
+  }
+
+  const selectedOption = question.options[selectedIndex];
+
+  if (!selectedOption) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Selected option does not exist.",
+    );
+  }
+
+  const isCorrect = selectedOption.isCorrect === true;
+
+  const existingAnswerIndex = session.answers.findIndex(
+    (answer: any) => answer.questionId.toString() === payload.questionId,
+  );
+
+  const answer = {
+    questionId: payload.questionId,
+    selectedOption: payload.selectedOption,
+    isCorrect,
+    timeTaken: payload.timeTaken ?? 0,
+  };
+
+  // ==========================================================
+  // UPDATE EXISTING ANSWER
+  // ==========================================================
+
+  if (existingAnswerIndex !== -1) {
+    session.answers[existingAnswerIndex] = answer;
   } else {
-    session.answers.push({
-      questionId: question._id,
-      selectedOption: payload.selectedOption,
-      isCorrect,
-      timeTaken: payload.timeTaken ?? 0,
-    });
+    session.answers.push(answer);
   }
 
   await session.save();
 
   return {
-    success: true,
+    questionId: payload.questionId,
+    selectedOption: payload.selectedOption,
+    isCorrect,
+    timeTaken: payload.timeTaken ?? 0,
   };
 };
 

@@ -1,21 +1,53 @@
 import { Types } from "mongoose";
-import { TExamSessionStatus } from "./examSession.constant";
+
 import { TExamType } from "../ExamEngine/examEngine.constant";
+
+// ============================================================
+// OPTION
+// ============================================================
+
+export type TOptionLabel = "A" | "B" | "C" | "D";
+
+// ============================================================
+// SESSION QUESTION
+// ============================================================
 
 export interface IExamSessionQuestion {
   questionId: Types.ObjectId;
   order: number;
 }
 
+// ============================================================
+// EXAM ANSWER
+// ============================================================
+
 export interface IExamAnswer {
   questionId: Types.ObjectId;
 
-  selectedOption?: "A" | "B" | "C" | "D";
+  selectedOption: TOptionLabel;
 
-  isCorrect: boolean;
+  correctOption?: TOptionLabel;
 
-  timeTaken: number;
+  isCorrect?: boolean;
+
+  timeTaken?: number;
 }
+
+// ============================================================
+// SESSION RESULT
+// ============================================================
+
+export interface IExamSessionResult {
+  score: number;
+  correct: number;
+  wrong: number;
+  skipped: number;
+  accuracy: number;
+}
+
+// ============================================================
+// EXAM SESSION
+// ============================================================
 
 export interface IExamSession {
   userId: Types.ObjectId;
@@ -44,34 +76,38 @@ export interface IExamSession {
     shuffleOptions: boolean;
   };
 
+  /**
+   * Duration in minutes.
+   */
   duration: number;
 
   totalMarks: number;
 
   negativeMark: number;
 
-  status: TExamSessionStatus;
-
   startTime: Date;
+
+  submittedAt?: Date;
 
   endTime?: Date;
 
-  submittedAt?: Date;
+  result?: IExamSessionResult;
 
   createdAt?: Date;
 
   updatedAt?: Date;
-  result?: {
-    score: number;
-    correct: number;
-    wrong: number;
-    skipped: number;
-    accuracy: number;
-  };
 }
+
+// ============================================================
+// SUBMIT ANSWER
+// ============================================================
+
 export interface ISubmitAnswerPayload {
   sessionId: string;
+
   questionId: string;
-  selectedOption: "A" | "B" | "C" | "D";
+
+  selectedOption: TOptionLabel;
+
   timeTaken?: number;
 }

@@ -1,20 +1,40 @@
+// modules/examSession/services/session-validation.service.ts
+
 import httpStatus from "http-status";
-import { HydratedDocument } from "mongoose";
 
 import AppError from "../../../error/AppError";
 
-import { IExamSession } from "../examSession.interface";
-import { ExamSessionStatus } from "../examSession.constant";
 import { hasSessionExpired } from "../examSession.utils";
 
-type ExamSessionDocument = HydratedDocument<IExamSession>;
+const ensureSessionIsRunning = async (session: any) => {
+  if (!session) {
+    throw new AppError(httpStatus.NOT_FOUND, "Exam session not found.");
+  }
 
-const ensureSessionIsRunning = async (session: ExamSessionDocument) => {
-  if (
-    hasSessionExpired(session.startTime, session.duration) &&
-    session.status === ExamSessionStatus.RUNNING
-  ) {
-    session.status = ExamSessionStatus.EXPIRED;
+  // ==========================================================
+  // ALREADY SUBMITTED
+  // ==========================================================
+
+  if (session.submittedAt) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Exam has already been submitted.",
+    );
+  }
+
+  // ==========================================================
+  // ALREADY ENDED
+  // ==========================================================
+
+  if (session.endTime) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Exam has already ended.");
+  }
+
+  // ==========================================================
+  // TIME EXPIRED
+  // ==========================================================
+
+  if (hasSessionExpired(session.startTime, session.duration)) {
     session.endTime = new Date();
 
     await session.save();
@@ -22,9 +42,7 @@ const ensureSessionIsRunning = async (session: ExamSessionDocument) => {
     throw new AppError(httpStatus.BAD_REQUEST, "Exam time has expired.");
   }
 
-  if (session.status !== ExamSessionStatus.RUNNING) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Exam is no longer running.");
-  }
+  return session;
 };
 
 export const SessionValidationService = {

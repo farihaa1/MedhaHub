@@ -27,7 +27,7 @@ export default function TodaysPlan() {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full my-8">
       <CardHeader>
         <CardTitle>আজকের পরিকল্পনা</CardTitle>
       </CardHeader>

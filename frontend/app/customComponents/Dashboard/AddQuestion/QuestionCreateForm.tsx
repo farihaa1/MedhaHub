@@ -267,7 +267,8 @@ export default function QuestionCreateForm({ location }: Props) {
          API does NOT need label/correctAnswer.
          
          It needs:
-         {
+         { 
+
            text,
            image,
            isCorrect

@@ -1,26 +1,22 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CustomExamStrategy = void 0;
+exports.customExamStrategy = void 0;
+const http_status_1 = __importDefault(require("http-status"));
+const AppError_1 = __importDefault(require("../../../error/AppError"));
+const base_strategy_1 = require("./base.strategy");
 const questionSelector_service_1 = require("../services/questionSelector.service");
-const timer_service_1 = require("../services/timer.service");
-class CustomExamStrategy {
-    async generateExam(payload) {
-        if (!payload.topicIds?.length) {
-            throw new Error("Topics are required");
-        }
-        const questions = await questionSelector_service_1.QuestionSelectorService.selectQuestions({
-            topicIds: payload.topicIds,
-            count: payload.questionCount ?? 50,
-        });
-        return {
-            questions: questions.map((q) => q._id),
-            duration: timer_service_1.TimerService.calculateDuration(questions.length),
-            totalMarks: questions.length,
-            negativeMark: 0,
-            shuffleQuestions: true,
-            shuffleOptions: true,
-        };
+const customExamStrategy = async (payload) => {
+    if (!payload.topicIds?.length) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Topics are required.");
     }
-}
-exports.CustomExamStrategy = CustomExamStrategy;
+    const questions = await questionSelector_service_1.QuestionSelectorService.selectQuestions({
+        topicIds: payload.topicIds,
+        count: payload.questionCount ?? 50,
+    });
+    return (0, base_strategy_1.buildExamConfiguration)(questions.map((question) => question._id));
+};
+exports.customExamStrategy = customExamStrategy;
 //# sourceMappingURL=custom.strategy.js.map

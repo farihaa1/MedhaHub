@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
 import { clearAuthCookies, setAuthCookies } from "./auth.utils";
+import AppError from "../../error/AppError";
 
 const register = catchAsync(async (req, res) => {
   const result = await AuthService.register(req.body);
@@ -45,8 +46,15 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMe = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthService.getMe(req.user!.email);
+  if (!req.user?.email) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "Authentication information is missing.",
+    );
+  }
 
+  const result = await AuthService.getMe(req.user.email);
+console.log(result)
   sendResponse(res, {
     success: true,
     statusCode: 200,

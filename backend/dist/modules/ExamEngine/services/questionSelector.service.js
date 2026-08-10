@@ -4,21 +4,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestionSelectorService = void 0;
+const mongoose_1 = require("mongoose");
 const AppError_1 = __importDefault(require("../../../error/AppError"));
 const question_model_1 = require("../../Questions/question.model");
-const mongoose_1 = require("mongoose");
+const question_constant_1 = require("../../Questions/question.constant");
 const selectQuestions = async (options) => {
-    const filter = {};
+    const filter = {
+        status: question_constant_1.QuestionStatus.APPROVED,
+    };
     if (options.topicIds?.length) {
         filter.topicId = {
             $in: options.topicIds.map((id) => new mongoose_1.Types.ObjectId(id)),
         };
     }
     if (options.subjectId) {
-        filter.subjectId = options.subjectId;
+        filter.subjectId = new mongoose_1.Types.ObjectId(options.subjectId);
     }
     if (options.chapterId) {
-        filter.chapterId = options.chapterId;
+        filter.chapterId = new mongoose_1.Types.ObjectId(options.chapterId);
     }
     if (options.source) {
         filter["examInfo.category"] = options.source;
@@ -31,9 +34,12 @@ const selectQuestions = async (options) => {
             $in: options.tags,
         };
     }
-    console.log("Filter:", filter);
+    console.log("Exam question filter:", filter);
     const total = await question_model_1.Question.countDocuments(filter);
-    console.log("Matching questions:", total);
+    console.log("Matching approved questions:", total);
+    if (total < options.count) {
+        throw new AppError_1.default(400, `Only ${total} approved questions are available, but ${options.count} were requested.`);
+    }
     const questions = await question_model_1.Question.aggregate([
         {
             $match: filter,

@@ -8,64 +8,67 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Button } from "@/components/ui/button"
+
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
 import ProfileDropdown from "@/app/customComponents/Dashboard/blocks/dropdown-profile"
 import { ThemeToggle } from "@/app/customComponents/shared/ThemeToggle"
+
 import { useAppSelector } from "@/app/redux/hooks"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Header() {
-  const { user } = useAppSelector((state) => state.auth)
+  const { user, isLoading } = useAppSelector((state) => state.auth)
 
   const userName = user?.name || "ব্যবহারকারী"
+
   const firstLetter = userName.charAt(0).toUpperCase()
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-        {/* Left */}
-        <div className="flex items-center gap-3">
-          <SidebarTrigger />
+    <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-4">
+      {/* Left */}
 
-          <Separator orientation="vertical" className="hidden h-5 sm:block" />
+      <div className="flex items-center gap-2">
+        <SidebarTrigger />
 
-          <Breadcrumb className="hidden sm:block">
-            <BreadcrumbList>
-              {/* Home */}
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">হোম</BreadcrumbLink>
-              </BreadcrumbItem>
+        <Separator orientation="vertical" className="hidden h-5 sm:block" />
 
-              <BreadcrumbSeparator />
+        <Breadcrumb className="hidden sm:block">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">হোম</BreadcrumbLink>
+            </BreadcrumbItem>
 
-              {/* Dashboard */}
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard">ড্যাশবোর্ড</BreadcrumbLink>
-              </BreadcrumbItem>
+            <BreadcrumbSeparator />
 
-              <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">ড্যাশবোর্ড</BreadcrumbLink>
+            </BreadcrumbItem>
 
-              {/* Current */}
-              <BreadcrumbItem>
-                <BreadcrumbPage>ফ্রি</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
+            <BreadcrumbSeparator />
 
-        {/* Right */}
-        <div className="flex items-center gap-2">
-          {/* Theme */}
-          <ThemeToggle />
+            <BreadcrumbItem>
+              <BreadcrumbPage>ফ্রি</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
 
-          {/* Profile */}
+      {/* Right */}
+
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+
+        {!isLoading && (
           <ProfileDropdown
             trigger={
-              <Button variant="ghost" size="icon-lg" className="rounded-full">
+              <button
+                type="button"
+                className="rounded-full ring-offset-background outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label="Open profile menu"
+              >
                 <Avatar className="size-10">
                   <AvatarImage src={user?.profileImage || ""} alt={userName} />
 
@@ -73,10 +76,10 @@ export default function Header() {
                     {firstLetter}
                   </AvatarFallback>
                 </Avatar>
-              </Button>
+              </button>
             }
           />
-        </div>
+        )}
       </div>
     </header>
   )

@@ -5,6 +5,10 @@ const question_service_1 = require("./question.service");
 const sendResponse_1 = require("../../utils/sendResponse");
 const catchAsync_1 = require("../../utils/catchAsync");
 const createQuestion = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const payload = {
+        ...req.body,
+        createdBy: req.user.id,
+    };
     const result = await question_service_1.QuestionService.createQuestion(req.body);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
@@ -85,6 +89,6 @@ exports.QuestionController = {
     updateQuestion,
     deleteQuestion,
     bulkCreateQuestions,
-    getQuestionStats
+    getQuestionStats,
 };
 //# sourceMappingURL=question.controller.js.map

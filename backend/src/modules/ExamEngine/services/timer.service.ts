@@ -1,5 +1,6 @@
 interface ICalculateDurationOptions {
   minutePerQuestion?: number;
+
   minimumDuration?: number;
 }
 
@@ -8,7 +9,8 @@ const calculateDuration = (
   options?: ICalculateDurationOptions,
 ): number => {
   const minutePerQuestion = options?.minutePerQuestion ?? 1;
-  const minimumDuration = options?.minimumDuration ?? 10;
+
+  const minimumDuration = options?.minimumDuration ?? 1;
 
   const duration = questionCount * minutePerQuestion;
 
@@ -29,6 +31,8 @@ const isExpired = (startTime: Date, duration: number): boolean => {
 
 export const TimerService = {
   calculateDuration,
+
   calculateRemainingTime,
+
   isExpired,
 };

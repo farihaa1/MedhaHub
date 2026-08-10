@@ -3,7 +3,6 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +25,6 @@ import {
 import { useAppSelector } from "@/app/redux/hooks"
 
 import LogoutButton from "../../shared/Navbar/LogoutButton"
-import { IUser } from "@/app/features/auth/auth.type"
 
 type Props = {
   trigger: ReactNode
@@ -54,13 +52,13 @@ export default function ProfileDropdown({
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-80" align={align}>
+        {/* User information */}
+
         <DropdownMenuLabel className="flex items-center gap-4 px-4 py-3 font-normal">
           <div className="relative">
-            <Avatar className="h-14 w-14">
-              <AvatarFallback className="bg-indigo-600 text-lg font-bold text-white">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-lg font-bold text-white">
+              {initials}
+            </div>
 
             <span className="absolute right-0 bottom-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
           </div>
@@ -77,6 +75,8 @@ export default function ProfileDropdown({
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
+
+        {/* Account */}
 
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
@@ -112,6 +112,8 @@ export default function ProfileDropdown({
 
         <DropdownMenuSeparator />
 
+        {/* Team */}
+
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href="/team" className="flex items-center gap-2 px-4 py-2.5">
@@ -142,9 +144,12 @@ export default function ProfileDropdown({
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <LogoutButton className="flex w-full items-center px-4 py-2.5" />
-        </DropdownMenuItem>
+
+        {/* Logout */}
+
+        <div className="p-1">
+          <LogoutButton className="flex w-full items-center rounded-sm px-3 py-2 text-sm hover:bg-muted" />
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 
-import { getSubjectColorBySlug } from "@/app/data/colorPalete"
 import { ISubject } from "../../subjects.type"
 
 interface Props {
@@ -10,39 +9,48 @@ interface Props {
 }
 
 export default function SubjectCard({ subject }: Props) {
-  const color = getSubjectColorBySlug(subject.slug)
-const progress =0;
+  const progress = 0
 
   return (
-    <Link href={subject.url} className="block h-full">
-      <div
-        className={`group relative flex h-full flex-col overflow-hidden rounded-lg border p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${color.border} ${color.bg}`}
-      >
-        {/* Title */}
-        <h3 className="line-clamp-2 text-xs font-semibold text-white">
+    <Link href={`/subjects/${subject.slug}`} className="block">
+      <div className="group relative flex min-h-32 flex-col overflow-hidden rounded-xl border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
+        {/* Subject title */}
+
+        <h2 className="text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
           {subject.title}
-        </h3>
+        </h2>
 
         {/* Progress */}
-        <div className="mt-4">
-          <div className="mb-1 flex justify-between text-[10px] text-gray-400">
-            <span>Progress</span>
-            <span>{progress}%</span>
+
+        <div className="mt-auto pt-5">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground">অগ্রগতি</span>
+
+            <span className="text-[10px] font-medium text-muted-foreground">
+              {progress}%
+            </span>
           </div>
 
-          <div className="h-1.5 w-full rounded bg-white/10">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className={`h-full rounded ${color.progress}`}
-              style={{ width: `${progress}%` }}
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{
+                width: `${progress}%`,
+              }}
             />
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-auto pt-4">
-          <p className="text-[10px] text-gray-400">
-            {subject.examsCount} Exams
+        {/* Exam count */}
+
+        <div className="mt-3 flex items-center justify-between">
+          <p className="text-[10px] text-muted-foreground">
+            {subject.examsCount}টি পরীক্ষা
           </p>
+
+          <span className="text-[10px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+            দেখুন →
+          </span>
         </div>
       </div>
     </Link>

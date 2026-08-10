@@ -10,8 +10,6 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { color } from "@/app/type"
-import { getTheme } from "@/app/data/colorPalete"
 
 interface SubjectDetailsHeroProps {
   title: string
@@ -21,7 +19,6 @@ interface SubjectDetailsHeroProps {
   completedQuestions: number
   totalTopics: number
   estimatedHours: number
-  color: color
 }
 
 export default function SubjectDetailsHero({
@@ -32,112 +29,120 @@ export default function SubjectDetailsHero({
   completedQuestions,
   totalTopics,
   estimatedHours,
-  color,
 }: SubjectDetailsHeroProps) {
-  const theme = getTheme(color.name)
+  const progress =
+    totalQuestions > 0
+      ? Math.min(100, Math.round((completedQuestions / totalQuestions) * 100))
+      : 0
 
-  const progress = Math.round((completedQuestions / totalQuestions) * 100)
+  const remainingQuestions = Math.max(0, totalQuestions - completedQuestions)
+
   return (
-    <section className="relative overflow-hidden rounded-3xl p-8">
-      {/* Background Glow */}
-
-      <div
-        className={`absolute -top-24 -right-32 h-80 w-80 rounded-full blur-[120px] ${theme.bg}`}
-      />
-
-      <div
-        className={`absolute -bottom-20 left-20 h-64 w-64 rounded-full blur-[120px] ${theme.bg}`}
-      />
-
-      <div className="relative grid gap-8 lg:grid-cols-[1fr_330px]">
-        {/* LEFT */}
+    <section className="relative overflow-hidden rounded-2xl p-5 sm:p-6">
+      
+      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+        {/* =====================================================
+            LEFT
+        ===================================================== */}
 
         <div>
-          <span
-            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${theme.border} ${theme.bg} ${theme.text}`}
-          >
-            MedhaHub Subject
+          {/* Label */}
+          <span className="inline-flex rounded-md border bg-muted px-2.5 py-1 text-[10px] font-medium text-muted-foreground">
+            বিষয় প্রস্তুতি
           </span>
 
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-white">
+          {/* Title */}
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground">
             {title}
           </h1>
 
-          <p className="mt-3 max-w-2xl leading-7 text-zinc-400">
-            {description}
-          </p>
+          {/* Description */}
+          {description && (
+            <p className="mt-2 max-w-2xl text-xs leading-5 text-muted-foreground">
+              {description}
+            </p>
+          )}
 
-          {/* Stats */}
+          {/* =================================================
+              STATS
+          ================================================= */}
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <StatCard
-              icon={<BookOpen size={20} />}
-              title="Chapters"
+              icon={<BookOpen className="h-4 w-4" />}
+              title="অধ্যায়"
               value={totalChapters}
-              color={color}
             />
 
             <StatCard
-              icon={<FileQuestion size={20} />}
-              title="Questions"
-              value={totalQuestions?.toLocaleString() ?? 0}
-              color={color}
+              icon={<FileQuestion className="h-4 w-4" />}
+              title="প্রশ্ন"
+              value={totalQuestions.toLocaleString()}
             />
 
             <StatCard
-              icon={<Clock3 size={20} />}
-              title="Study Time"
-              value={`${estimatedHours} hrs`}
-              color={color}
+              icon={<Clock3 className="h-4 w-4" />}
+              title="সময়"
+              value={`${estimatedHours} ঘন্টা`}
             />
 
             <StatCard
-              icon={<Trophy size={20} />}
-              title="Topics"
+              icon={<Trophy className="h-4 w-4" />}
+              title="টপিক"
               value={totalTopics}
-              color={color}
             />
           </div>
 
-          <Button size="lg" className={`mt-8 ${theme.button}`}>
-            Continue Learning
-            <ArrowRight className="ml-2 h-4 w-4" />
+          {/* Action */}
+          <Button size="sm" className="mt-5 h-9 text-xs">
+            প্রস্তুতি শুরু করুন
+            <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
           </Button>
         </div>
 
-        {/* RIGHT */}
+        {/* =====================================================
+            RIGHT — PROGRESS
+        ===================================================== */}
 
-        <div className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-6 backdrop-blur">
-          <p className="text-sm font-medium text-zinc-400">Overall Progress</p>
-
-          <div className="mt-5 flex items-center justify-between">
+        <div className="rounded-xl border bg-muted/30 p-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-5xl font-bold text-white">{progress}%</h2>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                মোট অগ্রগতি
+              </p>
 
-              <p className="mt-2 text-sm text-zinc-500">
-                {completedQuestions.toLocaleString()} /
-                {totalQuestions.toLocaleString()} Questions
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {progress}%
               </p>
             </div>
 
-            <div
-              className={`flex h-24 w-24 items-center justify-center rounded-full border-8 ${theme.ring}`}
-            >
-              <span className={`text-xl font-bold ${theme.text}`}>
+            {/* Progress circle */}
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-primary/20">
+              <span className="text-xs font-semibold text-foreground">
                 {progress}%
               </span>
             </div>
           </div>
 
-          <Progress value={progress} className="mt-6 h-3 bg-zinc-800" />
+          {/* Progress bar */}
+          <Progress value={progress} className="mt-4 h-1.5" />
 
-          <div className="mt-8 space-y-3">
-            <ProgressItem label="Completed" value={completedQuestions} />
+          {/* Completed */}
+          <div className="mt-4 flex items-center justify-between text-[10px]">
+            <span className="text-muted-foreground">সম্পন্ন</span>
 
-            <ProgressItem
-              label="Remaining"
-              value={totalQuestions - completedQuestions}
-            />
+            <span className="font-medium text-foreground">
+              {completedQuestions.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Remaining */}
+          <div className="mt-2 flex items-center justify-between text-[10px]">
+            <span className="text-muted-foreground">বাকি</span>
+
+            <span className="font-medium text-foreground">
+              {remainingQuestions.toLocaleString()}
+            </span>
           </div>
         </div>
       </div>
@@ -145,44 +150,32 @@ export default function SubjectDetailsHero({
   )
 }
 
+// ============================================================
+// STAT CARD
+// ============================================================
+
 interface StatCardProps {
   title: string
   value: string | number
   icon: React.ReactNode
-  color: color
 }
 
-function StatCard({ title, value, icon, color }: StatCardProps) {
-  const theme = getTheme(color.name)
-
+function StatCard({ title, value, icon }: StatCardProps) {
   return (
-    <div
-      className={`rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 transition ${theme.hover} hover:bg-zinc-900`}
-    >
-      <div
-        className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl ${theme.bg} ${theme.icon}`}
-      >
-        {icon}
+    <div className="rounded-xl border bg-card p-3 transition-colors hover:bg-muted/40">
+      <div className="flex items-center gap-2">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-[10px] text-muted-foreground">{title}</p>
+
+          <p className="mt-0.5 text-sm font-semibold text-foreground">
+            {value}
+          </p>
+        </div>
       </div>
-
-      <p className="text-sm text-zinc-400">{title}</p>
-
-      <h3 className="mt-1 text-2xl font-bold text-white">{value}</h3>
-    </div>
-  )
-}
-
-interface ProgressItemProps {
-  label: string
-  value: number
-}
-
-function ProgressItem({ label, value }: ProgressItemProps) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3">
-      <span className="text-sm text-zinc-400">{label}</span>
-
-      <span className="font-semibold text-white">{value.toLocaleString()}</span>
     </div>
   )
 }

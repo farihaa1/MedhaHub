@@ -13,9 +13,13 @@ const startExam = (0, catchAsync_1.catchAsync)(async (req, res) => {
     if (!req.user) {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "Authentication required.");
     }
-    console.log(req.user);
     const result = await examEngine_service_1.ExamEngineService.startExam({
         ...req.body,
+        /*
+         * NEVER trust userId from frontend.
+         *
+         * Take it from JWT.
+         */
         userId: req.user.id,
     });
     (0, sendResponse_1.sendResponse)(res, {

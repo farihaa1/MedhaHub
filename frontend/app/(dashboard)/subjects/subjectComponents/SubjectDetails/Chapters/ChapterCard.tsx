@@ -1,94 +1,81 @@
 "use client"
 
 import { FileQuestion, Hash } from "lucide-react"
+
 import TopicCheckbox from "../Topics/TopicCheckbox"
-import { color } from "@/app/type"
-import { getTheme } from "@/app/data/colorPalete"
 import { ITopic } from "@/app/redux/api/topicsApi"
 
 interface Props {
   topic: ITopic
   selected: boolean
   onToggle: (id: string) => void
-  color: color
 }
 
-export default function ChapterCard({
-  topic,
-  selected,
-  onToggle,
-  color,
-}: Props) {
-  const theme = getTheme(color.name)
-  console.log(topic)
-
+export default function ChapterCard({ topic, selected, onToggle }: Props) {
   return (
     <div
       onClick={() => onToggle(topic._id)}
-      className={`cursor-pointer rounded-xl border transition-all duration-300 ${
+      className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
         selected
-          ? `${theme.border} ${theme.bg}`
-          : `border-white/10 bg-[#182233] hover:bg-white/5 ${theme.hover}`
+          ? "border-foreground/20 bg-muted"
+          : "border-border bg-card hover:bg-muted/40"
       }`}
     >
-      <div className="flex items-start gap-4 p-5">
+      {/* Checkbox */}
+
+      <div className="pt-0.5">
         <TopicCheckbox
           checked={selected}
           onChange={() => onToggle(topic._id)}
-          color={color}
         />
+      </div>
 
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-white">
-                {topic.title}
-              </h3>
+      {/* Content */}
 
-              {/* {topic?.description && (
-                <p className="mt-1 text-sm text-gray-400">
-                  {topic.description ||""}
-                </p>
-              )} */}
-            </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-xs font-semibold text-foreground">
+            {topic.title}
+          </h3>
 
-            <StatusBadge status={topic.status} color={color} />
-          </div>
+          <StatusBadge status={topic.status} />
+        </div>
 
-          <div className="mt-4 flex flex-wrap gap-5 text-sm text-gray-400">
-            <span className="flex items-center gap-2">
-              <FileQuestion size={15} className={theme.icon} />
-              {topic.totalQuestions} Questions
-            </span>
+        {/* Topic information */}
 
-            <span className="flex items-center gap-2">
-              <Hash size={15} className={theme.icon} />
-              Topic {topic.order}
-            </span>
-          </div>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <FileQuestion className="h-3 w-3" />
+            {topic.totalQuestions}টি প্রশ্ন
+          </span>
+
+          <span className="flex items-center gap-1.5">
+            <Hash className="h-3 w-3" />
+            টপিক {topic.order}
+          </span>
         </div>
       </div>
     </div>
   )
 }
 
+// ============================================================
+// STATUS BADGE
+// ============================================================
+
 interface StatusBadgeProps {
   status: ITopic["status"]
-  color: color
 }
 
-function StatusBadge({ status, color }: StatusBadgeProps) {
-  const theme = getTheme(color.name)
-
-  const styles: Record<string, string> = {
-    approved: `${theme.bg} ${theme.text}`,
-    draft: "bg-yellow-500/10 text-yellow-400",
-  }
+function StatusBadge({ status }: StatusBadgeProps) {
+  const isApproved = status === "approved"
 
   return (
     <span
-      className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${
-        styles[status] ?? styles.draft
+      className={`shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-medium ${
+        isApproved
+          ? "border-border bg-muted text-foreground"
+          : "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
       }`}
     >
       {status}

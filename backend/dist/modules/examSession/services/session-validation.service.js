@@ -1,4 +1,5 @@
 "use strict";
+// modules/examSession/services/session-validation.service.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -9,16 +10,25 @@ const AppError_1 = __importDefault(require("../../../error/AppError"));
 const examSession_constant_1 = require("../examSession.constant");
 const examSession_utils_1 = require("../examSession.utils");
 const ensureSessionIsRunning = async (session) => {
-    if ((0, examSession_utils_1.hasSessionExpired)(session.startTime, session.duration) &&
-        session.status === examSession_constant_1.ExamSessionStatus.RUNNING) {
+    if (!session) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Exam session not found.");
+    }
+    if (session.status === examSession_constant_1.ExamSessionStatus.SUBMITTED) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam has already been submitted.");
+    }
+    if (session.status === examSession_constant_1.ExamSessionStatus.EXPIRED) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam time has expired.");
+    }
+    if (session.status !== examSession_constant_1.ExamSessionStatus.RUNNING) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam session is not running.");
+    }
+    if ((0, examSession_utils_1.hasSessionExpired)(session.startTime, session.duration)) {
         session.status = examSession_constant_1.ExamSessionStatus.EXPIRED;
         session.endTime = new Date();
         await session.save();
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam time has expired.");
     }
-    if (session.status !== examSession_constant_1.ExamSessionStatus.RUNNING) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam is no longer running.");
-    }
+    return session;
 };
 exports.SessionValidationService = {
     ensureSessionIsRunning,

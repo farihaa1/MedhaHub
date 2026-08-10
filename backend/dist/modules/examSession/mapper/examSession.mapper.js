@@ -1,33 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapExamSession = void 0;
-const examSession_constant_1 = require("../examSession.constant");
-const examSession_utils_1 = require("../examSession.utils");
-const mapExamSession = (session) => {
+const OPTION_LABELS = ["A", "B", "C", "D"];
+const mapExamSession = (data) => {
+    const session = data.session ?? data;
+    const questions = data.questions ?? session.questions ?? [];
     return {
-        id: session.id,
+        _id: session._id.toString(),
+        examType: session.examType,
         status: session.status,
         duration: session.duration,
-        remainingTime: (0, examSession_utils_1.calculateRemainingTime)(session.startTime, session.duration),
-        questions: session.questions.map((q) => ({
-            order: q.order,
-            question: {
-                id: q.questionId._id.toString(),
-                questionText: q.questionId.questionText,
-                options: q.questionId.options.map((option, index) => ({
-                    _id: option._id.toString(),
-                    label: ["A", "B", "C", "D"][index],
+        totalMarks: session.totalMarks,
+        negativeMark: session.negativeMark,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        settings: session.settings,
+        answers: (session.answers ?? []).map((answer) => ({
+            questionId: answer.questionId.toString(),
+            selectedOption: answer.selectedOption,
+            isCorrect: answer.isCorrect,
+            timeTaken: answer.timeTaken,
+        })),
+        questions: questions.map((item, index) => {
+            const question = item.questionId && typeof item.questionId === "object"
+                ? item.questionId
+                : item;
+            const questionId = item.questionId?._id ?? item.questionId ?? question._id;
+            return {
+                questionId: questionId.toString(),
+                order: item.order ?? index + 1,
+                questionText: question.questionText,
+                questionImage: question.questionImage ?? null,
+                options: (question.options ?? []).map((option, optionIndex) => ({
+                    _id: option._id?.toString(),
+                    label: OPTION_LABELS[optionIndex],
                     text: option.text,
                     image: option.image ?? null,
-                    isCorrect: session.status === examSession_constant_1.ExamSessionStatus.SUBMITTED
-                        ? option.isCorrect
-                        : false,
                 })),
-                explanation: session.status === examSession_constant_1.ExamSessionStatus.SUBMITTED
-                    ? q.questionId.explanation
-                    : undefined,
-            },
-        })),
+            };
+        }),
     };
 };
 exports.mapExamSession = mapExamSession;

@@ -1,4 +1,5 @@
 "use strict";
+// modules/Result/result.model.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Result = void 0;
 const mongoose_1 = require("mongoose");
@@ -8,11 +9,13 @@ const resultSchema = new mongoose_1.Schema({
         ref: "ExamSession",
         required: true,
         unique: true,
+        index: true,
     },
     userId: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: "User",
         required: true,
+        index: true,
     },
     totalQuestions: {
         type: Number,

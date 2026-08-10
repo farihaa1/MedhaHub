@@ -21,15 +21,21 @@ export default function LogoutButton({ className }: Props) {
   const handleLogout = async () => {
     try {
       await logout().unwrap()
-    } catch (err) {
-      console.error(err)
+    } catch (error) {
+      console.error("Logout failed:", error)
     } finally {
+      /*
+       * Clear immediately on client.
+       *
+       * authApi.onQueryStarted also does this,
+       * but keeping this here guarantees the UI is cleared
+       * even if the request fails.
+       */
       dispatch(clearCredentials())
 
       dispatch(baseApi.util.resetApiState())
 
       router.replace("/login")
-
       router.refresh()
     }
   }
@@ -43,15 +49,13 @@ export default function LogoutButton({ className }: Props) {
     >
       {isLoading ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 className="mr-2 size-4 animate-spin" />
           Logging out...
         </>
       ) : (
         <>
-          <div className="flex items-center font-bold">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </div>
+          <LogOut className="mr-2 size-4" />
+          Logout
         </>
       )}
     </button>

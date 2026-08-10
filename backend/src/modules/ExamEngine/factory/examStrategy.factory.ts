@@ -4,38 +4,44 @@ import AppError from "../../../error/AppError";
 
 import { ExamType, TExamType } from "../examEngine.constant";
 
-import { IExamStrategy } from "../strategies/strategy.interface";
+import { ExamStrategy } from "../strategies/strategy.interface";
 
-import { TopicExamStrategy } from "../strategies/topic.strategy";
-import { ChapterExamStrategy } from "../strategies/chapter.strategy";
-import { SubjectExamStrategy } from "../strategies/subject.strategy";
-import { PracticeSetStrategy } from "../strategies/practiceSet.strategy";
-import { ModelTestStrategy } from "../strategies/modelTest.strategy";
-import { PreviousYearStrategy } from "../strategies/previousYear.strategy";
-import { DailyQuizStrategy } from "../strategies/dailyQuiz.strategy";
+import { topicExamStrategy } from "../strategies/topic.strategy";
 
-export const getExamStrategy = (type: TExamType): IExamStrategy => {
+import { chapterExamStrategy } from "../strategies/chapter.strategy";
+
+import { subjectExamStrategy } from "../strategies/subject.strategy";
+
+import { practiceSetStrategy } from "../strategies/practiceSet.strategy";
+
+import { modelTestStrategy } from "../strategies/modelTest.strategy";
+
+import { previousYearStrategy } from "../strategies/previousYear.strategy";
+
+import { dailyQuizStrategy } from "../strategies/dailyQuiz.strategy";
+
+export const getExamStrategy = (type: TExamType): ExamStrategy => {
   switch (type) {
     case ExamType.TOPIC:
-      return new TopicExamStrategy();
+      return topicExamStrategy;
 
     case ExamType.CHAPTER:
-      return new ChapterExamStrategy();
+      return chapterExamStrategy;
 
     case ExamType.SUBJECT:
-      return new SubjectExamStrategy();
+      return subjectExamStrategy;
 
     case ExamType.PRACTICE_SET:
-      return new PracticeSetStrategy();
+      return practiceSetStrategy;
 
     case ExamType.MODEL_TEST:
-      return new ModelTestStrategy();
+      return modelTestStrategy;
 
     case ExamType.PREVIOUS_YEAR:
-      return new PreviousYearStrategy();
+      return previousYearStrategy;
 
     case ExamType.DAILY:
-      return new DailyQuizStrategy();
+      return dailyQuizStrategy;
 
     default:
       throw new AppError(httpStatus.BAD_REQUEST, "Unsupported exam type.");

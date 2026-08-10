@@ -1,30 +1,37 @@
 import { Types } from "mongoose";
 
-import { IExamConfiguration, IStartExamPayload } from "../examEngine.interface";
+import { IExamConfiguration } from "../examEngine.interface";
 
 import { TimerService } from "../services/timer.service";
 
-export interface IExamStrategy {
-  generateExam(payload: IStartExamPayload): Promise<IExamConfiguration>;
+export interface IExamConfigurationOptions {
+  duration?: number;
+
+  totalMarks?: number;
+
+  negativeMark?: number;
+
+  shuffleQuestions?: boolean;
+
+  shuffleOptions?: boolean;
 }
-export abstract class BaseExamStrategy {
-  protected buildConfiguration(
-    questions: Types.ObjectId[],
-    options?: Partial<IExamConfiguration>,
-  ): IExamConfiguration {
-    return {
-      questions,
 
-      duration:
-        options?.duration ?? TimerService.calculateDuration(questions.length),
+export const buildExamConfiguration = (
+  questions: Types.ObjectId[],
+  options?: IExamConfigurationOptions,
+): IExamConfiguration => {
+  return {
+    questions,
 
-      totalMarks: options?.totalMarks ?? questions.length,
+    duration:
+      options?.duration ?? TimerService.calculateDuration(questions.length),
 
-      negativeMark: options?.negativeMark ?? 0,
+    totalMarks: options?.totalMarks ?? questions.length,
 
-      shuffleQuestions: options?.shuffleQuestions ?? true,
+    negativeMark: options?.negativeMark ?? 0,
 
-      shuffleOptions: options?.shuffleOptions ?? true,
-    };
-  }
-}
+    shuffleQuestions: options?.shuffleQuestions ?? true,
+
+    shuffleOptions: options?.shuffleOptions ?? true,
+  };
+};

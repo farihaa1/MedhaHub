@@ -1,4 +1,7 @@
+// modules/Result/result.model.ts
+
 import { Schema, model } from "mongoose";
+
 import { IResult } from "./result.interface";
 
 const resultSchema = new Schema<IResult>(
@@ -8,12 +11,14 @@ const resultSchema = new Schema<IResult>(
       ref: "ExamSession",
       required: true,
       unique: true,
+      index: true,
     },
 
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
 
     totalQuestions: {

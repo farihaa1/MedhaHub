@@ -1,6 +1,3 @@
-import {  color } from "@/app/type"
-import { getSubjectColorBySlug } from "@/app/data/colorPalete"
-
 import SubjectPracticeClient from "./SubjectPracticeClient"
 import { SubjectSlug } from "../subjects.type"
 
@@ -12,15 +9,5 @@ interface Props {
 
 export default async function SubjectPage({ params }: Props) {
   const { subjectSlug } = await params
-
- 
-
-  const color: color = getSubjectColorBySlug(subjectSlug)
-console.log(subjectSlug)
-  return (
-    <SubjectPracticeClient
-      subjectSlug={subjectSlug}
-      color={color}
-    />
-  )
+  return <SubjectPracticeClient subjectSlug={subjectSlug} />
 }

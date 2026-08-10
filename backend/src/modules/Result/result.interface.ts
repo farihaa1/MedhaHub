@@ -1,3 +1,5 @@
+// modules/Result/result.interface.ts
+
 import { Types } from "mongoose";
 
 export interface IResult {
@@ -20,4 +22,8 @@ export interface IResult {
   accuracy: number;
 
   negativeMark: number;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }

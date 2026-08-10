@@ -1,58 +1,61 @@
 import { getExamStrategy } from "./factory/examStrategy.factory";
 
 import { IStartExamPayload } from "./examEngine.interface";
+
 import { ExamSessionService } from "../examSession/examSession.service";
+
 import { hasSessionExpired } from "../examSession/examSession.utils";
-import { ExamSessionStatus } from "../examSession/examSession.constant";
+
 import { SessionQueryService } from "../examSession/services/session-query.service";
 
+// ============================================================
+// START EXAM
+// ============================================================
+
 const startExam = async (payload: IStartExamPayload) => {
-  /**
-   * ---------------------------------------
-   * STEP 1
-   * Check for existing running session
-   * ---------------------------------------
-   */
+  // ==========================================================
+  // STEP 1: CHECK EXISTING ACTIVE SESSION
+  // ==========================================================
 
-const runningSession = await SessionQueryService.getRunningSession(
-  payload.userId,
-  payload.examType,
-);
+  const activeSession = await SessionQueryService.getActiveSession(
+    payload.userId,
+    payload.examType,
+  );
 
-  if (runningSession) {
-    /**
-     * Expired?
-     */
-    if (hasSessionExpired(runningSession.startTime, runningSession.duration)) {
-      runningSession.status = ExamSessionStatus.EXPIRED;
-      runningSession.endTime = new Date();
+  if (activeSession) {
+    // --------------------------------------------------------
+    // Existing session expired
+    // --------------------------------------------------------
 
-      await runningSession.save();
+    if (hasSessionExpired(activeSession.startTime, activeSession.duration)) {
+      activeSession.endTime = new Date();
+
+      await activeSession.save();
     } else {
-      /**
-       * Resume exam
-       */
-      return runningSession;
+      // ------------------------------------------------------
+      // Existing session is still active
+      // Resume it
+      // ------------------------------------------------------
+
+      return activeSession;
     }
   }
 
-  /**
-   * ---------------------------------------
-   * STEP 2
-   * Generate Exam
-   * ---------------------------------------
-   */
+  // ==========================================================
+  // STEP 2: GET EXAM STRATEGY
+  // ==========================================================
 
   const strategy = getExamStrategy(payload.examType);
 
-  const examConfig = await strategy.generateExam(payload);
+  // ==========================================================
+  // STEP 3: GENERATE EXAM CONFIG
+  // ==========================================================
 
-  /**
-   * ---------------------------------------
-   * STEP 3
-   * Create Session
-   * ---------------------------------------
-   */
+  const examConfig = await strategy(payload);
+
+  // ==========================================================
+  // STEP 4: CREATE SESSION
+  // ==========================================================
 
   const session = await ExamSessionService.createSession({
     userId: payload.userId,
@@ -73,6 +76,10 @@ const runningSession = await SessionQueryService.getRunningSession(
       shuffleOptions: examConfig.shuffleOptions,
     },
   });
+
+  // ==========================================================
+  // STEP 5: RETURN SESSION
+  // ==========================================================
 
   return session;
 };

@@ -17,19 +17,19 @@ const dailyQuiz_strategy_1 = require("../strategies/dailyQuiz.strategy");
 const getExamStrategy = (type) => {
     switch (type) {
         case examEngine_constant_1.ExamType.TOPIC:
-            return new topic_strategy_1.TopicExamStrategy();
+            return topic_strategy_1.topicExamStrategy;
         case examEngine_constant_1.ExamType.CHAPTER:
-            return new chapter_strategy_1.ChapterExamStrategy();
+            return chapter_strategy_1.chapterExamStrategy;
         case examEngine_constant_1.ExamType.SUBJECT:
-            return new subject_strategy_1.SubjectExamStrategy();
+            return subject_strategy_1.subjectExamStrategy;
         case examEngine_constant_1.ExamType.PRACTICE_SET:
-            return new practiceSet_strategy_1.PracticeSetStrategy();
+            return practiceSet_strategy_1.practiceSetStrategy;
         case examEngine_constant_1.ExamType.MODEL_TEST:
-            return new modelTest_strategy_1.ModelTestStrategy();
+            return modelTest_strategy_1.modelTestStrategy;
         case examEngine_constant_1.ExamType.PREVIOUS_YEAR:
-            return new previousYear_strategy_1.PreviousYearStrategy();
+            return previousYear_strategy_1.previousYearStrategy;
         case examEngine_constant_1.ExamType.DAILY:
-            return new dailyQuiz_strategy_1.DailyQuizStrategy();
+            return dailyQuiz_strategy_1.dailyQuizStrategy;
         default:
             throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Unsupported exam type.");
     }

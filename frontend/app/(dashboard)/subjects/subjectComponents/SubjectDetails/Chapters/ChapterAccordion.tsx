@@ -1,44 +1,53 @@
 "use client"
+
 import { useState } from "react"
-import { ChevronDown, BookOpen, FileQuestion, CheckCircle2 } from "lucide-react"
-import ChapterCard from "./ChapterCard"
-import { color } from "@/app/type"
-import { getTheme } from "@/app/data/colorPalete"
+import { ChevronDown } from "lucide-react"
+
 import { IChapter } from "@/app/redux/api/chaptersApi"
 import { useGetTopicsByChapterQuery } from "@/app/redux/api/topicsApi"
 
+import ChapterCard from "./ChapterCard"
+
 interface Props {
   chapters: IChapter[]
-  color: color
   selectedTopics: string[]
   onToggleTopic: (id: string) => void
 }
 
 export default function ChapterAccordion({
   chapters,
-  color,
   selectedTopics,
   onToggleTopic,
 }: Props) {
-  const theme = getTheme(color.name)
-
   const [openChapter, setOpenChapter] = useState<string | null>(
     chapters[0]?._id ?? null
   )
 
+  if (chapters.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
+        <p className="text-sm font-medium text-foreground">
+          কোনো অধ্যায় পাওয়া যায়নি।
+        </p>
+
+        <p className="mt-1 text-xs text-muted-foreground">
+          এই বিষয়ের অধ্যায়গুলো পরে যোগ করা হবে।
+        </p>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-2">
       {chapters.map((chapter, index) => (
         <ChapterItem
           key={chapter._id}
           chapter={chapter}
           index={index}
-          color={color}
-          theme={theme}
           open={openChapter === chapter._id}
           onOpen={() =>
-            setOpenChapter((prev) =>
-              prev === chapter._id ? null : chapter._id
+            setOpenChapter((previous) =>
+              previous === chapter._id ? null : chapter._id
             )
           }
           selectedTopics={selectedTopics}
@@ -49,11 +58,13 @@ export default function ChapterAccordion({
   )
 }
 
+// ============================================================
+// CHAPTER ITEM
+// ============================================================
+
 interface ChapterItemProps {
   chapter: IChapter
   index: number
-  color: color
-  theme: ReturnType<typeof getTheme>
   open: boolean
   onOpen: () => void
   selectedTopics: string[]
@@ -63,119 +74,125 @@ interface ChapterItemProps {
 function ChapterItem({
   chapter,
   index,
-  color,
-  theme,
   open,
   onOpen,
   selectedTopics,
   onToggleTopic,
 }: ChapterItemProps) {
-  const { data } = useGetTopicsByChapterQuery(chapter._id, {
+  const { data, isLoading } = useGetTopicsByChapterQuery(chapter._id, {
     skip: !open,
   })
 
   const topics = data?.data ?? []
-  console.log(topics)
 
   const selectedCount = topics.filter((topic) =>
     selectedTopics.includes(topic._id)
   ).length
 
+  const progress = Math.min(100, Math.max(0, chapter.progress ?? 0))
+
   return (
     <div
-      className={`overflow-hidden rounded-2xl bg-[#141C2D] shadow-lg transition-all ${theme.border} ${theme.hover}`}
+      className={`overflow-hidden rounded-xl border border-border bg-card transition-shadow ${
+        open ? "shadow-sm" : ""
+      }`}
     >
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <button
+        type="button"
         onClick={onOpen}
-        className="flex w-full items-center justify-between p-6 transition hover:bg-white/5"
+        className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-muted/40"
       >
-        <div className="flex items-start gap-5">
-          <div
-            className={`flex h-12 w-12 items-center justify-center rounded-xl font-bold text-white ${theme.bg}`}
-          >
-            {index + 1}
+        {/* Chapter number */}
+
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold text-foreground">
+          {index + 1}
+        </div>
+
+        {/* Chapter information */}
+
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] text-muted-foreground">
+            অধ্যায় {index + 1}
+          </p>
+
+          <h3 className="mt-0.5 truncate text-sm font-semibold text-foreground">
+            {chapter.title}
+          </h3>
+
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+            <span>{topics.length}টি টপিক</span>
+
+            <span>{chapter.totalQuestions}টি প্রশ্ন</span>
+
+            {selectedCount > 0 && (
+              <span className="font-medium text-foreground">
+                {selectedCount}টি নির্বাচিত
+              </span>
+            )}
           </div>
 
-          <div className="text-left">
-            <p className="text-xs tracking-widest text-gray-400 uppercase">
-              Chapter {index + 1}
-            </p>
+          {/* Progress */}
 
-            <h3 className="mt-1 text-xl font-semibold text-white">
-              {chapter.title}
-            </h3>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <span className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs text-gray-300">
-                <BookOpen size={13} className={theme.icon} />
-                {topics.length} Topics
-              </span>
-
-              <span className="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs text-gray-300">
-                <FileQuestion size={13} className={theme.icon} />
-                {chapter.totalQuestions} Questions
-              </span>
-
-              <span
-                className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs ${theme.bg} ${theme.text}`}
-              >
-                <CheckCircle2 size={13} className={theme.icon} />
-                {selectedCount} Selected
-              </span>
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-foreground/70 transition-all"
+                style={{
+                  width: `${progress}%`,
+                }}
+              />
             </div>
 
-            <div className="mt-5 flex items-center gap-3">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={`${color.progress} h-full rounded-full`}
-                  style={{
-                    width: `${Math.min(Math.max(chapter.progress ?? 0, 0), 100)}%`,
-                  }}
-                />
-              </div>
-
-              <span className={`text-xs font-medium ${theme.text}`}>
-                {chapter.progress}%
-              </span>
-            </div>
+            <span className="text-[10px] font-medium text-muted-foreground">
+              {progress}%
+            </span>
           </div>
         </div>
 
+        {/* Chevron */}
+
         <ChevronDown
-          size={24}
-          className={`${theme.icon} transition-transform ${
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
             open ? "rotate-180" : ""
           }`}
         />
       </button>
 
-      <div
-        className={`grid transition-all duration-300 ${
-          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className={`space-y-4 border-t ${theme.border} bg-black/10 p-6`}>
-            {topics.length === 0 ? (
-              <div
-                className={`rounded-xl border border-dashed ${theme.border} py-10 text-center text-sm text-gray-500`}
-              >
-                No topics available.
-              </div>
-            ) : (
-              topics.map((topic) => (
+      {/* =====================================================
+          TOPICS
+      ===================================================== */}
+
+      {open && (
+        <div className="border-t border-border bg-muted/20 p-3 sm:p-4">
+          {isLoading ? (
+            <div className="space-y-2">
+              <div className="h-16 animate-pulse rounded-lg bg-muted" />
+              <div className="h-16 animate-pulse rounded-lg bg-muted" />
+            </div>
+          ) : topics.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border bg-card p-6 text-center">
+              <p className="text-xs text-muted-foreground">
+                এই অধ্যায়ে কোনো টপিক পাওয়া যায়নি।
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {topics.map((topic) => (
                 <ChapterCard
                   key={topic._id}
                   topic={topic}
                   selected={selectedTopics.includes(topic._id)}
                   onToggle={onToggleTopic}
-                  color={color}
                 />
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   )
 }

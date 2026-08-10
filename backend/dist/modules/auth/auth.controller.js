@@ -1,10 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
+const http_status_1 = __importDefault(require("http-status"));
 const auth_service_1 = require("./auth.service");
 const sendResponse_1 = require("../../utils/sendResponse");
 const catchAsync_1 = require("../../utils/catchAsync");
 const auth_utils_1 = require("./auth.utils");
+const AppError_1 = __importDefault(require("../../error/AppError"));
 const register = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const result = await auth_service_1.AuthService.register(req.body);
     (0, auth_utils_1.setAuthCookies)(res, result.accessToken, result.refreshToken);
@@ -36,6 +41,9 @@ const changePassword = (0, catchAsync_1.catchAsync)(async (req, res) => {
     });
 });
 const getMe = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    if (!req.user?.email) {
+        throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "Authentication information is missing.");
+    }
     const result = await auth_service_1.AuthService.getMe(req.user.email);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,

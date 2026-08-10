@@ -37,7 +37,7 @@ export default async function RegisterPage({
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4 py-10">
       <AuthBackgroundShape />
 
       <Card className="z-10 w-full max-w-lg gap-6 py-6">
@@ -68,7 +68,9 @@ export default async function RegisterPage({
 
           <div className="flex items-center gap-3">
             <Separator />
+
             <span className="text-sm">OR</span>
+
             <Separator />
           </div>
 

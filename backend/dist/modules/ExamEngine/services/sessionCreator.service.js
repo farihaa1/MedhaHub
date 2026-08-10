@@ -9,8 +9,7 @@ const createSession = async (payload) => {
         questionId,
         order: index + 1,
     }));
-    console.log(questions);
-    return await examSession_model_1.ExamSession.create({
+    return examSession_model_1.ExamSession.create({
         userId: new mongoose_1.Types.ObjectId(payload.userId),
         examType: payload.examType,
         questions,
