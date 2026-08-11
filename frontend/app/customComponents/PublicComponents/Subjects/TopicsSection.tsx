@@ -13,10 +13,6 @@ export default function TopicsSection({
   subjectSlug,
   chapterId,
 }: TopicsSectionProps) {
-  console.log("TOPICS SECTION:", {
-    subjectSlug,
-    chapterId,
-  })
 
   const {
     data: topicsResponse,

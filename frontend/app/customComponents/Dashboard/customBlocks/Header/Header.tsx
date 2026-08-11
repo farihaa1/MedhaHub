@@ -70,8 +70,6 @@ export default function Header() {
                 aria-label="Open profile menu"
               >
                 <Avatar className="size-10">
-                  <AvatarImage src={user?.profileImage || ""} alt={userName} />
-
                   <AvatarFallback className="bg-blue-600 font-semibold text-white">
                     {firstLetter}
                   </AvatarFallback>

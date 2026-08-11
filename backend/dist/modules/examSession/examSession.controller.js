@@ -10,6 +10,7 @@ const AppError_1 = __importDefault(require("../../error/AppError"));
 const catchAsync_1 = require("../../utils/catchAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 const examSession_service_1 = require("./examSession.service");
+const result_service_1 = require("../Result/result.service");
 // ============================================================
 // GET SESSION
 // ============================================================
@@ -50,7 +51,17 @@ const submitSession = (0, catchAsync_1.catchAsync)(async (req, res) => {
     if (!req.user) {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "User authentication required.");
     }
+    // ----------------------------------------------------------
+    // 1. Submit the exam session
+    // ----------------------------------------------------------
     const result = await examSession_service_1.ExamSessionService.submitSession(req.params.id, req.user.id);
+    // ----------------------------------------------------------
+    // 2. Create / update the result
+    // ----------------------------------------------------------
+    await result_service_1.ResultService.createResult(req.params.id);
+    // ----------------------------------------------------------
+    // 3. Return submitted session
+    // ----------------------------------------------------------
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: http_status_1.default.OK,

@@ -1,12 +1,11 @@
-import { Schema, model } from "mongoose";
-import bcrypt from "bcrypt";
-import config from "../../config";
+import mongoose, { Schema } from "mongoose";
 
-import { IUser, UserModel } from "./user.interface";
+import { IUser, IUserDocument, IUserModel } from "./user.interface";
+
 import { UserRole, UserStatus } from "./user.constants";
 import { AuthProvider } from "../auth/auth.constant";
 
-const userSchema = new Schema<IUser, UserModel>(
+const userSchema = new Schema<IUser, IUserModel>(
   {
     name: {
       type: String,
@@ -22,12 +21,43 @@ const userSchema = new Schema<IUser, UserModel>(
       trim: true,
     },
 
+    /**
+     * Password is optional because
+     * Google users may not have one initially.
+     */
     password: {
       type: String,
-      required: function (this: IUser): boolean {
-        return this.provider === AuthProvider.CREDENTIAL;
-      },
+      required: false,
       select: false,
+    },
+
+    /**
+     * Google's stable account ID.
+     *
+     * sparse allows multiple users to have
+     * undefined googleId.
+     */
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    avatar: {
+      type: String,
+      default: "",
+    },
+
+    /**
+     * Original registration provider.
+     *
+     * credential = registered with email/password
+     * google     = registered with Google
+     */
+    provider: {
+      type: String,
+      enum: Object.values(AuthProvider),
+      required: true,
     },
 
     role: {
@@ -42,26 +72,11 @@ const userSchema = new Schema<IUser, UserModel>(
       default: UserStatus.ACTIVE,
     },
 
-    provider: {
-      type: String,
-      enum: Object.values(AuthProvider),
-      default: AuthProvider.CREDENTIAL,
-    },
-
-    avatar: {
-      type: String,
-      default: "",
-    },
-
-    phone: {
-      type: String,
-      default: "",
-    },
-
     isVerified: {
       type: Boolean,
       default: false,
     },
+
     points: {
       type: Number,
       default: 0,
@@ -72,15 +87,20 @@ const userSchema = new Schema<IUser, UserModel>(
   },
 );
 
-// Remove password after saving
-userSchema.post("save", function (doc, next) {
-  doc.password = "";
-  next();
-});
-
-// Static method
+/**
+ * Find user by email and explicitly include password.
+ *
+ * Normally password has select:false.
+ */
 userSchema.statics.isUserExistsByEmail = function (email: string) {
-  return this.findOne({ email }).select("+password");
+  return this.findOne({
+    email: email.toLowerCase(),
+  }).select("+password");
 };
 
-export const User = model<IUser, UserModel>("User", userSchema);
+/**
+ * Prevent OverwriteModelError during development
+ * / Next.js-style hot reload environments.
+ */
+export const User =
+  mongoose.models.User || mongoose.model<IUser, IUserModel>("User", userSchema);

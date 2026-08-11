@@ -1,5 +1,4 @@
 "use strict";
-// modules/Result/result.service.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -19,23 +18,38 @@ const OPTION_LABELS = ["A", "B", "C", "D"];
 // CREATE RESULT
 // ============================================================
 const createResult = async (sessionId) => {
+    // ----------------------------------------------------------
+    // Find session
+    // ----------------------------------------------------------
     const session = await examSession_model_1.ExamSession.findById(sessionId);
     if (!session) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Exam session not found.");
     }
+    // ----------------------------------------------------------
+    // Check session status
+    // ----------------------------------------------------------
     if (session.status !== examSession_constant_1.ExamSessionStatus.SUBMITTED &&
         session.status !== examSession_constant_1.ExamSessionStatus.EXPIRED) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam has not been submitted.");
     }
+    // ----------------------------------------------------------
+    // Calculate statistics
+    // ----------------------------------------------------------
     const totalQuestions = session.questions.length;
     const attempted = session.answers.length;
     const correct = session.answers.filter((answer) => answer.isCorrect === true).length;
     const wrong = session.answers.filter((answer) => answer.isCorrect === false).length;
     const skipped = Math.max(0, totalQuestions - attempted);
+    // ----------------------------------------------------------
+    // Calculate score
+    // ----------------------------------------------------------
     const score = correct - wrong * session.negativeMark;
+    // ----------------------------------------------------------
+    // Calculate accuracy
+    // ----------------------------------------------------------
     const accuracy = attempted === 0 ? 0 : Number(((correct / attempted) * 100).toFixed(2));
     // ----------------------------------------------------------
-    // Upsert Result
+    // Create / Update Result
     // ----------------------------------------------------------
     const result = await result_model_1.Result.findOneAndUpdate({
         sessionId: session._id,
@@ -56,7 +70,7 @@ const createResult = async (sessionId) => {
         setDefaultsOnInsert: true,
     });
     // ----------------------------------------------------------
-    // Persist result in session
+    // Persist result inside session
     // ----------------------------------------------------------
     session.result = {
         score,
@@ -72,6 +86,9 @@ const createResult = async (sessionId) => {
 // RESULT REVIEW
 // ============================================================
 const getResultReview = async (sessionId, userId) => {
+    // ----------------------------------------------------------
+    // Get session
+    // ----------------------------------------------------------
     const session = await examSession_model_1.ExamSession.findOne({
         _id: sessionId,
         userId,
@@ -79,17 +96,36 @@ const getResultReview = async (sessionId, userId) => {
     if (!session) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Exam session not found.");
     }
-    const result = await result_model_1.Result.findOne({
+    // ----------------------------------------------------------
+    // Check exam status
+    // ----------------------------------------------------------
+    if (session.status !== examSession_constant_1.ExamSessionStatus.SUBMITTED &&
+        session.status !== examSession_constant_1.ExamSessionStatus.EXPIRED) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam has not been submitted yet.");
+    }
+    // ----------------------------------------------------------
+    // Get result
+    // ----------------------------------------------------------
+    let result = await result_model_1.Result.findOne({
         sessionId,
         userId,
     });
+    // ----------------------------------------------------------
+    // Safety fallback
+    //
+    // If result was not created during submit,
+    // create it now.
+    // ----------------------------------------------------------
     if (!result) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Result not found.");
+        result = await createResult(sessionId);
     }
     // ----------------------------------------------------------
-    // Get Questions
+    // Get question IDs
     // ----------------------------------------------------------
     const questionIds = session.questions.map((question) => question.questionId);
+    // ----------------------------------------------------------
+    // Get questions
+    // ----------------------------------------------------------
     const questions = await question_model_1.Question.find({
         _id: {
             $in: questionIds,
@@ -97,10 +133,16 @@ const getResultReview = async (sessionId, userId) => {
     })
         .select("questionText questionImage options explanation explanationImage")
         .lean();
+    // ----------------------------------------------------------
+    // Answer map
+    // ----------------------------------------------------------
     const answerMap = new Map(session.answers.map((answer) => [answer.questionId.toString(), answer]));
+    // ----------------------------------------------------------
+    // Question map
+    // ----------------------------------------------------------
     const questionMap = new Map(questions.map((question) => [question._id.toString(), question]));
     // ----------------------------------------------------------
-    // Review Questions
+    // Build review questions
     // ----------------------------------------------------------
     const reviewQuestions = session.questions
         .map((sessionQuestion) => {
@@ -109,11 +151,14 @@ const getResultReview = async (sessionId, userId) => {
             return null;
         }
         const answer = answerMap.get(sessionQuestion.questionId.toString());
-        // ----------------------------------------------------
-        // Find correct option
-        // ----------------------------------------------------
+        // --------------------------------------------------
+        // Correct option
+        // --------------------------------------------------
         const correctIndex = question.options.findIndex((option) => option.isCorrect === true);
         const correctOption = correctIndex >= 0 ? OPTION_LABELS[correctIndex] : undefined;
+        // --------------------------------------------------
+        // Review question
+        // --------------------------------------------------
         return {
             id: question._id.toString(),
             order: sessionQuestion.order,
@@ -133,6 +178,9 @@ const getResultReview = async (sessionId, userId) => {
         };
     })
         .filter((question) => question !== null);
+    // ----------------------------------------------------------
+    // Return
+    // ----------------------------------------------------------
     return {
         result: {
             totalQuestions: result.totalQuestions,
@@ -143,10 +191,14 @@ const getResultReview = async (sessionId, userId) => {
             score: result.score,
             accuracy: result.accuracy,
             negativeMark: result.negativeMark,
+            status: session.status,
         },
         questions: reviewQuestions,
     };
 };
+// ============================================================
+// EXPORT
+// ============================================================
 exports.ResultService = {
     createResult,
     getResultReview,

@@ -54,8 +54,11 @@ export default function LogoutButton({ className }: Props) {
         </>
       ) : (
         <>
-          <LogOut className="mr-2 size-4" />
-          Logout
+          <h1 className="flex">
+           
+            <LogOut className="mr-2 size-4" />
+            <p> Logout</p>
+          </h1>
         </>
       )}
     </button>

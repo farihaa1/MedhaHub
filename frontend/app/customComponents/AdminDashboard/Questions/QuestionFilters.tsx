@@ -1,8 +1,10 @@
 "use client"
 
-import { Dispatch, SetStateAction } from "react"
-import { RotateCcw } from "lucide-react"
+import { RotateCcw, Search } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+
 import {
   Select,
   SelectContent,
@@ -10,9 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
 import { useGetSubjectsQuery } from "@/app/redux/api/subjectsApi"
 import { useGetChaptersBySubjectQuery } from "@/app/redux/api/chaptersApi"
 import { useGetTopicsByChapterQuery } from "@/app/redux/api/topicsApi"
+
 import {
   QuestionDifficulty,
   QuestionStatus,
@@ -36,35 +40,50 @@ interface ITopic {
 }
 
 interface Props {
+  /* Search */
+  search: string
+  setSearch: (value: string) => void
+
+  sourceTitle: string
+  setSourceTitle: (value: string) => void
+
+  /* Academic */
   subjectId: string
-  setSubjectId: Dispatch<SetStateAction<string>>
+  setSubjectId: (value: string) => void
 
   chapterId: string
-  setChapterId: Dispatch<SetStateAction<string>>
+  setChapterId: (value: string) => void
 
   topicId: string
-  setTopicId: Dispatch<SetStateAction<string>>
+  setTopicId: (value: string) => void
 
+  /* Metadata */
   difficulty: string
-  setDifficulty: Dispatch<SetStateAction<string>>
+  setDifficulty: (value: string) => void
 
   status: string
-  setStatus: Dispatch<SetStateAction<string>>
+  setStatus: (value: string) => void
 
   type: string
-  setType: Dispatch<SetStateAction<string>>
+  setType: (value: string) => void
 
   source: string
-  setSource: Dispatch<SetStateAction<string>>
+  setSource: (value: string) => void
 
+  /* Sorting */
   sort: string
-  setSort: Dispatch<SetStateAction<string>>
+  setSort: (value: string) => void
 
-  // pagination
-  setPage: Dispatch<SetStateAction<number>>
+  setPage: (value: number) => void
 }
 
 export default function QuestionFilters({
+  search,
+  setSearch,
+
+  sourceTitle,
+  setSourceTitle,
+
   subjectId,
   setSubjectId,
 
@@ -91,19 +110,46 @@ export default function QuestionFilters({
 
   setPage,
 }: Props) {
+  /* ============================================================
+     SUBJECTS
+  ============================================================ */
+
   const { data: subjectData } = useGetSubjectsQuery()
+
+  /* ============================================================
+     CHAPTERS
+  ============================================================ */
 
   const { data: chapterData, isLoading: chapterLoading } =
     useGetChaptersBySubjectQuery(subjectId, {
       skip: !subjectId,
     })
 
+  /* ============================================================
+     TOPICS
+  ============================================================ */
+
   const { data: topicData, isLoading: topicLoading } =
     useGetTopicsByChapterQuery(chapterId, {
       skip: !chapterId,
     })
 
+  /* ============================================================
+     RESET PAGE
+  ============================================================ */
+
+  const resetPage = () => {
+    setPage(1)
+  }
+
+  /* ============================================================
+     RESET ALL FILTERS
+  ============================================================ */
+
   const resetFilters = () => {
+    setSearch("")
+    setSourceTitle("")
+
     setSubjectId("")
     setChapterId("")
     setTopicId("")
@@ -115,24 +161,62 @@ export default function QuestionFilters({
 
     setSort("-createdAt")
 
-    // important
-    setPage(1)
-  }
-
-  const resetPage = () => {
     setPage(1)
   }
 
   return (
     <div className="rounded-lg border bg-background p-4">
+      {/* ======================================================
+          SEARCHES
+      ====================================================== */}
+
+      <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* QUESTION SEARCH */}
+
+        <div className="relative">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+          <Input
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              resetPage()
+            }}
+            placeholder="Search question..."
+            className="pl-9"
+          />
+        </div>
+
+        {/* SOURCE TITLE SEARCH */}
+
+        <div className="relative">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+          <Input
+            value={sourceTitle}
+            onChange={(event) => {
+              setSourceTitle(event.target.value)
+              resetPage()
+            }}
+            placeholder="Search source title..."
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {/* ======================================================
+          FILTERS
+      ====================================================== */}
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {/* Subject */}
+        {/* SUBJECT */}
 
         <Select
           value={subjectId || "all"}
-
           onValueChange={(value) => {
-            setSubjectId(value === "all" ? "" : value)
+            const newSubjectId = value === "all" ? "" : value
+
+            setSubjectId(newSubjectId)
 
             setChapterId("")
             setTopicId("")
@@ -155,16 +239,15 @@ export default function QuestionFilters({
           </SelectContent>
         </Select>
 
-        {/* Chapter */}
+        {/* CHAPTER */}
 
         <Select
           disabled={!subjectId || chapterLoading}
-
           value={chapterId || "all"}
-
           onValueChange={(value) => {
-            setChapterId(value === "all" ? "" : value)
+            const newChapterId = value === "all" ? "" : value
 
+            setChapterId(newChapterId)
             setTopicId("")
 
             resetPage()
@@ -185,13 +268,11 @@ export default function QuestionFilters({
           </SelectContent>
         </Select>
 
-        {/* Topic */}
+        {/* TOPIC */}
 
         <Select
           disabled={!chapterId || topicLoading}
-
           value={topicId || "all"}
-
           onValueChange={(value) => {
             setTopicId(value === "all" ? "" : value)
 
@@ -213,11 +294,10 @@ export default function QuestionFilters({
           </SelectContent>
         </Select>
 
-        {/* Difficulty */}
+        {/* DIFFICULTY */}
 
         <Select
           value={difficulty || "all"}
-
           onValueChange={(value) => {
             setDifficulty(value === "all" ? "" : value)
 
@@ -231,7 +311,7 @@ export default function QuestionFilters({
           <SelectContent>
             <SelectItem value="all">All Difficulties</SelectItem>
 
-            {(Object.values(QuestionDifficulty) as string[]).map((item) => (
+            {Object.values(QuestionDifficulty).map((item) => (
               <SelectItem key={item} value={item}>
                 {item}
               </SelectItem>
@@ -239,11 +319,10 @@ export default function QuestionFilters({
           </SelectContent>
         </Select>
 
-        {/* Status */}
+        {/* STATUS */}
 
         <Select
           value={status || "all"}
-
           onValueChange={(value) => {
             setStatus(value === "all" ? "" : value)
 
@@ -257,7 +336,7 @@ export default function QuestionFilters({
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
 
-            {(Object.values(QuestionStatus) as string[]).map((item) => (
+            {Object.values(QuestionStatus).map((item) => (
               <SelectItem key={item} value={item}>
                 {item}
               </SelectItem>
@@ -265,11 +344,10 @@ export default function QuestionFilters({
           </SelectContent>
         </Select>
 
-        {/* Type */}
+        {/* TYPE */}
 
         <Select
           value={type || "all"}
-
           onValueChange={(value) => {
             setType(value === "all" ? "" : value)
 
@@ -283,7 +361,7 @@ export default function QuestionFilters({
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
 
-            {(Object.values(QuestionType) as string[]).map((item) => (
+            {Object.values(QuestionType).map((item) => (
               <SelectItem key={item} value={item}>
                 {item}
               </SelectItem>
@@ -291,11 +369,10 @@ export default function QuestionFilters({
           </SelectContent>
         </Select>
 
-        {/* Source */}
+        {/* SOURCE TYPE */}
 
         <Select
           value={source || "all"}
-
           onValueChange={(value) => {
             setSource(value === "all" ? "" : value)
 
@@ -303,12 +380,13 @@ export default function QuestionFilters({
           }}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Source" />
+            <SelectValue placeholder="Source Type" />
           </SelectTrigger>
 
           <SelectContent>
             <SelectItem value="all">All Sources</SelectItem>
-            {(Object.values(QuestionSourceType) as string[]).map((item) => (
+
+            {Object.values(QuestionSourceType).map((item) => (
               <SelectItem key={item} value={item}>
                 {item}
               </SelectItem>
@@ -316,11 +394,10 @@ export default function QuestionFilters({
           </SelectContent>
         </Select>
 
-        {/* Sort */}
+        {/* SORT */}
 
         <Select
           value={sort}
-
           onValueChange={(value) => {
             setSort(value)
 
@@ -343,9 +420,13 @@ export default function QuestionFilters({
         </Select>
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
+      {/* ======================================================
+          FOOTER
+      ====================================================== */}
+
+      <div className="mt-6 flex items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
-          Filter questions by academic and metadata fields.
+          Filter questions by academic, source, search, and metadata fields.
         </p>
 
         <Button variant="outline" onClick={resetFilters}>

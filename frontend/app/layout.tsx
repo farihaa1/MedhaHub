@@ -1,8 +1,20 @@
+
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Anek_Bangla, Hind_Siliguri, Poppins } from "next/font/google"
+
+import {
+  Anek_Bangla,
+  Hind_Siliguri,
+  Poppins,
+} from "next/font/google"
+
 import Providers from "./providers/providers"
+
 import { Toaster } from "@/components/ui/sonner"
+
+
+/* =========================================================
+   FONTS
+========================================================= */
 
 const anekBangla = Anek_Bangla({
   subsets: ["bengali"],
@@ -22,6 +34,11 @@ const poppins = Poppins({
   variable: "--font-sans",
 })
 
+
+/* =========================================================
+   ROOT LAYOUT
+========================================================= */
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,17 +50,12 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${poppins.variable} ${hind.variable} ${anekBangla.variable}`}
     >
-      <body className="font-on font-sans">
+      <body>
         <Providers>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-            {children} <Toaster />
-          </ThemeProvider>
+          {children}
         </Providers>
+
+        <Toaster />
       </body>
     </html>
   )

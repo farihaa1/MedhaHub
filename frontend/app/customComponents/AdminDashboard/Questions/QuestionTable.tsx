@@ -1,7 +1,7 @@
 "use client"
 
 import { DataTable } from "./data-table"
-import { columns, IQuestionRow } from "./QuestionColumns"
+import { columns, type IQuestionRow } from "./QuestionColumns"
 
 import {
   IQuestion,
@@ -22,27 +22,27 @@ interface QuestionTableProps {
   onPageChange: (page: number) => void
   onLimitChange: (limit: number) => void
 
-  // NEW
-  selectedQuestion?: IQuestion | null
-  onSelectQuestion?: (question: IQuestion) => void
+  selectedQuestionId: string | null
+
+  onSelectQuestion: (questionId: string) => void
 }
 
 export default function QuestionTable({
   data,
   loading,
   isFetching,
-
   pagination,
-
   page,
   limit,
-
   onPageChange,
   onLimitChange,
-
-  selectedQuestion,
+  selectedQuestionId,
   onSelectQuestion,
 }: QuestionTableProps) {
+  // ============================================================
+  // API DATA -> TABLE DATA
+  // ============================================================
+
   const tableData: IQuestionRow[] = (data ?? []).map((item) => ({
     _id: item._id,
 
@@ -83,6 +83,10 @@ export default function QuestionTable({
     createdAt: item.createdAt,
   }))
 
+  // ============================================================
+  // TABLE
+  // ============================================================
+
   return (
     <DataTable
       columns={columns}
@@ -99,9 +103,13 @@ export default function QuestionTable({
       onPageChange={onPageChange}
       onLimitChange={onLimitChange}
 
-      // NEW
-      selectedRowId={selectedQuestion?._id}
-      onRowClick={(row) => onSelectQuestion?.(row.original)}
+      selectedRowId={selectedQuestionId}
+
+      getRowId={(row) => row._id}
+
+      onRowClick={(row) => {
+        onSelectQuestion(row.original._id)
+      }}
     />
   )
 }

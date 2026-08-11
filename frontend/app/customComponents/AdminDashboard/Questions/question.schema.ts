@@ -3,29 +3,12 @@ import { z } from "zod"
 import {
   QuestionDifficulty,
   QuestionSourceType,
+  QuestionStatus,
 } from "@/app/redux/api/questionsApi"
-
-/* ==========================================================
-   Source Schema
-========================================================== */
-
-const sourceSchema = z.object({
-  type: z.nativeEnum(QuestionSourceType),
-
-  name: z.string().min(1, "Source name is required"),
-
-  year: z.number().optional(),
-})
-
-/* ==========================================================
-   Question Schema
-========================================================== */
 
 export const questionSchema = z.object({
   subjectId: z.string().min(1, "Subject is required"),
-
   chapterId: z.string().min(1, "Chapter is required"),
-
   topicId: z.string().min(1, "Topic is required"),
 
   questionText: z.string().min(1, "Question is required"),
@@ -36,16 +19,11 @@ export const questionSchema = z.object({
     .array(
       z.object({
         text: z.string().min(1, "Option is required"),
-
         image: z.string().nullable().optional(),
-
         isCorrect: z.boolean(),
       })
     )
-    .length(4, "Exactly four options are required")
-    .refine((options) => options.filter((o) => o.isCorrect).length === 1, {
-      message: "Exactly one option must be correct",
-    }),
+    .min(2, "At least 2 options are required"),
 
   explanation: z.string().optional(),
 
@@ -55,20 +33,25 @@ export const questionSchema = z.object({
 
   tags: z.array(z.string()),
 
-  sources: z.array(sourceSchema),
+  sources: z.array(
+    z.object({
+      type: z.nativeEnum(QuestionSourceType),
+      name: z.string(),
+      year: z.number().optional(),
+    })
+  ),
+
+  status: z.nativeEnum(QuestionStatus),
 })
 
 export type QuestionFormValues = z.infer<typeof questionSchema>
 
 export const defaultQuestionValues: QuestionFormValues = {
   subjectId: "",
-
   chapterId: "",
-
   topicId: "",
 
   questionText: "",
-
   questionImage: null,
 
   options: [
@@ -95,17 +78,13 @@ export const defaultQuestionValues: QuestionFormValues = {
   ],
 
   explanation: "",
-
   explanationImage: null,
 
-  difficulty: QuestionDifficulty.MEDIUM,
+  difficulty: QuestionDifficulty.EASY,
 
   tags: [],
 
-  sources: [
-    {
-      type: QuestionSourceType.CUSTOM,
-      name: "Custom",
-    },
-  ],
+  sources: [],
+
+  status: QuestionStatus.PENDING,
 }

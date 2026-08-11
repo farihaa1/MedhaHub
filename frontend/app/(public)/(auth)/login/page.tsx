@@ -25,56 +25,48 @@ interface LoginPageProps {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect: redirectTo } = await searchParams
 
-  return (
-    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4 py-10">
-      <AuthBackgroundShape />
+  const redirectQuery = redirectTo
+    ? `?redirect=${encodeURIComponent(redirectTo)}`
+    : ""
 
-      <Card className="z-10 w-full max-w-lg gap-6 py-6">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            Welcome to MedhaHub
+  return (
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-6 sm:px-6">
+      {/* Background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl dark:bg-primary/15" />
+        <div className="absolute -right-24 -bottom-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-400/10" />
+
+        <AuthBackgroundShape className="absolute inset-0 h-full w-full opacity-20 dark:opacity-10" />
+      </div>
+
+      {/* Login Card */}
+      <Card className="relative z-10 w-full max-w-md border-border/60 bg-card/95 shadow-xl backdrop-blur-sm dark:shadow-black/30">
+        <CardHeader className="space-y-2 px-5 pt-5 pb-4 text-center sm:px-7 sm:pt-7">
+          <CardTitle className="text-lg font-bold tracking-tight sm:text-xl">
+            মেধাহাবে স্বাগতম
           </CardTitle>
 
-          <CardDescription>
-            Sign in to continue your preparation.
+          <CardDescription className="text-xs leading-relaxed text-muted-foreground">
+            আপনার প্রস্তুতি চালিয়ে যেতে অ্যাকাউন্টে লগইন করুন।
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4 px-5 pb-5 sm:px-7 sm:pb-7">
           <LoginForm redirect={redirectTo} />
 
-          <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?
+          {/* Register */}
+          <p className="text-center text-xs text-muted-foreground">
+            আপনার কি কোনো অ্যাকাউন্ট নেই?
             <Link
-              className="ml-2 font-medium text-primary hover:underline"
-              href={`/register${
-                redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""
-              }`}
+              className="ml-1.5 font-medium text-primary transition-colors hover:underline"
+              href={`/register${redirectQuery}`}
             >
-              Create Account
+              অ্যাকাউন্ট তৈরি করুন
             </Link>
           </p>
 
-          <div className="flex items-center gap-3">
-            <Separator />
-
-            <span className="text-sm">OR</span>
-
-            <Separator />
-          </div>
-
-          <Button variant="outline" className="w-full" asChild>
-            <Link
-              href={`/login/google${
-                redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""
-              }`}
-            >
-              <FcGoogle className="mr-2 h-5 w-5" />
-              Continue with Google
-            </Link>
-          </Button>
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }

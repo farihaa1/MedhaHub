@@ -73,15 +73,15 @@ export const columns: ColumnDef<IQuestion>[] = [
     cell: ({ row }) => getEntityTitle(row.original.topicId),
   },
 
-  {
-    accessorKey: "difficulty",
+  // {
+  //   accessorKey: "difficulty",
 
-    header: "Difficulty",
+  //   header: "Difficulty",
 
-    cell: ({ row }) => (
-      <Badge variant="outline">{row.original.difficulty}</Badge>
-    ),
-  },
+  //   cell: ({ row }) => (
+  //     <Badge variant="outline">{row.original.difficulty}</Badge>
+  //   ),
+  // },
 
   {
     accessorKey: "status",
@@ -91,21 +91,21 @@ export const columns: ColumnDef<IQuestion>[] = [
     cell: ({ row }) => <Badge variant="secondary">{row.original.status}</Badge>,
   },
 
-  {
-    accessorKey: "sources",
+  // {
+  //   accessorKey: "sources",
 
-    header: "Source",
+  //   header: "Source",
 
-    cell: ({ row }) => row.original.sources?.[0]?.name ?? "-",
-  },
+  //   cell: ({ row }) => row.original.sources?.[0]?.name ?? "-",
+  // },
 
-  {
-    accessorKey: "createdAt",
+  // {
+  //   accessorKey: "createdAt",
 
-    header: "Created",
+  //   header: "Created",
 
-    cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
-  },
+  //   cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+  // },
 
   {
     id: "actions",

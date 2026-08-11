@@ -1,4 +1,3 @@
-
 import { baseApi } from "./baseApi"
 import {
   IEntityValue,
@@ -9,7 +8,7 @@ import {
   QuestionType,
 } from "./questionsApi"
 
-import { IApiResponse } from "@/app/features/auth/auth.type"
+import { IApiResponse } from "@/app/redux/types/auth.type"
 
 /* ============================================================
    Question Submission
@@ -102,10 +101,7 @@ export const questionSubmissionApi = baseApi.injectEndpoints({
       invalidatesTags: ["QuestionSubmission"],
     }),
 
-    getMySubmissions: builder.query<
-      IApiResponse<IQuestionSubmission[]>,
-      void
-    >({
+    getMySubmissions: builder.query<IApiResponse<IQuestionSubmission[]>, void>({
       query: () => ({
         url: "/question-submissions/my",
         method: "GET",
@@ -116,7 +112,5 @@ export const questionSubmissionApi = baseApi.injectEndpoints({
   }),
 })
 
-export const {
-  useCreateQuestionSubmissionMutation,
-  useGetMySubmissionsQuery,
-} = questionSubmissionApi
+export const { useCreateQuestionSubmissionMutation, useGetMySubmissionsQuery } =
+  questionSubmissionApi

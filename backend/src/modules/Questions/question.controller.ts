@@ -2,13 +2,32 @@ import { Request, Response } from "express";
 import { QuestionService } from "./question.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
+import { UserRole } from "../users/user.constants";
+import { QuestionStatus } from "./question.constant";
+
+/* =========================================================
+   CREATE QUESTION
+========================================================= */
 
 const createQuestion = catchAsync(async (req: Request, res: Response) => {
   const payload = {
     ...req.body,
+
     createdBy: req.user!.id,
+
+    /*
+     * Backend decides status.
+     *
+     * ADMIN -> APPROVED
+     * USER  -> PENDING
+     */
+    status:
+      req.user!.role === UserRole.ADMIN
+        ? QuestionStatus.APPROVED
+        : QuestionStatus.PENDING,
   };
-  const result = await QuestionService.createQuestion(req.body);
+
+  const result = await QuestionService.createQuestion(payload, req.user!.role);
 
   sendResponse(res, {
     success: true,
@@ -18,8 +37,22 @@ const createQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const bulkCreateQuestions = catchAsync(async (req, res) => {
-  const result = await QuestionService.bulkCreateQuestions(req.body);
+const bulkCreateQuestions = catchAsync(async (req: Request, res: Response) => {
+  const status =
+    req.user!.role === UserRole.ADMIN
+      ? QuestionStatus.APPROVED
+      : QuestionStatus.PENDING;
+
+  const payload = req.body.map((question: Record<string, any>) => ({
+    ...question,
+    createdBy: req.user!.id,
+    status,
+  }));
+
+  const result = await QuestionService.bulkCreateQuestions(
+    payload,
+    req.user!.role,
+  );
 
   sendResponse(res, {
     success: true,
@@ -29,9 +62,11 @@ const bulkCreateQuestions = catchAsync(async (req, res) => {
   });
 });
 
-const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
-  console.log("Query from get alla questions:", req.query);
+/* =========================================================
+   GET ALL QUESTIONS
+========================================================= */
 
+const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.getAllQuestions(req.query);
 
   sendResponse(res, {
@@ -41,6 +76,10 @@ const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+/* =========================================================
+   GET QUESTIONS BY TOPIC
+========================================================= */
 
 const getQuestionsByTopic = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.getQuestionsByTopic(
@@ -55,6 +94,10 @@ const getQuestionsByTopic = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+/* =========================================================
+   GET SINGLE QUESTION
+========================================================= */
+
 const getSingleQuestion = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.getSingleQuestion(
     req.params.id as string,
@@ -67,6 +110,10 @@ const getSingleQuestion = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+/* =========================================================
+   UPDATE QUESTION
+========================================================= */
 
 const updateQuestion = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.updateQuestion(
@@ -82,6 +129,10 @@ const updateQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+/* =========================================================
+   DELETE QUESTION
+========================================================= */
+
 const deleteQuestion = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.deleteQuestion(req.params.id as string);
 
@@ -92,6 +143,11 @@ const deleteQuestion = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+/* =========================================================
+   QUESTION STATISTICS
+========================================================= */
+
 const getQuestionStats = catchAsync(async (_req: Request, res: Response) => {
   const result = await QuestionService.getQuestionStats();
 
@@ -103,6 +159,11 @@ const getQuestionStats = catchAsync(async (_req: Request, res: Response) => {
   });
 });
 
+
+/* =========================================================
+   EXPORT
+========================================================= */
+
 export const QuestionController = {
   createQuestion,
   getAllQuestions,
@@ -112,4 +173,5 @@ export const QuestionController = {
   deleteQuestion,
   bulkCreateQuestions,
   getQuestionStats,
+ 
 };

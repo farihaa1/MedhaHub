@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import { QuestionController } from "./question.controller";
 import { QuestionValidation } from "./question.validation";
 import validateRequest from "../../utils/validateRequest";
@@ -7,7 +8,10 @@ import { UserRole } from "../users/user.constants";
 
 const QuestionRoutes = Router();
 
-// Create question
+/* =========================================================
+   CREATE QUESTION
+========================================================= */
+
 QuestionRoutes.post(
   "/",
   auth(UserRole.ADMIN, UserRole.USER),
@@ -15,7 +19,10 @@ QuestionRoutes.post(
   QuestionController.createQuestion,
 );
 
-// Bulk create questions
+/* =========================================================
+   BULK CREATE QUESTIONS
+========================================================= */
+
 QuestionRoutes.post(
   "/bulk",
   auth(UserRole.ADMIN, UserRole.USER),
@@ -23,23 +30,39 @@ QuestionRoutes.post(
   QuestionController.bulkCreateQuestions,
 );
 
-// Get all questions
+/* =========================================================
+   GET ALL QUESTIONS
+========================================================= */
+
 QuestionRoutes.get("/", QuestionController.getAllQuestions);
 
-// Question statistics
+/* =========================================================
+   QUESTION STATISTICS
+========================================================= */
+
 QuestionRoutes.get(
   "/stats",
   auth(UserRole.ADMIN),
   QuestionController.getQuestionStats,
 );
 
-// Get questions by topic
+
+/* =========================================================
+   GET QUESTIONS BY TOPIC
+========================================================= */
+
 QuestionRoutes.get("/topic/:topicId", QuestionController.getQuestionsByTopic);
 
-// Get single question
+/* =========================================================
+   GET SINGLE QUESTION
+========================================================= */
+
 QuestionRoutes.get("/:id", QuestionController.getSingleQuestion);
 
-// Update question
+/* =========================================================
+   UPDATE QUESTION
+========================================================= */
+
 QuestionRoutes.patch(
   "/:id",
   auth(UserRole.ADMIN, UserRole.USER),
@@ -47,7 +70,10 @@ QuestionRoutes.patch(
   QuestionController.updateQuestion,
 );
 
-// Delete question
+/* =========================================================
+   DELETE QUESTION
+========================================================= */
+
 QuestionRoutes.delete(
   "/:id",
   auth(UserRole.ADMIN),

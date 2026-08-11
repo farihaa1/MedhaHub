@@ -1,51 +1,85 @@
-
-import { IUser, UpdateUserInput } from "@/app/features/auth/auth.type"
 import { baseApi } from "./baseApi"
+
+import { IApiResponse, IUser, UpdateUserInput } from "../types/auth.type"
+
+// ============================================================
+// USER API
+// ============================================================
 
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    /**
-     * Get all users
-     * GET /users
-     */
-    getUsers: builder.query<IUser[], void>({
+    // ========================================================
+    // GET ALL USERS
+    // GET /users
+    // ========================================================
+
+    getUsers: builder.query<IApiResponse<IUser[]>, void>({
       query: () => ({
         url: "/users",
         method: "GET",
+        credentials: "include",
       }),
-      providesTags: ["User"],
+
+      providesTags: (result) => {
+        if (!result?.data) {
+          return ["User"]
+        }
+
+        return [
+          "User",
+
+          ...result.data.map((user) => ({
+            type: "User" as const,
+            id: user._id,
+          })),
+        ]
+      },
     }),
 
-    /**
-     * Get single user
-     * GET /users/:id
-     */
-    getUser: builder.query<IUser, string>({
+    // ========================================================
+    // GET SINGLE USER
+    // GET /users/:id
+    // ========================================================
+
+    getUser: builder.query<IApiResponse<IUser>, string>({
       query: (id) => ({
         url: `/users/${id}`,
         method: "GET",
+        credentials: "include",
       }),
-      providesTags: (_result, _error, id) => [{ type: "User", id }],
+
+      providesTags: (_result, _error, id) => [
+        {
+          type: "User",
+          id,
+        },
+      ],
     }),
 
-    /**
-     * Update user
-     * PATCH /users/:id
-     */
+    // ========================================================
+    // UPDATE USER
+    // PATCH /users/:id
+    // ========================================================
+
     updateUser: builder.mutation<
-     IUser,
+      IApiResponse<IUser>,
       {
         id: string
         data: UpdateUserInput
-      } >({
+      }
+    >({
       query: ({ id, data }) => ({
         url: `/users/${id}`,
         method: "PATCH",
         body: data,
+        credentials: "include",
       }),
 
       invalidatesTags: (_result, _error, { id }) => [
-        { type: "User", id },
+        {
+          type: "User",
+          id,
+        },
         "User",
       ],
     }),
@@ -53,6 +87,10 @@ export const userApi = baseApi.injectEndpoints({
 
   overrideExisting: false,
 })
+
+// ============================================================
+// GENERATED HOOKS
+// ============================================================
 
 export const { useGetUsersQuery, useGetUserQuery, useUpdateUserMutation } =
   userApi

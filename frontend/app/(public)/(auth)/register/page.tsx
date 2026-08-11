@@ -1,8 +1,5 @@
-import { redirect } from "next/navigation"
-import { cookies } from "next/headers"
 
 import Link from "next/link"
-import { FcGoogle } from "react-icons/fc"
 
 import RegisterForm from "@/app/customComponents/PublicComponents/Register/register-form"
 
@@ -13,9 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 
 import AuthBackgroundShape from "@/public/svg/auth-backgrounf-shape"
 
@@ -30,62 +24,52 @@ export default async function RegisterPage({
 }: RegisterPageProps) {
   const { redirect: redirectTo } = await searchParams
 
-  const cookieStore = await cookies()
-
-  if (cookieStore.get("refreshToken")) {
-    redirect("/dashboard")
-  }
+  const redirectQuery = redirectTo
+    ? `?redirect=${encodeURIComponent(redirectTo)}`
+    : ""
 
   return (
-    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4 py-10">
-      <AuthBackgroundShape />
+    <main className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center overflow-hidden px-4 py-8">
+      {/* Background */}
 
-      <Card className="z-10 w-full max-w-lg gap-6 py-6">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            Create Your Account
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+
+        <div className="absolute -right-24 -bottom-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-400/10" />
+
+        <AuthBackgroundShape className="absolute inset-0 h-full w-full opacity-20 dark:opacity-10" />
+      </div>
+
+      {/* Register Card */}
+
+      <Card className="relative z-10 w-full max-w-md border-border/60 bg-card/95 shadow-xl backdrop-blur-sm dark:shadow-black/30">
+        <CardHeader className="space-y-2 px-5 pb-4 pt-5 text-center sm:px-7 sm:pb-4 sm:pt-7">
+          <CardTitle className="text-lg font-bold tracking-tight sm:text-xl">
+            অ্যাকাউন্ট তৈরি করুন
           </CardTitle>
 
-          <CardDescription>
-            Join MedhaHub and start learning today.
+          <CardDescription className="text-xs leading-relaxed text-muted-foreground">
+            মেধাহাবে যোগ দিন এবং আজ থেকেই আপনার প্রস্তুতি শুরু করুন।
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4 px-5 pb-5 sm:px-7 sm:pb-7">
           <RegisterForm redirect={redirectTo} />
 
-          <p className="text-center text-sm text-muted-foreground">
-            Already have an account?
+          {/* Login */}
+
+          <p className="text-center text-xs text-muted-foreground">
+            ইতোমধ্যে অ্যাকাউন্ট আছে?
+
             <Link
-              className="ml-2 font-medium text-primary hover:underline"
-              href={`/login${
-                redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""
-              }`}
+              className="ml-1.5 font-medium text-primary transition-colors hover:underline"
+              href={`/login${redirectQuery}`}
             >
-              Sign In
+              লগইন করুন
             </Link>
           </p>
-
-          <div className="flex items-center gap-3">
-            <Separator />
-
-            <span className="text-sm">OR</span>
-
-            <Separator />
-          </div>
-
-          <Button variant="outline" className="w-full" asChild>
-            <Link
-              href={`/register/google${
-                redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ""
-              }`}
-            >
-              <FcGoogle className="mr-2 h-5 w-5" />
-              Continue with Google
-            </Link>
-          </Button>
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }

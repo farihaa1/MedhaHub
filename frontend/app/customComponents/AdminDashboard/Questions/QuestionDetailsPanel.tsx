@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+
 import {
   BookOpen,
   Calendar,
@@ -18,6 +19,7 @@ import {
   Trash2,
   X,
 } from "lucide-react"
+
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -26,22 +28,36 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 import {
-  IQuestion,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+import {
   IEntityRef,
   IEntityValue,
+  useGetQuestionQuery,
   useUpdateQuestionMutation,
+  QuestionStatus,
+  QuestionSourceType,
 } from "@/app/redux/api/questionsApi"
 
 import PreviewQuestionDialog from "./PreviewQuestionDialog"
 import DeleteQuestionDialog from "./DeleteQuestionDialog"
 import AddToQuestionBankDialog from "./AddToQuestionBankDialog"
-import { InlineTextEditor } from "./InlineEdit"
+
+/* ============================================================
+   TYPES
+============================================================ */
 
 interface Props {
-  question: IQuestion | null
+  questionId: string | null
 }
 
 interface EditableOption {
+  _id?: string
   text: string
   image?: string | null
   isCorrect: boolean
@@ -54,11 +70,24 @@ interface EditableSource {
 }
 
 /* ============================================================
+   SOURCE TYPE OPTIONS
+============================================================ */
+
+const sourceTypeOptions = Object.entries(QuestionSourceType).map(
+  ([key, value]) => ({
+    value,
+    label: key
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase()),
+  })
+)
+
+/* ============================================================
    HELPERS
 ============================================================ */
 
 function getTitle(
-  value: string | IEntityRef | IEntityValue | null | undefined,
+  value: string | IEntityRef | IEntityValue | null | undefined
 ): string {
   if (!value) {
     return "-"
@@ -71,9 +100,7 @@ function getTitle(
   return value.title
 }
 
-function getDifficultyClass(
-  difficulty: string | undefined,
-): string {
+function getDifficultyClass(difficulty: string | undefined): string {
   switch (difficulty?.toLowerCase()) {
     case "easy":
       return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
@@ -89,15 +116,14 @@ function getDifficultyClass(
   }
 }
 
-function getStatusClass(
-  status: string | undefined,
-): string {
+function getStatusClass(status: string | undefined): string {
   switch (status?.toLowerCase()) {
     case "published":
     case "approved":
       return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
 
     case "draft":
+    case "pending":
       return "bg-amber-500/10 text-amber-600 dark:text-amber-400"
 
     case "rejected":
@@ -112,22 +138,32 @@ function getStatusClass(
    MAIN COMPONENT
 ============================================================ */
 
-export default function QuestionDetailsPanel({
-  question,
-}: Props) {
+export default function QuestionDetailsPanel({ questionId }: Props) {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [bankOpen, setBankOpen] = useState(false)
 
-  const [updateQuestion] = useUpdateQuestionMutation()
-
   /* ==========================================================
-     GENERIC UPDATE
+     GET QUESTION
   ========================================================== */
 
-  async function updateField(
-    data: Record<string, unknown>,
-  ): Promise<void> {
+  const {
+    data: questionResponse,
+    isLoading,
+    isFetching,
+  } = useGetQuestionQuery(questionId!, {
+    skip: !questionId,
+  })
+
+  const question = questionResponse?.data ?? null
+
+  /* ==========================================================
+     UPDATE QUESTION
+  ========================================================== */
+
+  const [updateQuestion] = useUpdateQuestionMutation()
+
+  async function updateField(data: Record<string, unknown>): Promise<void> {
     if (!question?._id) {
       return
     }
@@ -152,6 +188,46 @@ export default function QuestionDetailsPanel({
      EMPTY STATE
   ========================================================== */
 
+  if (!questionId) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
+            <FileText className="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          <h3 className="mt-4 text-base font-semibold">Select a question</h3>
+
+          <p className="mt-2 max-w-[280px] text-sm leading-6 text-muted-foreground">
+            Select a question from the table to view and edit its details.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  /* ==========================================================
+     LOADING
+  ========================================================== */
+
+  if (isLoading && !question) {
+    return (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-muted border-t-primary" />
+
+          <p className="mt-4 text-sm text-muted-foreground">
+            Loading question...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  /* ==========================================================
+     NOT FOUND
+  ========================================================== */
+
   if (!question) {
     return (
       <div className="flex h-full items-center justify-center p-8">
@@ -160,28 +236,17 @@ export default function QuestionDetailsPanel({
             <FileText className="h-5 w-5 text-muted-foreground" />
           </div>
 
-          <h3 className="mt-4 text-base font-semibold">
-            Select a question
-          </h3>
+          <h3 className="mt-4 text-base font-semibold">Question not found</h3>
 
-          <p className="mt-2 max-w-[280px] text-sm leading-6 text-muted-foreground">
-            Select a question from the table to view and edit its
-            details.
+          <p className="mt-2 text-sm text-muted-foreground">
+            The selected question could not be loaded.
           </p>
         </div>
       </div>
     )
   }
 
-  /*
-   * Normalize difficulty here.
-   *
-   * This fixes:
-   *
-   * Type 'QuestionDifficulty | undefined'
-   * is not assignable to type 'string'
-   */
-  const difficulty = question.difficulty ?? "easy"
+  const difficulty = question.difficulty ?? "EASY"
 
   return (
     <>
@@ -200,6 +265,12 @@ export default function QuestionDetailsPanel({
               <span className="truncate text-xs font-medium text-muted-foreground">
                 {question._id}
               </span>
+
+              {isFetching && (
+                <span className="text-[10px] text-muted-foreground">
+                  Updating...
+                </span>
+              )}
             </div>
 
             <h2 className="text-base font-semibold tracking-tight">
@@ -207,26 +278,24 @@ export default function QuestionDetailsPanel({
             </h2>
           </div>
 
-          <Badge
-            variant="secondary"
-            className="shrink-0 capitalize"
-          >
+          <Badge variant="secondary" className="shrink-0 capitalize">
             {question.type}
           </Badge>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {/* Status */}
+          {/* STATUS */}
 
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium capitalize ${getStatusClass(
-              question.status,
-            )}`}
-          >
-            {question.status}
-          </span>
+          <InlineStatus
+            value={question.status}
+            onSave={(value) =>
+              updateField({
+                status: value,
+              })
+            }
+          />
 
-          {/* Difficulty */}
+          {/* DIFFICULTY */}
 
           <InlineDifficulty
             value={difficulty}
@@ -244,11 +313,7 @@ export default function QuestionDetailsPanel({
       ================================================== */}
 
       <div className="flex shrink-0 flex-wrap gap-2 border-b border-border/60 bg-muted/20 px-5 py-3">
-        <Button
-          size="sm"
-          className="h-9"
-          onClick={() => setPreviewOpen(true)}
-        >
+        <Button size="sm" className="h-9" onClick={() => setPreviewOpen(true)}>
           <Eye className="mr-1.5 h-3.5 w-3.5" />
           Preview
         </Button>
@@ -269,9 +334,7 @@ export default function QuestionDetailsPanel({
           className="h-9 bg-background"
           onClick={async () => {
             try {
-              await navigator.clipboard.writeText(
-                question.questionText ?? "",
-              )
+              await navigator.clipboard.writeText(question.questionText ?? "")
 
               toast.success("Question copied")
             } catch {
@@ -302,13 +365,10 @@ export default function QuestionDetailsPanel({
         <div className="space-y-7 p-5">
           {/* =================================================
               ACADEMIC CONTEXT
-          ================================================== */}
+          ================================================= */}
 
           <section>
-            <SectionHeader
-              icon={BookOpen}
-              title="Academic Context"
-            />
+            <SectionHeader icon={BookOpen} title="Academic Context" />
 
             <div className="overflow-hidden rounded-xl border border-border/60 bg-muted/20">
               <div className="grid grid-cols-1 divide-y divide-border/60 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
@@ -332,7 +392,7 @@ export default function QuestionDetailsPanel({
 
           {/* =================================================
               QUESTION
-          ================================================== */}
+          ================================================= */}
 
           <section>
             <SectionHeader
@@ -366,7 +426,7 @@ export default function QuestionDetailsPanel({
 
           {/* =================================================
               OPTIONS
-          ================================================== */}
+          ================================================= */}
 
           <section>
             <SectionHeader
@@ -387,7 +447,7 @@ export default function QuestionDetailsPanel({
 
           {/* =================================================
               EXPLANATION
-          ================================================== */}
+          ================================================= */}
 
           <section>
             <SectionHeader
@@ -421,14 +481,10 @@ export default function QuestionDetailsPanel({
 
           {/* =================================================
               TAGS
-          ================================================== */}
+          ================================================= */}
 
           <section>
-            <SectionHeader
-              icon={Tag}
-              title="Tags"
-              hint="Click to edit"
-            />
+            <SectionHeader icon={Tag} title="Tags" hint="Click to edit" />
 
             <InlineTagsEditor
               tags={question.tags ?? []}
@@ -442,7 +498,7 @@ export default function QuestionDetailsPanel({
 
           {/* =================================================
               SOURCES
-          ================================================== */}
+          ================================================= */}
 
           <section>
             <SectionHeader
@@ -456,9 +512,7 @@ export default function QuestionDetailsPanel({
             />
 
             <InlineSourcesEditor
-              sources={
-                (question.sources ?? []) as EditableSource[]
-              }
+              sources={(question.sources ?? []) as EditableSource[]}
               onSave={(sources) =>
                 updateField({
                   sources,
@@ -469,24 +523,20 @@ export default function QuestionDetailsPanel({
 
           {/* =================================================
               METADATA
-          ================================================== */}
+          ================================================= */}
 
           <section className="rounded-xl border border-border/60 bg-muted/20 p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <MetadataItem
                 icon={Calendar}
                 label="Created"
-                value={new Date(
-                  question.createdAt,
-                ).toLocaleString()}
+                value={new Date(question.createdAt).toLocaleString()}
               />
 
               <MetadataItem
                 icon={Clock}
                 label="Updated"
-                value={new Date(
-                  question.updatedAt,
-                ).toLocaleString()}
+                value={new Date(question.updatedAt).toLocaleString()}
               />
             </div>
           </section>
@@ -536,16 +586,155 @@ function SectionHeader({
       <div className="flex items-center gap-2">
         <Icon className="h-4 w-4 text-primary" />
 
-        <h3 className="text-sm font-semibold">
-          {title}
-        </h3>
+        <h3 className="text-sm font-semibold">{title}</h3>
       </div>
 
       {hint && (
-        <span className="text-[10px] text-muted-foreground">
-          {hint}
-        </span>
+        <span className="text-[10px] text-muted-foreground">{hint}</span>
       )}
+    </div>
+  )
+}
+
+/* ============================================================
+   INLINE TEXT EDITOR
+============================================================ */
+
+interface InlineTextEditorProps {
+  value: string
+  placeholder?: string
+  onSave: (value: string) => Promise<void>
+  multiline?: boolean
+}
+
+function InlineTextEditor({
+  value,
+  placeholder = "Click to edit...",
+  onSave,
+}: InlineTextEditorProps) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(value)
+  const [saving, setSaving] = useState(false)
+
+  function startEditing() {
+    setDraft(value)
+    setEditing(true)
+  }
+
+  function cancel() {
+    setDraft(value)
+    setEditing(false)
+  }
+
+  async function save() {
+    const trimmed = draft.trim()
+
+    if (!trimmed) {
+      return
+    }
+
+    if (trimmed === value.trim()) {
+      setEditing(false)
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      await onSave(trimmed)
+
+      setEditing(false)
+    } catch {
+      // Parent handles error.
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault()
+      void save()
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault()
+      cancel()
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div
+        className="group relative cursor-pointer rounded-xl border border-border/60 bg-muted/20 p-4 transition-colors hover:bg-muted/40"
+        onClick={startEditing}
+      >
+        <div className="pr-8">
+          {value ? (
+            <p className="text-sm leading-6 whitespace-pre-wrap">{value}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">
+              {placeholder}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation()
+            startEditing()
+          }}
+          className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-md bg-background opacity-0 shadow-sm ring-1 ring-border transition-opacity group-hover:opacity-100"
+          aria-label="Edit text"
+        >
+          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-primary/30 bg-muted/20 p-4">
+      <textarea
+        value={draft}
+        disabled={saving}
+        autoFocus
+        onChange={(event) => setDraft(event.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        className="min-h-[120px] w-full resize-y rounded-md border border-border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+      />
+
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-muted-foreground">
+          Ctrl + Enter to save · Esc to cancel
+        </p>
+
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={saving}
+            onClick={cancel}
+          >
+            <X className="mr-1.5 h-3.5 w-3.5" />
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            disabled={saving || !draft.trim()}
+            onClick={() => void save()}
+          >
+            <Check className="mr-1.5 h-3.5 w-3.5" />
+
+            {saving ? "Saving..." : "Save"}
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -589,7 +778,7 @@ function InlineDifficulty({
       setDraft(valueToSave)
       setEditing(false)
     } catch {
-      // Parent handles the error.
+      // Parent handles error.
     } finally {
       setSaving(false)
     }
@@ -601,7 +790,7 @@ function InlineDifficulty({
         type="button"
         onClick={startEditing}
         className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition-opacity hover:opacity-80 ${getDifficultyClass(
-          value,
+          value
         )}`}
       >
         {value}
@@ -613,19 +802,19 @@ function InlineDifficulty({
 
   return (
     <div className="flex items-center gap-1">
-      {["easy", "medium", "hard"].map((item) => (
+      {["EASY", "MEDIUM", "HARD"].map((item) => (
         <button
           key={item}
           type="button"
           disabled={saving}
-          onClick={() => save(item)}
+          onClick={() => void save(item)}
           className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition-all ${
             draft === item
               ? getDifficultyClass(item)
               : "bg-muted text-muted-foreground hover:bg-muted/80"
           }`}
         >
-          {item}
+          {item.toLowerCase()}
         </button>
       ))}
 
@@ -656,9 +845,7 @@ function InlineOptionsEditor({
   const [draft, setDraft] = useState<EditableOption[]>([])
   const [saving, setSaving] = useState(false)
 
-  function cloneOptions(
-    source: EditableOption[],
-  ): EditableOption[] {
+  function cloneOptions(source: EditableOption[]): EditableOption[] {
     return source.map((option) => ({
       ...option,
     }))
@@ -674,10 +861,7 @@ function InlineOptionsEditor({
     setEditing(false)
   }
 
-  function updateText(
-    index: number,
-    text: string,
-  ) {
+  function updateText(index: number, text: string) {
     setDraft((current) =>
       current.map((option, i) =>
         i === index
@@ -685,8 +869,8 @@ function InlineOptionsEditor({
               ...option,
               text,
             }
-          : option,
-      ),
+          : option
+      )
     )
   }
 
@@ -695,14 +879,12 @@ function InlineOptionsEditor({
       current.map((option, i) => ({
         ...option,
         isCorrect: i === index,
-      })),
+      }))
     )
   }
 
   function removeOption(index: number) {
-    setDraft((current) =>
-      current.filter((_, i) => i !== index),
-    )
+    setDraft((current) => current.filter((_, i) => i !== index))
   }
 
   function addOption() {
@@ -739,7 +921,7 @@ function InlineOptionsEditor({
 
       setEditing(false)
     } catch {
-      // Parent handles the error.
+      // Parent handles error.
     } finally {
       setSaving(false)
     }
@@ -758,15 +940,13 @@ function InlineOptionsEditor({
             Add options
           </button>
         ) : (
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2">
             {options.map((option, index) => {
-              const letter = String.fromCharCode(
-                65 + index,
-              )
+              const letter = String.fromCharCode(65 + index)
 
               return (
                 <div
-                  key={index}
+                  key={option._id ?? index}
                   className={`flex gap-3 rounded-xl border p-3 transition-colors ${
                     option.isCorrect
                       ? "border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10"
@@ -819,15 +999,10 @@ function InlineOptionsEditor({
   return (
     <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
       {draft.map((option, index) => {
-        const letter = String.fromCharCode(
-          65 + index,
-        )
+        const letter = String.fromCharCode(65 + index)
 
         return (
-          <div
-            key={index}
-            className="flex items-center gap-2"
-          >
+          <div key={option._id ?? index} className="flex items-center gap-2">
             <button
               type="button"
               disabled={saving}
@@ -838,22 +1013,13 @@ function InlineOptionsEditor({
                   : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
-              {option.isCorrect ? (
-                <Check className="h-4 w-4" />
-              ) : (
-                letter
-              )}
+              {option.isCorrect ? <Check className="h-4 w-4" /> : letter}
             </button>
 
             <Input
               value={option.text}
               disabled={saving}
-              onChange={(event) =>
-                updateText(
-                  index,
-                  event.target.value,
-                )
-              }
+              onChange={(event) => updateText(index, event.target.value)}
               placeholder={`Option ${letter}`}
               className="h-9"
             />
@@ -862,13 +1028,9 @@ function InlineOptionsEditor({
               type="button"
               variant="ghost"
               size="icon"
-              disabled={
-                saving || draft.length <= 2
-              }
+              disabled={saving || draft.length <= 2}
               className="h-9 w-9 shrink-0 text-destructive hover:bg-destructive/10"
-              onClick={() =>
-                removeOption(index)
-              }
+              onClick={() => removeOption(index)}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -903,7 +1065,7 @@ function InlineOptionsEditor({
           type="button"
           size="sm"
           disabled={saving}
-          onClick={save}
+          onClick={() => void save()}
         >
           <Check className="mr-1.5 h-3.5 w-3.5" />
 
@@ -943,9 +1105,7 @@ function InlineTagsEditor({
   }
 
   function removeTag(tag: string) {
-    setDraft((current) =>
-      current.filter((item) => item !== tag),
-    )
+    setDraft((current) => current.filter((item) => item !== tag))
   }
 
   function addTag() {
@@ -960,11 +1120,7 @@ function InlineTagsEditor({
       return
     }
 
-    setDraft((current) => [
-      ...current,
-      value,
-    ])
-
+    setDraft((current) => [...current, value])
     setNewTag("")
   }
 
@@ -976,7 +1132,7 @@ function InlineTagsEditor({
 
       setEditing(false)
     } catch {
-      // Parent handles the error.
+      // Parent handles error.
     } finally {
       setSaving(false)
     }
@@ -988,16 +1144,13 @@ function InlineTagsEditor({
         {tags.length ? (
           <div className="flex flex-wrap gap-2 pr-8">
             {tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-              >
+              <Badge key={tag} variant="secondary">
                 {tag}
               </Badge>
             ))}
           </div>
         ) : (
-          <p className="pr-8 text-sm italic text-muted-foreground">
+          <p className="pr-8 text-sm text-muted-foreground italic">
             No tags added
           </p>
         )}
@@ -1019,19 +1172,13 @@ function InlineTagsEditor({
       {draft.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {draft.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="gap-1"
-            >
+            <Badge key={tag} variant="secondary" className="gap-1">
               {tag}
 
               <button
                 type="button"
                 disabled={saving}
-                onClick={() =>
-                  removeTag(tag)
-                }
+                onClick={() => removeTag(tag)}
                 className="rounded-full p-0.5 hover:bg-foreground/10"
               >
                 <X className="h-3 w-3" />
@@ -1045,9 +1192,7 @@ function InlineTagsEditor({
         <Input
           value={newTag}
           disabled={saving}
-          onChange={(event) =>
-            setNewTag(event.target.value)
-          }
+          onChange={(event) => setNewTag(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.preventDefault()
@@ -1085,7 +1230,7 @@ function InlineTagsEditor({
           type="button"
           size="sm"
           disabled={saving}
-          onClick={save}
+          onClick={() => void save()}
         >
           <Check className="mr-1.5 h-3.5 w-3.5" />
 
@@ -1105,19 +1250,13 @@ function InlineSourcesEditor({
   onSave,
 }: {
   sources: EditableSource[]
-  onSave: (
-    sources: EditableSource[],
-  ) => Promise<void>
+  onSave: (sources: EditableSource[]) => Promise<void>
 }) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState<
-    EditableSource[]
-  >([])
+  const [draft, setDraft] = useState<EditableSource[]>([])
   const [saving, setSaving] = useState(false)
 
-  function cloneSources(
-    sourceList: EditableSource[],
-  ): EditableSource[] {
+  function cloneSources(sourceList: EditableSource[]): EditableSource[] {
     return sourceList.map((source) => ({
       name: source.name,
       type: source.type,
@@ -1138,7 +1277,7 @@ function InlineSourcesEditor({
   function updateSource(
     index: number,
     field: keyof EditableSource,
-    value: string,
+    value: string
   ) {
     setDraft((current) =>
       current.map((source, i) =>
@@ -1146,21 +1285,15 @@ function InlineSourcesEditor({
           ? {
               ...source,
               [field]:
-                field === "year"
-                  ? value
-                    ? Number(value)
-                    : undefined
-                  : value,
+                field === "year" ? (value ? Number(value) : undefined) : value,
             }
-          : source,
-      ),
+          : source
+      )
     )
   }
 
   function removeSource(index: number) {
-    setDraft((current) =>
-      current.filter((_, i) => i !== index),
-    )
+    setDraft((current) => current.filter((_, i) => i !== index))
   }
 
   function addSource() {
@@ -1175,16 +1308,28 @@ function InlineSourcesEditor({
   }
 
   async function save() {
+    if (draft.length === 0) {
+      try {
+        setSaving(true)
+
+        await onSave([])
+
+        setEditing(false)
+      } catch {
+        // Parent handles error.
+      } finally {
+        setSaving(false)
+      }
+
+      return
+    }
+
     const valid = draft.every(
-      (source) =>
-        source.name.trim() &&
-        source.type.trim(),
+      (source) => source.name.trim() && source.type.trim()
     )
 
     if (!valid) {
-      toast.error(
-        "Source name and type are required",
-      )
+      toast.error("Source name and type are required")
       return
     }
 
@@ -1195,7 +1340,7 @@ function InlineSourcesEditor({
 
       setEditing(false)
     } catch {
-      // Parent handles the error.
+      // Parent handles error.
     } finally {
       setSaving(false)
     }
@@ -1206,24 +1351,32 @@ function InlineSourcesEditor({
       <div className="group relative">
         {sources.length ? (
           <div className="space-y-2">
-            {sources.map((source, index) => (
-              <div
-                key={`${source.name}-${index}`}
-                className="rounded-lg border border-border/50 bg-background p-3"
-              >
-                <p className="text-sm font-medium">
-                  {source.name}
-                </p>
+            {sources.map((source, index) => {
+              const sourceLabel =
+                sourceTypeOptions.find((item) => item.value === source.type)
+                  ?.label ?? source.type
 
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {source.type}
+              return (
+                <div
+                  key={`${source.name}-${index}`}
+                  className="rounded-lg border border-border/50 bg-background p-3"
+                >
+                  <div className="flex items-start justify-between gap-3 pr-8">
+                    <p className="text-sm font-medium">{source.name}</p>
+
+                    <Badge variant="secondary" className="shrink-0 text-[10px]">
+                      {sourceLabel}
+                    </Badge>
+                  </div>
 
                   {source.year && (
-                    <> • {source.year}</>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Year: {source.year}
+                    </p>
                   )}
-                </p>
-              </div>
-            ))}
+                </div>
+              )
+            })}
           </div>
         ) : (
           <button
@@ -1258,9 +1411,7 @@ function InlineSourcesEditor({
           className="space-y-2 rounded-lg border border-border/60 bg-background p-3"
         >
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold">
-              Source {index + 1}
-            </p>
+            <p className="text-xs font-semibold">Source {index + 1}</p>
 
             <Button
               type="button"
@@ -1268,51 +1419,52 @@ function InlineSourcesEditor({
               size="icon"
               className="h-7 w-7 text-destructive hover:bg-destructive/10"
               disabled={saving}
-              onClick={() =>
-                removeSource(index)
-              }
+              onClick={() => removeSource(index)}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
 
+          {/* SOURCE NAME */}
+
           <Input
             value={source.name}
             disabled={saving}
             onChange={(event) =>
-              updateSource(
-                index,
-                "name",
-                event.target.value,
-              )
+              updateSource(index, "name", event.target.value)
             }
             placeholder="Source name"
           />
 
+          {/* SOURCE TYPE + YEAR */}
+
           <div className="grid grid-cols-2 gap-2">
-            <Input
-              value={source.type}
+            <Select
+              value={source.type || undefined}
               disabled={saving}
-              onChange={(event) =>
-                updateSource(
-                  index,
-                  "type",
-                  event.target.value,
-                )
-              }
-              placeholder="Type"
-            />
+              onValueChange={(value) => updateSource(index, "type", value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select source type" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {sourceTypeOptions.map((sourceType) => (
+                  <SelectItem key={sourceType.value} value={sourceType.value}>
+                    {sourceType.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* YEAR */}
 
             <Input
               type="number"
               value={source.year ?? ""}
               disabled={saving}
               onChange={(event) =>
-                updateSource(
-                  index,
-                  "year",
-                  event.target.value,
-                )
+                updateSource(index, "year", event.target.value)
               }
               placeholder="Year"
             />
@@ -1347,7 +1499,7 @@ function InlineSourcesEditor({
           type="button"
           size="sm"
           disabled={saving}
-          onClick={save}
+          onClick={() => void save()}
         >
           <Check className="mr-1.5 h-3.5 w-3.5" />
 
@@ -1359,16 +1511,124 @@ function InlineSourcesEditor({
 }
 
 /* ============================================================
+   INLINE STATUS
+============================================================ */
+
+function InlineStatus({
+  value,
+  onSave,
+}: {
+  value: QuestionStatus
+  onSave: (value: QuestionStatus) => Promise<void>
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState<QuestionStatus>(value)
+  const [saving, setSaving] = useState(false)
+
+  function startEditing() {
+    setDraft(value)
+    setEditing(true)
+  }
+
+  function cancel() {
+    setDraft(value)
+    setEditing(false)
+  }
+
+  async function save(valueToSave: QuestionStatus) {
+    if (valueToSave === value) {
+      setEditing(false)
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      await onSave(valueToSave)
+
+      setDraft(valueToSave)
+      setEditing(false)
+    } catch {
+      // Parent handles error.
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={startEditing}
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition-opacity hover:opacity-80 ${getStatusClass(
+          value
+        )}`}
+      >
+        {value}
+
+        <Pencil className="h-3 w-3 opacity-60" />
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        disabled={saving}
+        onClick={() => void save(QuestionStatus.PENDING)}
+        className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition-all ${
+          draft === QuestionStatus.PENDING
+            ? getStatusClass(QuestionStatus.PENDING)
+            : "bg-muted text-muted-foreground hover:bg-muted/80"
+        }`}
+      >
+        Pending
+      </button>
+
+      <button
+        type="button"
+        disabled={saving}
+        onClick={() => void save(QuestionStatus.APPROVED)}
+        className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition-all ${
+          draft === QuestionStatus.APPROVED
+            ? getStatusClass(QuestionStatus.APPROVED)
+            : "bg-muted text-muted-foreground hover:bg-muted/80"
+        }`}
+      >
+        Approved
+      </button>
+
+      <button
+        type="button"
+        disabled={saving}
+        onClick={() => void save(QuestionStatus.REJECTED)}
+        className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition-all ${
+          draft === QuestionStatus.REJECTED
+            ? getStatusClass(QuestionStatus.REJECTED)
+            : "bg-muted text-muted-foreground hover:bg-muted/80"
+        }`}
+      >
+        Rejected
+      </button>
+
+      <button
+        type="button"
+        disabled={saving}
+        onClick={cancel}
+        className="ml-1 rounded-md p-1 text-muted-foreground hover:bg-muted"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    </div>
+  )
+}
+
+/* ============================================================
    ACADEMIC ITEM
 ============================================================ */
 
-function AcademicItem({
-  label,
-  value,
-}: {
-  label: string
-  value: string
-}) {
+function AcademicItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="group p-4">
       <p className="mb-1 text-[10px] tracking-wider text-muted-foreground uppercase">
@@ -1376,10 +1636,7 @@ function AcademicItem({
       </p>
 
       <div className="flex items-center justify-between gap-2">
-        <p
-          className="truncate text-sm font-medium"
-          title={value}
-        >
+        <p className="truncate text-sm font-medium" title={value}>
           {value}
         </p>
 
@@ -1413,9 +1670,7 @@ function MetadataItem({
           {label}
         </p>
 
-        <p className="truncate text-xs font-medium">
-          {value}
-        </p>
+        <p className="truncate text-xs font-medium">{value}</p>
       </div>
     </div>
   )

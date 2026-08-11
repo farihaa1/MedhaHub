@@ -30,13 +30,6 @@ export const menu: MenuItem[] = [
 ]
 
 export const auth: Auth = {
-  login: {
-    title: "লগইন",
-    url: "/login",
-  },
-
-  signup: {
-    title: "নিবন্ধন",
-    url: "/register",
-  },
+  login: { title: "লগইন", url: "/login" },
+  signup: { title: "সাইন আপ", url: "/register" },
 }

@@ -17,21 +17,18 @@ export default function ProtectedRoute({
   )
 
   useEffect(() => {
-    if (isLoading) {
-      return
-    }
+    if (isLoading) return
 
     if (!isAuthenticated || !user) {
       router.replace("/login")
     }
   }, [isLoading, isAuthenticated, user, router])
 
+  // Authentication is being checked
   if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-3 size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-
           <p className="text-sm text-muted-foreground">
             Checking authentication...
           </p>
@@ -40,9 +37,11 @@ export default function ProtectedRoute({
     )
   }
 
+  // Not authenticated
   if (!isAuthenticated || !user) {
     return null
   }
 
+  // Authenticated
   return <>{children}</>
 }

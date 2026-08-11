@@ -1,11 +1,15 @@
 "use client"
 
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
+  type ColumnDef,
 } from "@tanstack/react-table"
+
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 
 import {
   Table,
@@ -16,8 +20,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import { Button } from "@/components/ui/button"
-
 import {
   Select,
   SelectContent,
@@ -26,14 +28,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-export interface PaginationMeta {
-  page: number
-  limit: number
-  total: number
-  totalPage: number
-}
+import type { QuestionMeta } from "@/app/redux/api/questionsApi"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -42,19 +39,18 @@ interface DataTableProps<TData, TValue> {
   isLoading?: boolean
   isFetching?: boolean
 
-  pagination?: PaginationMeta
+  pagination?: QuestionMeta
 
-  page?: number
-  limit?: number
+  page: number
+  limit: number
 
-  onPageChange?: (page: number) => void
-  onLimitChange?: (limit: number) => void
+  onPageChange: (page: number) => void
+  onLimitChange: (limit: number) => void
 
-  /**
-   * Row selection
-   */
-  selectedRowId?: string
-  getRowId?: (row: TData) => string
+  selectedRowId?: string | null
+
+  getRowId: (row: TData) => string
+
   onRowClick?: (row: TData) => void
 }
 
@@ -67,64 +63,85 @@ export function DataTable<TData, TValue>({
 
   pagination,
 
-  page = 1,
-  limit = 20,
+  page,
+  limit,
 
   onPageChange,
   onLimitChange,
 
   selectedRowId,
+
   getRowId,
+
   onRowClick,
 }: DataTableProps<TData, TValue>) {
+  // ============================================================
+  // TABLE
+  // ============================================================
+
   const table = useReactTable({
     data,
     columns,
 
     getCoreRowModel: getCoreRowModel(),
 
-    getRowId: getRowId ? (row) => getRowId(row) : undefined,
+    getRowId: (row) => getRowId(row),
   })
 
-  /*
-   * Initial loading
-   */
+  // ============================================================
+  // PAGINATION DATA
+  // ============================================================
+
+  const total = pagination?.total ?? 0
+
+  const totalPages =
+    pagination?.totalPage ?? Math.max(1, Math.ceil(total / limit))
+
+  const currentPage = Math.min(Math.max(page, 1), Math.max(totalPages, 1))
+
+  const hasPreviousPage = currentPage > 1
+
+  const hasNextPage = currentPage < totalPages
+
+  // ============================================================
+  // LOADING
+  // ============================================================
+
   if (isLoading) {
     return (
-      <div className="flex min-h-105 items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Loader2 className="h-6 w-6 animate-spin" />
-
-          <p className="text-sm">Loading questions...</p>
-        </div>
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
+  // ============================================================
+  // TABLE
+  // ============================================================
+
   return (
     <div className="w-full">
-      {/* Fetching indicator */}
-      {isFetching && (
-        <div className="flex items-center gap-2 border-b border-border/60 bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          Updating questions...
-        </div>
-      )}
+      {/* ========================================================
+          TABLE
+      ======================================================== */}
 
-      {/* Table */}
-      <div className="w-full overflow-x-auto">
+      <div className="relative w-full overflow-auto">
+        {isFetching && (
+          <div className="absolute inset-x-0 top-0 z-10 h-1 overflow-hidden bg-muted">
+            <div className="h-full w-1/3 animate-pulse bg-primary" />
+          </div>
+        )}
+
         <Table>
+          {/* ====================================================
+              HEADER
+          ==================================================== */}
+
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className="border-b border-border/60 bg-muted/30 hover:bg-muted/30"
-              >
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="h-11 px-4 text-xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase"
-                  >
+                  <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -137,30 +154,29 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
 
+          {/* ====================================================
+              BODY
+          ==================================================== */}
+
           <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => {
-                const rowId = getRowId ? getRowId(row.original) : row.id
+                const rowId = getRowId(row.original)
 
                 const isSelected = selectedRowId === rowId
 
                 return (
                   <TableRow
                     key={row.id}
+                    data-state={isSelected ? "selected" : undefined}
+                    className={cn(
+                      "cursor-pointer",
+                      isSelected && "bg-muted/60"
+                    )}
                     onClick={() => onRowClick?.(row.original)}
-                    className={`group border-b border-border/50 transition-colors ${
-                      onRowClick ? "cursor-pointer" : ""
-                    } ${
-                      isSelected
-                        ? "bg-primary/5 hover:bg-primary/10 dark:bg-primary/10 dark:hover:bg-primary/15"
-                        : "hover:bg-muted/40"
-                    } `}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="px-4 py-3 align-middle"
-                      >
+                      <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -174,19 +190,9 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-40 text-center"
+                  className="h-32 text-center text-muted-foreground"
                 >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                      <span className="text-lg">?</span>
-                    </div>
-
-                    <p className="text-sm font-medium">No questions found</p>
-
-                    <p className="text-xs text-muted-foreground">
-                      Try changing your filters or search.
-                    </p>
-                  </div>
+                  No questions found.
                 </TableCell>
               </TableRow>
             )}
@@ -194,76 +200,106 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* Pagination */}
-      {pagination && pagination.total > 0 && (
-        <div className="flex flex-col gap-4 border-t border-border/60 px-4 py-4 md:flex-row md:items-center md:justify-between">
-          {/* Results */}
-          <div className="text-sm text-muted-foreground">
-            Showing{" "}
-            <span className="font-medium text-foreground">
-              {(pagination.page - 1) * pagination.limit + 1}
-            </span>{" "}
-            -{" "}
-            <span className="font-medium text-foreground">
-              {Math.min(pagination.page * pagination.limit, pagination.total)}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium text-foreground">
-              {pagination.total}
-            </span>
-          </div>
+      {/* ========================================================
+          PAGINATION
+      ======================================================== */}
 
-          {/* Controls */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={String(limit)}
-              onValueChange={(value) => {
-                onLimitChange?.(Number(value))
-                onPageChange?.(1)
-              }}
-            >
-              <SelectTrigger className="h-9 w-20 bg-background">
-                <SelectValue />
-              </SelectTrigger>
+      <div className="flex flex-col gap-4 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* ======================================================
+            RESULT INFO
+        ====================================================== */}
 
-              <SelectContent>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="10">20</SelectItem>
-
-                <SelectItem value="50">50</SelectItem>
-
-                <SelectItem value="100">100</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9"
-              disabled={page <= 1 || isFetching}
-              onClick={() => onPageChange?.(page - 1)}
-            >
-              Previous
-            </Button>
-
-            <div className="flex h-9 items-center rounded-md border border-border bg-muted/30 px-3 text-sm font-medium">
-              {pagination.page}
-              <span className="mx-1 text-muted-foreground">/</span>
-              {pagination.totalPage}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9"
-              disabled={page >= pagination.totalPage || isFetching}
-              onClick={() => onPageChange?.(page + 1)}
-            >
-              Next
-            </Button>
-          </div>
+        <div className="text-sm text-muted-foreground">
+          {total > 0 ? (
+            <>
+              Showing{" "}
+              <span className="font-medium text-foreground">
+                {(currentPage - 1) * limit + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-medium text-foreground">
+                {Math.min(currentPage * limit, total)}
+              </span>{" "}
+              of <span className="font-medium text-foreground">{total}</span>{" "}
+              questions
+            </>
+          ) : (
+            "No questions"
+          )}
         </div>
-      )}
+
+        {/* ======================================================
+            CONTROLS
+        ====================================================== */}
+
+        <div className="flex items-center gap-2">
+          {/* PAGE SIZE */}
+
+          <Select
+            value={String(limit)}
+            onValueChange={(value) => {
+              onLimitChange(Number(value))
+            }}
+          >
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectItem value="10">10 / page</SelectItem>
+
+              <SelectItem value="20">20 / page</SelectItem>
+
+              <SelectItem value="50">50 / page</SelectItem>
+
+              <SelectItem value="100">100 / page</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* PAGE NUMBER */}
+
+          <div className="min-w-[80px] text-center text-sm">
+            Page <span className="font-medium">{currentPage}</span> of{" "}
+            <span className="font-medium">{totalPages}</span>
+          </div>
+
+          {/* PREVIOUS */}
+
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={!hasPreviousPage || isFetching}
+            onClick={() => {
+              if (!hasPreviousPage) {
+                return
+              }
+
+              onPageChange(currentPage - 1)
+            }}
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          {/* NEXT */}
+
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={!hasNextPage || isFetching}
+            onClick={() => {
+              if (!hasNextPage) {
+                return
+              }
+
+              onPageChange(currentPage + 1)
+            }}
+            aria-label="Next page"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

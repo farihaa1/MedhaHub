@@ -7,25 +7,29 @@ import { AuthValidation } from "./auth.validation";
 
 
 const AuthRoutes = Router();
-
 AuthRoutes.post(
   "/register",
   validateRequest(AuthValidation.registerValidationSchema),
   AuthController.register,
 );
 
-AuthRoutes.post(
-  "/login",
-  
-  AuthController.login,
-);
+AuthRoutes.post("/login", AuthController.login);
+
 AuthRoutes.post("/refresh-token", AuthController.refreshToken);
+
 AuthRoutes.post("/logout", AuthController.logout);
+
 AuthRoutes.post(
   "/change-password",
   auth(UserRole.USER, UserRole.ADMIN),
   validateRequest(AuthValidation.changePasswordValidationSchema),
   AuthController.changePassword,
+);
+
+AuthRoutes.post(
+  "/set-password",
+  auth(UserRole.USER, UserRole.ADMIN),
+  AuthController.setPassword,
 );
 
 AuthRoutes.get(
@@ -39,5 +43,6 @@ AuthRoutes.patch(
   auth(UserRole.USER, UserRole.ADMIN),
   AuthController.updateProfile,
 );
+AuthRoutes.post("/google", AuthController.googleLogin);
 
 export default AuthRoutes;

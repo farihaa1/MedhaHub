@@ -5,6 +5,10 @@ import { UploadController } from "./upload.controller";
 
 const UploadRoutes = express.Router();
 
-UploadRoutes.post("/image", upload.single("file"), UploadController.uploadImage);
+UploadRoutes.post(
+  "/image",
+  upload.single("file"),
+  UploadController.uploadImage,
+);
 
-export default UploadRoutes ;
+export default UploadRoutes;

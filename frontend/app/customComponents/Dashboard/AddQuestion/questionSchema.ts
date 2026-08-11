@@ -3,6 +3,7 @@ import { z } from "zod"
 import {
   QuestionDifficulty,
   QuestionSourceType,
+  QuestionStatus,
 } from "@/app/redux/api/questionsApi"
 
 /* =========================================================
@@ -29,10 +30,6 @@ const sourceSchema = z.object({
   year: z.number().optional(),
 })
 
-/* =========================================================
-   QUESTION SCHEMA
-========================================================= */
-
 export const questionSchema = z.object({
   questionText: z.string().trim().min(5, "প্রশ্ন কমপক্ষে ৫ অক্ষরের হতে হবে।"),
 
@@ -51,6 +48,8 @@ export const questionSchema = z.object({
   tags: z.array(z.string()).default([]),
 
   sources: z.array(sourceSchema).default([]),
+
+  status: z.nativeEnum(QuestionStatus).default(QuestionStatus.PENDING),
 })
 
 /* =========================================================

@@ -7,23 +7,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionValidationService = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const AppError_1 = __importDefault(require("../../../error/AppError"));
-const examSession_constant_1 = require("../examSession.constant");
 const examSession_utils_1 = require("../examSession.utils");
 const ensureSessionIsRunning = async (session) => {
     if (!session) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "Exam session not found.");
     }
-    if (session.status === examSession_constant_1.ExamSessionStatus.SUBMITTED) {
+    // ==========================================================
+    // ALREADY SUBMITTED
+    // ==========================================================
+    if (session.submittedAt) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam has already been submitted.");
     }
-    if (session.status === examSession_constant_1.ExamSessionStatus.EXPIRED) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam time has expired.");
+    // ==========================================================
+    // ALREADY ENDED
+    // ==========================================================
+    if (session.endTime) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam has already ended.");
     }
-    if (session.status !== examSession_constant_1.ExamSessionStatus.RUNNING) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam session is not running.");
-    }
+    // ==========================================================
+    // TIME EXPIRED
+    // ==========================================================
     if ((0, examSession_utils_1.hasSessionExpired)(session.startTime, session.duration)) {
-        session.status = examSession_constant_1.ExamSessionStatus.EXPIRED;
         session.endTime = new Date();
         await session.save();
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Exam time has expired.");

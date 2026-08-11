@@ -1,44 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapExamSession = void 0;
-const OPTION_LABELS = ["A", "B", "C", "D"];
-const mapExamSession = (data) => {
-    const session = data.session ?? data;
-    const questions = data.questions ?? session.questions ?? [];
+// ============================================================
+// MAP SESSION
+// ============================================================
+const mapExamSession = (session) => {
     return {
         _id: session._id.toString(),
+        userId: session.userId.toString(),
         examType: session.examType,
-        status: session.status,
         duration: session.duration,
         totalMarks: session.totalMarks,
         negativeMark: session.negativeMark,
         startTime: session.startTime,
+        submittedAt: session.submittedAt,
         endTime: session.endTime,
         settings: session.settings,
-        answers: (session.answers ?? []).map((answer) => ({
+        answers: session.answers.map((answer) => ({
             questionId: answer.questionId.toString(),
             selectedOption: answer.selectedOption,
+            correctOption: answer.correctOption,
             isCorrect: answer.isCorrect,
             timeTaken: answer.timeTaken,
         })),
-        questions: questions.map((item, index) => {
-            const question = item.questionId && typeof item.questionId === "object"
-                ? item.questionId
-                : item;
-            const questionId = item.questionId?._id ?? item.questionId ?? question._id;
+        questions: session.questions
+            .map((item) => {
+            const question = item.questionId;
+            if (!question || typeof question !== "object") {
+                return null;
+            }
             return {
-                questionId: questionId.toString(),
-                order: item.order ?? index + 1,
+                _id: question._id.toString(),
+                order: item.order,
                 questionText: question.questionText,
-                questionImage: question.questionImage ?? null,
-                options: (question.options ?? []).map((option, optionIndex) => ({
-                    _id: option._id?.toString(),
-                    label: OPTION_LABELS[optionIndex],
-                    text: option.text,
-                    image: option.image ?? null,
-                })),
+                image: question.questionImage ?? question.image ?? null,
+                options: question.options ?? [],
+                explanation: question.explanation ?? null,
             };
-        }),
+        })
+            .filter(Boolean),
     };
 };
 exports.mapExamSession = mapExamSession;

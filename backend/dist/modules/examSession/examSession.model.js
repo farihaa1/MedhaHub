@@ -1,12 +1,43 @@
 "use strict";
-// modules/examSession/examSession.model.ts
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamSession = void 0;
-const mongoose_1 = require("mongoose");
+const mongoose_1 = __importStar(require("mongoose"));
 const examSession_constant_1 = require("./examSession.constant");
-const examEngine_constant_1 = require("../ExamEngine/examEngine.constant");
 // ============================================================
-// SESSION QUESTION
+// QUESTION SCHEMA
 // ============================================================
 const examSessionQuestionSchema = new mongoose_1.Schema({
     questionId: {
@@ -22,7 +53,7 @@ const examSessionQuestionSchema = new mongoose_1.Schema({
     _id: false,
 });
 // ============================================================
-// ANSWER
+// ANSWER SCHEMA
 // ============================================================
 const examAnswerSchema = new mongoose_1.Schema({
     questionId: {
@@ -33,21 +64,49 @@ const examAnswerSchema = new mongoose_1.Schema({
     selectedOption: {
         type: String,
         enum: ["A", "B", "C", "D"],
-        required: true,
+    },
+    correctOption: {
+        type: String,
+        enum: ["A", "B", "C", "D"],
     },
     isCorrect: {
         type: Boolean,
-        default: false,
     },
     timeTaken: {
         type: Number,
-        default: 0,
     },
 }, {
     _id: false,
 });
 // ============================================================
-// SESSION
+// RESULT SCHEMA
+// ============================================================
+const examSessionResultSchema = new mongoose_1.Schema({
+    score: {
+        type: Number,
+        required: true,
+    },
+    correct: {
+        type: Number,
+        required: true,
+    },
+    wrong: {
+        type: Number,
+        required: true,
+    },
+    skipped: {
+        type: Number,
+        required: true,
+    },
+    accuracy: {
+        type: Number,
+        required: true,
+    },
+}, {
+    _id: false,
+});
+// ============================================================
+// EXAM SESSION SCHEMA
 // ============================================================
 const examSessionSchema = new mongoose_1.Schema({
     userId: {
@@ -58,20 +117,23 @@ const examSessionSchema = new mongoose_1.Schema({
     },
     examType: {
         type: String,
-        enum: Object.values(examEngine_constant_1.ExamType),
         required: true,
-    },
-    source: {
-        type: {
-            type: String,
-        },
-        id: {
-            type: mongoose_1.Schema.Types.ObjectId,
-        },
     },
     questions: {
         type: [examSessionQuestionSchema],
-        default: [],
+        required: true,
+    },
+    duration: {
+        type: Number,
+        required: true,
+    },
+    totalMarks: {
+        type: Number,
+        required: true,
+    },
+    negativeMark: {
+        type: Number,
+        default: 0,
     },
     answers: {
         type: [examAnswerSchema],
@@ -87,73 +149,40 @@ const examSessionSchema = new mongoose_1.Schema({
             default: false,
         },
     },
-    /**
-     * Duration in minutes.
-     */
-    duration: {
-        type: Number,
-        required: true,
-        min: 1,
-    },
-    totalMarks: {
-        type: Number,
-        required: true,
-        min: 0,
-    },
-    negativeMark: {
-        type: Number,
-        required: true,
-        min: 0,
-    },
+    // ========================================================
+    // STATUS
+    // ========================================================
     status: {
         type: String,
         enum: Object.values(examSession_constant_1.ExamSessionStatus),
         default: examSession_constant_1.ExamSessionStatus.RUNNING,
+        required: true,
         index: true,
     },
+    // ========================================================
+    // TIME
+    // ========================================================
     startTime: {
         type: Date,
         required: true,
     },
-    endTime: {
-        type: Date,
-    },
     submittedAt: {
         type: Date,
     },
+    endTime: {
+        type: Date,
+    },
     // ========================================================
-    // PERSISTED RESULT
+    // RESULT
     // ========================================================
     result: {
-        score: {
-            type: Number,
-        },
-        correct: {
-            type: Number,
-        },
-        wrong: {
-            type: Number,
-        },
-        skipped: {
-            type: Number,
-        },
-        accuracy: {
-            type: Number,
-        },
+        type: examSessionResultSchema,
     },
 }, {
     timestamps: true,
 });
 // ============================================================
-// INDEXES
+// MODEL
 // ============================================================
-examSessionSchema.index({
-    userId: 1,
-    status: 1,
-});
-examSessionSchema.index({
-    userId: 1,
-    createdAt: -1,
-});
-exports.ExamSession = (0, mongoose_1.model)("ExamSession", examSessionSchema);
+exports.ExamSession = mongoose_1.default.model("ExamSession", examSessionSchema);
 //# sourceMappingURL=examSession.model.js.map

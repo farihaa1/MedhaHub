@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
-import { IExamSession } from "../api/api.type"
+import { ExamSessionQuestion } from "../types/exam.type"
 
 
 interface ExamEngineState {
-  session: IExamSession | null
+  session: ExamSessionQuestion | null
 }
 
 const initialState: ExamEngineState = {
@@ -14,7 +14,7 @@ const examEngineSlice = createSlice({
   name: "examEngine",
   initialState,
   reducers: {
-    setSession(state, action: PayloadAction<IExamSession>) {
+    setSession(state, action: PayloadAction<ExamSessionQuestion>) {
       state.session = action.payload
     },
 

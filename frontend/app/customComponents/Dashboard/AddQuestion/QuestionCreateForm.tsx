@@ -27,7 +27,10 @@ import {
   QuestionSourceType,
   QuestionType,
   CreateQuestionPayload,
+  QuestionStatus,
 } from "@/app/redux/api/questionsApi"
+
+import { useMeQuery } from "@/app/redux/api/authApi"
 
 import { Plus, Trash2, Send, ImageIcon } from "lucide-react"
 
@@ -133,6 +136,8 @@ const defaultValues: QuestionFormValues = {
   tags: [],
 
   sources: [],
+
+  status: QuestionStatus.PENDING,
 }
 
 /* =========================================================
@@ -149,6 +154,26 @@ interface Props {
 
 export default function QuestionCreateForm({ location }: Props) {
   const [tagInput, setTagInput] = useState("")
+
+  /* =======================================================
+     AUTHENTICATED USER
+  ======================================================= */
+
+  const { data: meData } = useMeQuery()
+
+  /*
+   * Admin:
+   *    APPROVED
+   *
+   * Normal user:
+   *    PENDING
+   */
+
+  const isAdmin = meData?.data?.role === "admin"
+
+  const questionStatus = isAdmin
+    ? QuestionStatus.APPROVED
+    : QuestionStatus.PENDING
 
   /* =======================================================
      FORM
@@ -262,17 +287,6 @@ export default function QuestionCreateForm({ location }: Props) {
 
       /* ===================================================
          OPTIONS
-         
-         IMPORTANT:
-         API does NOT need label/correctAnswer.
-         
-         It needs:
-         { 
-
-           text,
-           image,
-           isCorrect
-         }
       =================================================== */
 
       const options = formData.options.map((option) => ({
@@ -301,11 +315,6 @@ export default function QuestionCreateForm({ location }: Props) {
 
       /* ===================================================
          PAYLOAD
-         
-         THIS MUST MATCH:
-         CreateQuestionPayload
-         
-         Same structure as JSON importer.
       =================================================== */
 
       const payload: CreateQuestionPayload = {
@@ -332,6 +341,12 @@ export default function QuestionCreateForm({ location }: Props) {
         tags,
 
         sources,
+
+        /*
+         * ADMIN → APPROVED
+         * USER  → PENDING
+         */
+        status: questionStatus,
       }
 
       console.log("CREATE QUESTION PAYLOAD:", payload)
@@ -346,7 +361,11 @@ export default function QuestionCreateForm({ location }: Props) {
          SUCCESS
       =================================================== */
 
-      toast.success("প্রশ্ন সফলভাবে তৈরি হয়েছে।")
+      toast.success(
+        isAdmin
+          ? "প্রশ্ন সফলভাবে তৈরি এবং অনুমোদিত হয়েছে।"
+          : "প্রশ্ন সফলভাবে তৈরি হয়েছে। অনুমোদনের জন্য অপেক্ষা করুন।"
+      )
 
       reset(defaultValues)
 
@@ -457,22 +476,16 @@ export default function QuestionCreateForm({ location }: Props) {
             return (
               <div key={field.id} className="rounded-lg border p-3">
                 <div className="flex items-start gap-2">
-                  {/* OPTION LABEL */}
-
                   <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold">
                     {field.label}
                   </div>
 
                   <div className="min-w-0 flex-1 space-y-2">
-                    {/* OPTION TEXT */}
-
                     <Input
                       {...register(`options.${index}.text`)}
                       placeholder={`বিকল্প ${field.label}`}
                       className="h-9 text-sm"
                     />
-
-                    {/* OPTION IMAGE */}
 
                     <QuestionImageUpload
                       value={optionImage}
@@ -738,6 +751,26 @@ export default function QuestionCreateForm({ location }: Props) {
           ))}
         </div>
       </section>
+
+      {/* =================================================
+          STATUS INFO
+      ================================================= */}
+
+      <div className="rounded-lg border bg-muted/30 p-3 text-xs">
+        {isAdmin ? (
+          <p className="text-green-600 dark:text-green-400">
+            আপনি Admin হিসেবে লগইন করেছেন। এই প্রশ্ন সরাসরি
+            <strong> Approved </strong>
+            হবে।
+          </p>
+        ) : (
+          <p className="text-muted-foreground">
+            প্রশ্নটি তৈরি করার পর এটি
+            <strong> Pending </strong>
+            অবস্থায় থাকবে এবং অনুমোদনের প্রয়োজন হবে।
+          </p>
+        )}
+      </div>
 
       {/* =================================================
           SUBMIT

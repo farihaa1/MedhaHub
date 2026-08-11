@@ -21,20 +21,20 @@ export function HeaderSection() {
               <CheckCircle2 className="size-4 text-primary" />
               BCS ও অন্যান্য চাকরি পরীক্ষার প্রস্তুতির জন্য
             </div>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="text-2xl font-bold tracking-tight md:text-4xl">
               স্মার্টভাবে প্রস্তুতি নিন।
               <br />
               <span className="text-primary">সাফল্যের জন্য অনুশীলন করুন।</span>
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-sm">
               হাজার হাজার MCQ প্রশ্ন অনুশীলন করুন, বিষয় ও টপিক অনুযায়ী
               প্রস্তুতি নিন এবং মডেল পরীক্ষা দিয়ে নিজের প্রস্তুতি যাচাই করুন।
             </p>
 
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
-                href="/practice"
+                href="/practice/subjects"
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
               >
                 অনুশীলন শুরু করুন

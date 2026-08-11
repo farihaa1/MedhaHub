@@ -1,27 +1,49 @@
-import { Model, Types, HydratedDocument } from "mongoose";
+import { Model } from "mongoose";
+
 import { UserRole, UserStatus } from "./user.constants";
 import { AuthProvider } from "../auth/auth.constant";
 
 export interface IUser {
-  _id?: Types.ObjectId;
   name: string;
   email: string;
-  password: string;
+
+  // Optional because Google-only users initially
+  // don't have a password.
+  password?: string;
+
+  // Google account identifier
+  googleId?: string;
+
+  avatar?: string;
+
+  // Original registration provider
+  provider: AuthProvider;
 
   role: UserRole;
   status: UserStatus;
-  provider: AuthProvider;
 
-  profileImage?: string;
-  avatar?: string;
-  phone?: string;
+  isVerified?: boolean;
 
-  isVerified: boolean;
   points?: number;
+
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export interface UserModel extends Model<IUser> {
-  isUserExistsByEmail(email: string): Promise<HydratedDocument<IUser> | null>;
+/**
+ * Custom static methods available on User model.
+ */
+export interface IUserModel extends Model<IUser> {
+  isUserExistsByEmail(email: string): Promise<IUserDocument | null>;
 }
+
+/**
+ * Mongoose hydrated document.
+ *
+ * We intentionally don't use `extends Document`
+ * here because modern Mongoose recommends keeping
+ * the raw document interface separate.
+ */
+export type IUserDocument = IUser & {
+  _id: import("mongoose").Types.ObjectId;
+};

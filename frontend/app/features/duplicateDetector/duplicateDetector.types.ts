@@ -1,6 +1,4 @@
-
-import type { IApiResponse } from "@/app/features/auth/auth.type";
-
+import type { IApiResponse } from "@/app/redux/types/auth.type"
 
 // ============================================================
 // ENUMS
@@ -22,202 +20,190 @@ export enum DuplicateStatus {
   IGNORED = "ignored",
 }
 
-
 // ============================================================
 // QUESTION
 // ============================================================
 
 export interface IDuplicateQuestion {
-  _id: string;
+  _id: string
 
-  questionText: string;
+  questionText: string
 
-  options?: string[];
+  options?: string[]
 
-  answer?: string;
+  answer?: string
 
-  explanation?: string;
+  explanation?: string
 
-  subjectId?: string;
+  subjectId?: string
 
-  chapterId?: string;
+  chapterId?: string
 
-  topicId?: string;
+  topicId?: string
 
-  questionBankId?: string;
+  questionBankId?: string
 
-  modelTestId?: string;
+  modelTestId?: string
 }
-
 
 // ============================================================
 // DUPLICATE PAIR
 // ============================================================
 
 export interface IDuplicatePair {
-  _id: string;
+  _id: string
 
-  questionA: IDuplicateQuestion;
+  questionA: IDuplicateQuestion
 
-  questionB: IDuplicateQuestion;
+  questionB: IDuplicateQuestion
 
-  similarity: number;
+  similarity: number
 
-  exactMatch: boolean;
+  exactMatch: boolean
 
-  status: DuplicateStatus;
+  status: DuplicateStatus
 
-  scope: DuplicateScope;
+  scope: DuplicateScope
 
-  scopeId?: string;
+  scopeId?: string
 
-  reviewedAt?: string;
+  reviewedAt?: string
 
-  reviewedBy?: string;
+  reviewedBy?: string
 
   resolution?: {
-    keptQuestionId: string;
+    keptQuestionId: string
 
-    archivedQuestionId: string;
-  };
+    archivedQuestionId: string
+  }
 
-  createdAt: string;
+  createdAt: string
 
-  updatedAt: string;
+  updatedAt: string
 }
-
 
 // ============================================================
 // STATS
 // ============================================================
 
 export interface IDuplicateStats {
-  total: number;
+  total: number
 
-  pending: number;
+  pending: number
 
-  duplicate: number;
+  duplicate: number
 
-  notDuplicate: number;
+  notDuplicate: number
 
-  ignored: number;
+  ignored: number
 
-  exact: number;
+  exact: number
 }
-
 
 // ============================================================
 // PAGINATION
 // ============================================================
 
 export interface IDuplicatePagination {
-  page: number;
+  page: number
 
-  limit: number;
+  limit: number
 
-  total: number;
+  total: number
 
-  totalPages: number;
+  totalPages: number
 }
-
 
 // ============================================================
 // GET PAIRS QUERY
 // ============================================================
 
 export interface IDuplicatePairsQuery {
-  status?: DuplicateStatus;
+  status?: DuplicateStatus
 
-  scope?: DuplicateScope;
+  scope?: DuplicateScope
 
-  scopeId?: string;
+  scopeId?: string
 
-  minSimilarity?: number;
+  minSimilarity?: number
 
-  page?: number;
+  page?: number
 
-  limit?: number;
+  limit?: number
 }
-
 
 // ============================================================
 // GET PAIRS RESPONSE
 // ============================================================
 
 export interface IDuplicatePairsResponse {
-  success: boolean;
+  success: boolean
 
-  message: string;
+  message: string
 
-  data: IDuplicatePair[];
+  data: IDuplicatePair[]
 
-  meta: IDuplicatePagination;
+  meta: IDuplicatePagination
 }
-
 
 // ============================================================
 // SCAN REQUEST
 // ============================================================
 
 export interface IDuplicateScanRequest {
-  scope: DuplicateScope;
+  scope: DuplicateScope
 
-  subjectId?: string;
+  subjectId?: string
 
-  chapterId?: string;
+  chapterId?: string
 
-  topicId?: string;
+  topicId?: string
 
-  questionBankId?: string;
+  questionBankId?: string
 
-  modelTestId?: string;
+  modelTestId?: string
 
-  compareQuestionBankIds?: string[];
+  compareQuestionBankIds?: string[]
 
-  compareModelTestIds?: string[];
+  compareModelTestIds?: string[]
 
-  minSimilarity?: number;
+  minSimilarity?: number
 }
-
 
 // ============================================================
 // JOB RESPONSE
 // ============================================================
 
 export interface IDuplicateJobResponse {
-  success: boolean;
+  success: boolean
 
-  message: string;
+  message: string
 
   data: {
-    jobId: string;
-  };
+    jobId: string
+  }
 }
-
 
 // ============================================================
 // REVIEW
 // ============================================================
 
 export interface IReviewDuplicateRequest {
-  status: DuplicateStatus;
+  status: DuplicateStatus
 }
-
 
 // ============================================================
 // RESOLVE
 // ============================================================
 
 export interface IResolveDuplicateRequest {
-  keepQuestionId: string;
+  keepQuestionId: string
 
-  archiveQuestionId: string;
+  archiveQuestionId: string
 }
-
 
 // ============================================================
 // API RESPONSE HELPERS
 // ============================================================
 
-export type DuplicateStatsResponse =
-  IApiResponse<IDuplicateStats>;
+export type DuplicateStatsResponse = IApiResponse<IDuplicateStats>

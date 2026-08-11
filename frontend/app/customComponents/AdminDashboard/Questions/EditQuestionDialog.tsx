@@ -20,6 +20,7 @@ import {
   IEntityRef,
   IQuestion,
   QuestionDifficulty,
+  QuestionStatus,
   useGetQuestionQuery,
   useUpdateQuestionMutation,
 } from "@/app/redux/api/questionsApi"
@@ -32,6 +33,7 @@ interface Props {
 
 const getId = (value: string | IEntityRef | null | undefined) => {
   if (!value) return ""
+
   return typeof value === "string" ? value : value._id
 }
 
@@ -43,11 +45,12 @@ const mapQuestionToForm = (question: IQuestion): QuestionFormValues => ({
   questionText: question.questionText,
   questionImage: question.questionImage ?? null,
 
-  options: question.options?.map((option) => ({
-    text: option.text,
-    image: option.image ?? null,
-    isCorrect: option.isCorrect ?? false,
-  })),
+  options:
+    question.options?.map((option) => ({
+      text: option.text,
+      image: option.image ?? null,
+      isCorrect: option.isCorrect ?? false,
+    })) ?? [],
 
   explanation: question.explanation ?? "",
   explanationImage: question.explanationImage ?? null,
@@ -57,6 +60,8 @@ const mapQuestionToForm = (question: IQuestion): QuestionFormValues => ({
   tags: question.tags ?? [],
 
   sources: question.sources ?? [],
+
+  status: question.status ?? QuestionStatus.PENDING,
 })
 
 export default function EditQuestionDialog({
@@ -66,6 +71,7 @@ export default function EditQuestionDialog({
 }: Props) {
   const methods = useForm<QuestionFormValues>({
     resolver: zodResolver(questionSchema),
+
     defaultValues: {
       subjectId: "",
       chapterId: "",
@@ -105,13 +111,15 @@ export default function EditQuestionDialog({
       tags: [],
 
       sources: [],
+
+      status: QuestionStatus.PENDING,
     },
   })
 
   const { data, currentData, isLoading, isFetching } = useGetQuestionQuery(
     questionId,
     {
-      skip: !questionId,
+      skip: !questionId || !open,
     }
   )
 
@@ -131,14 +139,40 @@ export default function EditQuestionDialog({
     try {
       await updateQuestion({
         id: questionId,
-        data: values,
+
+        data: {
+          subjectId: values.subjectId,
+          chapterId: values.chapterId,
+          topicId: values.topicId,
+
+          questionText: values.questionText,
+          questionImage: values.questionImage,
+
+          options: values.options,
+
+          explanation: values.explanation,
+          explanationImage: values.explanationImage,
+
+          difficulty: values.difficulty,
+
+          tags: values.tags,
+
+          sources: values.sources,
+
+          status: values.status,
+        },
       }).unwrap()
 
       toast.success("Question updated successfully")
 
       onOpenChange(false)
-    } catch {
-      toast.error("Failed to update question")
+    } catch (error: unknown) {
+      const message =
+        error && typeof error === "object" && "data" in error
+          ? (error.data as { message?: string })?.message
+          : undefined
+
+      toast.error(message ?? "Failed to update question")
     }
   }
 
@@ -147,6 +181,7 @@ export default function EditQuestionDialog({
       <DialogContent className="max-h-[90vh] max-w-3xl min-w-[70%] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Question</DialogTitle>
+
           <DialogDescription>Update question information.</DialogDescription>
         </DialogHeader>
 

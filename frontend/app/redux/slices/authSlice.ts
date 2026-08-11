@@ -1,17 +1,20 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
-import { IUser } from "@/app/features/auth/auth.type"
 
-interface AuthState {
-  user: IUser | null
-  isAuthenticated: boolean
-  isLoading: boolean
-}
+import { IAuthState, IUser } from "../types/auth.type"
 
-const initialState: AuthState = {
+// ============================================================
+// INITIAL STATE
+// ============================================================
+
+const initialState: IAuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: true,
 }
+
+// ============================================================
+// AUTH SLICE
+// ============================================================
 
 const authSlice = createSlice({
   name: "auth",
@@ -19,11 +22,19 @@ const authSlice = createSlice({
   initialState,
 
   reducers: {
+    // ========================================================
+    // SET USER
+    // ========================================================
+
     setCredentials: (state, action: PayloadAction<IUser>) => {
       state.user = action.payload
       state.isAuthenticated = true
       state.isLoading = false
     },
+
+    // ========================================================
+    // CLEAR USER
+    // ========================================================
 
     clearCredentials: (state) => {
       state.user = null
@@ -31,13 +42,25 @@ const authSlice = createSlice({
       state.isLoading = false
     },
 
+    // ========================================================
+    // AUTH LOADING
+    // ========================================================
+
     setAuthLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload
     },
   },
 })
 
+// ============================================================
+// ACTIONS
+// ============================================================
+
 export const { setCredentials, clearCredentials, setAuthLoading } =
   authSlice.actions
+
+// ============================================================
+// REDUCER
+// ============================================================
 
 export default authSlice.reducer

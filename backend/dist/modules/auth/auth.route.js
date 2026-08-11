@@ -15,7 +15,9 @@ AuthRoutes.post("/login", auth_controller_1.AuthController.login);
 AuthRoutes.post("/refresh-token", auth_controller_1.AuthController.refreshToken);
 AuthRoutes.post("/logout", auth_controller_1.AuthController.logout);
 AuthRoutes.post("/change-password", (0, auth_1.default)(user_constants_1.UserRole.USER, user_constants_1.UserRole.ADMIN), (0, validateRequest_1.default)(auth_validation_1.AuthValidation.changePasswordValidationSchema), auth_controller_1.AuthController.changePassword);
+AuthRoutes.post("/set-password", (0, auth_1.default)(user_constants_1.UserRole.USER, user_constants_1.UserRole.ADMIN), auth_controller_1.AuthController.setPassword);
 AuthRoutes.get("/me", (0, auth_1.default)(user_constants_1.UserRole.USER, user_constants_1.UserRole.ADMIN), auth_controller_1.AuthController.getMe);
 AuthRoutes.patch("/profile", (0, auth_1.default)(user_constants_1.UserRole.USER, user_constants_1.UserRole.ADMIN), auth_controller_1.AuthController.updateProfile);
+AuthRoutes.post("/google", auth_controller_1.AuthController.googleLogin);
 exports.default = AuthRoutes;
 //# sourceMappingURL=auth.route.js.map

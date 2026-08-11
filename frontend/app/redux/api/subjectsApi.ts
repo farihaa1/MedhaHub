@@ -1,6 +1,6 @@
 import { ISubject } from "@/app/(dashboard)/subjects/subjects.type"
 import { baseApi } from "./baseApi"
-import { IApiResponse } from "@/app/features/auth/auth.type"
+import { IApiResponse } from "@/app/redux/types/auth.type"
 
 export const subjectsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

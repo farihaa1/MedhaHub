@@ -1,36 +1,44 @@
 import mongoose from "mongoose";
 import AppError from "../../error/AppError";
 import { StatisticsService } from "../services/statistics.service";
-import { IQuestion, IQuestionStats } from "./question.interface";
+import { IQuestion } from "./question.interface";
 import { Question } from "./question.model";
 import { QuestionStatus } from "./question.constant";
+import { UserRole } from "../users/user.constants";
 
-/* =========================================================
-   CREATE QUESTION
-========================================================= */
 
-const createQuestion = async (payload: IQuestion) => {
+const createQuestion = async (payload: IQuestion, userRole: UserRole) => {
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    const question = await Question.create([payload], {
+   const status =
+     userRole === UserRole.ADMIN
+       ? QuestionStatus.APPROVED
+       : QuestionStatus.PENDING;
+
+    const questionPayload: IQuestion = {
+      ...payload,
+      status,
+    };
+
+    const question = await Question.create([questionPayload], {
       session,
     });
 
     /*
      * Only approved questions count publicly.
      */
-    if (payload.status === QuestionStatus.APPROVED) {
+    if (status === QuestionStatus.APPROVED) {
       await StatisticsService.incrementQuestionCount(
-        payload.chapterId.toString(),
+        questionPayload.chapterId.toString(),
         1,
         session,
       );
 
       await StatisticsService.incrementTopicQuestionCount(
-        payload.topicId.toString(),
+        questionPayload.topicId.toString(),
         1,
         session,
       );
@@ -47,54 +55,59 @@ const createQuestion = async (payload: IQuestion) => {
   }
 };
 
-/* =========================================================
-   BULK CREATE QUESTIONS
-========================================================= */
-
-const bulkCreateQuestions = async (payload: IQuestion[]) => {
+const bulkCreateQuestions = async (
+  payload: IQuestion[],
+  userRole: UserRole,
+) => {
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    const questions = await Question.insertMany(payload, {
+    const status =
+      userRole === UserRole.ADMIN
+        ? QuestionStatus.APPROVED
+        : QuestionStatus.PENDING;
+
+    const questionPayload: IQuestion[] = payload.map((question) => ({
+      ...question,
+      status,
+    }));
+
+    const questions = await Question.insertMany(questionPayload, {
       session,
       ordered: false,
     });
 
-    const chapterMap = new Map<string, number>();
-    const topicMap = new Map<string, number>();
+    // Only APPROVED questions affect public statistics
+    if (status === QuestionStatus.APPROVED) {
+      const chapterMap = new Map<string, number>();
+      const topicMap = new Map<string, number>();
 
-    /*
-     * Only approved questions affect public counts.
-     */
-    for (const question of payload) {
-      if (question.status !== QuestionStatus.APPROVED) {
-        continue;
+      for (const question of questions) {
+        const chapterId = question.chapterId.toString();
+        const topicId = question.topicId.toString();
+
+        chapterMap.set(chapterId, (chapterMap.get(chapterId) || 0) + 1);
+
+        topicMap.set(topicId, (topicMap.get(topicId) || 0) + 1);
       }
 
-      const chapterId = question.chapterId.toString();
-      const topicId = question.topicId.toString();
+      for (const [chapterId, count] of chapterMap) {
+        await StatisticsService.incrementQuestionCount(
+          chapterId,
+          count,
+          session,
+        );
+      }
 
-      chapterMap.set(chapterId, (chapterMap.get(chapterId) || 0) + 1);
-
-      topicMap.set(topicId, (topicMap.get(topicId) || 0) + 1);
-    }
-
-    /* Chapter counts */
-
-    for (const [chapterId, count] of chapterMap) {
-      await StatisticsService.incrementQuestionCount(chapterId, count, session);
-    }
-
-    /* Topic counts */
-
-    for (const [topicId, count] of topicMap) {
-      await StatisticsService.incrementTopicQuestionCount(
-        topicId,
-        count,
-        session,
-      );
+      for (const [topicId, count] of topicMap) {
+        await StatisticsService.incrementTopicQuestionCount(
+          topicId,
+          count,
+          session,
+        );
+      }
     }
 
     await session.commitTransaction();
@@ -104,7 +117,7 @@ const bulkCreateQuestions = async (payload: IQuestion[]) => {
     await session.abortTransaction();
     throw error;
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 };
 
@@ -114,12 +127,15 @@ const bulkCreateQuestions = async (payload: IQuestion[]) => {
 
 const getAllQuestions = async (query: Record<string, any>) => {
   const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 20;
+  const limit = Number(query.limit) || 10;
+
   const skip = (page - 1) * limit;
 
   const filter: Record<string, any> = {};
 
-  /* Academic filters */
+  // ============================================================
+  // ACADEMIC FILTERS
+  // ============================================================
 
   if (query.subjectId && query.subjectId !== "all") {
     filter.subjectId = query.subjectId;
@@ -133,7 +149,9 @@ const getAllQuestions = async (query: Record<string, any>) => {
     filter.topicId = query.topicId;
   }
 
-  /* Metadata filters */
+  // ============================================================
+  // METADATA FILTERS
+  // ============================================================
 
   if (query.status && query.status !== "all") {
     filter.status = query.status;
@@ -151,16 +169,35 @@ const getAllQuestions = async (query: Record<string, any>) => {
     filter["sources.type"] = query.source;
   }
 
-  /* Search */
+  // ============================================================
+  // QUESTION SEARCH
+  // ============================================================
 
-  if (query.searchTerm) {
+  if (query.searchTerm?.trim()) {
     filter.questionText = {
-      $regex: query.searchTerm,
+      $regex: query.searchTerm.trim(),
       $options: "i",
     };
   }
 
-  /* Sorting */
+  // ============================================================
+  // SOURCE NAME SEARCH
+  // ============================================================
+
+if (query.sourceTitle?.trim()) {
+  filter.sources = {
+    $elemMatch: {
+      name: {
+        $regex: query.sourceTitle.trim(),
+        $options: "i",
+      },
+    },
+  };
+}
+
+  // ============================================================
+  // SORT
+  // ============================================================
 
   const sortField = query.sortBy || "createdAt";
   const sortOrder = query.sortOrder === "asc" ? 1 : -1;
@@ -245,9 +282,7 @@ const updateQuestion = async (id: string, payload: Partial<IQuestion>) => {
     }
 
     const oldChapterId = oldQuestion.chapterId.toString();
-
     const oldTopicId = oldQuestion.topicId.toString();
-
     const oldStatus = oldQuestion.status;
 
     const newChapterId = payload.chapterId?.toString() || oldChapterId;
@@ -272,8 +307,8 @@ const updateQuestion = async (id: string, payload: Partial<IQuestion>) => {
 
     /* =====================================================
        CASE 1:
-       Approved → Approved
-       ===================================================== */
+       APPROVED → APPROVED
+    ===================================================== */
 
     if (wasApproved && isApproved) {
       if (oldChapterId !== newChapterId) {
@@ -307,8 +342,8 @@ const updateQuestion = async (id: string, payload: Partial<IQuestion>) => {
 
     /* =====================================================
        CASE 2:
-       Pending/Rejected → Approved
-       ===================================================== */
+       PENDING/REJECTED → APPROVED
+    ===================================================== */
 
     if (!wasApproved && isApproved) {
       await StatisticsService.incrementQuestionCount(newChapterId, 1, session);
@@ -319,6 +354,11 @@ const updateQuestion = async (id: string, payload: Partial<IQuestion>) => {
         session,
       );
     }
+
+    /* =====================================================
+       CASE 3:
+       APPROVED → PENDING/REJECTED
+    ===================================================== */
 
     if (wasApproved && !isApproved) {
       await StatisticsService.decrementQuestionCount(oldChapterId, 1, session);
@@ -341,17 +381,17 @@ const updateQuestion = async (id: string, payload: Partial<IQuestion>) => {
   }
 };
 
+/* =========================================================
+   DELETE QUESTION
+========================================================= */
+
 const deleteQuestion = async (id: string) => {
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
 
-    console.log("STEP 1");
-
     const question = await Question.findById(id).session(session);
-
-    console.log("STEP 2", question);
 
     if (!question) {
       throw new AppError(404, "Question not found");
@@ -379,12 +419,8 @@ const deleteQuestion = async (id: string) => {
 
     await session.commitTransaction();
 
-    console.log("STEP 7");
-
     return question;
   } catch (error) {
-    console.error(error);
-
     await session.abortTransaction();
 
     throw error;
@@ -397,7 +433,7 @@ const deleteQuestion = async (id: string) => {
    QUESTION STATS
 ========================================================= */
 
-const getQuestionStats = async (): Promise<IQuestionStats> => {
+const getQuestionStats = async () => {
   const startOfToday = new Date();
 
   startOfToday.setHours(0, 0, 0, 0);
@@ -435,6 +471,12 @@ const getQuestionStats = async (): Promise<IQuestionStats> => {
     today,
   };
 };
+
+
+
+/* =========================================================
+   EXPORT
+========================================================= */
 
 export const QuestionService = {
   createQuestion,

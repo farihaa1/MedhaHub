@@ -20,6 +20,16 @@ const register = (0, catchAsync_1.catchAsync)(async (req, res) => {
         data: result.user,
     });
 });
+const setPassword = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const { newPassword } = req.body;
+    await auth_service_1.AuthService.setPassword(req.user.email, newPassword);
+    (0, sendResponse_1.sendResponse)(res, {
+        success: true,
+        statusCode: 200,
+        message: "Password set successfully",
+        data: null,
+    });
+});
 const login = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const result = await auth_service_1.AuthService.login(req.body);
     (0, auth_utils_1.setAuthCookies)(res, result.accessToken, result.refreshToken);
@@ -45,6 +55,7 @@ const getMe = (0, catchAsync_1.catchAsync)(async (req, res) => {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, "Authentication information is missing.");
     }
     const result = await auth_service_1.AuthService.getMe(req.user.email);
+    console.log(result);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: 200,
@@ -89,10 +100,23 @@ const logout = (0, catchAsync_1.catchAsync)(async (_req, res) => {
         data: null,
     });
 });
+const googleLogin = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const { idToken } = req.body;
+    const result = await auth_service_1.AuthService.googleLogin(idToken);
+    (0, auth_utils_1.setAuthCookies)(res, result.accessToken, result.refreshToken);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: 200,
+        success: true,
+        message: "Google login successful",
+        data: result.user,
+    });
+});
 exports.AuthController = {
     register,
     login,
+    googleLogin,
     changePassword,
+    setPassword,
     getMe,
     updateProfile,
     refreshToken,

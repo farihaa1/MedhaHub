@@ -1,5 +1,4 @@
 "use strict";
-// modules/examSession/examSession.constant.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExamSessionStatus = void 0;
 exports.ExamSessionStatus = {

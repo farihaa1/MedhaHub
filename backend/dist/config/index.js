@@ -23,6 +23,7 @@ const config = {
     // Cookie expires (milliseconds)
     accessCookieMaxAge: Number(process.env.ACCESS_COOKIE_MAX_AGE) || 15 * 60 * 1000,
     refreshCookieMaxAge: Number(process.env.REFRESH_COOKIE_MAX_AGE) || 15 * 24 * 60 * 60 * 1000,
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
     // Cloudinary
     cloudinary: {
         cloudName: process.env.CLOUDINARY_CLOUD_NAME,

@@ -1,12 +1,11 @@
 
 "use client"
 
+import { useGetResultQuery } from "@/app/redux/api/resultApi"
 import { useParams } from "next/navigation"
-import { useGetResultQuery } from "@/app/redux/api/examEngineApi"
 
 export default function ResultPage() {
   const params = useParams()
-
   const sessionId = params.sessionId as string
 
   const {

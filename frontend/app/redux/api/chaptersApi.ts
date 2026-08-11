@@ -1,4 +1,4 @@
-import { IApiResponse } from "@/app/features/auth/auth.type"
+import { IApiResponse } from "@/app/redux/types/auth.type"
 import { baseApi } from "./baseApi"
 import { ITopic } from "./topicsApi"
 export enum ChapterStatus {

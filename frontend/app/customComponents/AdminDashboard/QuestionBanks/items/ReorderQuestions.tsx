@@ -1,8 +1,7 @@
 "use client"
 
-import { DragEndEvent } from "@dnd-kit/core"
-import { useReorderQuestionsMutation } from "@/app/redux/api/questionBankItemApi"
-import { DndContext, closestCenter } from "@dnd-kit/core"
+import { useState } from "react"
+import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core"
 
 import {
   arrayMove,
@@ -10,65 +9,74 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 
-import { useState } from "react"
-import { IQuestion } from "@/app/redux/api/api.type"
+import { useReorderQuestionsMutation } from "@/app/redux/api/questionBankItemApi"
+import { IQuestion } from "@/app/redux/api/questionsApi"
 
+import SortableQuestion from "./SortableQuestion"
 
 interface Props {
   questionBankId: string
   items: IQuestion[]
 }
 
-export default function ReorderQuestions({
-  questionBankId,
-  items,
-}: Props){
-  const [questions, setQuestions] = useState(items)
+export default function ReorderQuestions({ questionBankId, items }: Props) {
+  const [optimisticQuestions, setOptimisticQuestions] = useState<
+    IQuestion[] | null
+  >(null)
+
+  const questions = optimisticQuestions ?? items
+
   const [reorderQuestions] = useReorderQuestionsMutation()
 
-
-  const handleDragEnd = async(event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
-    if (!over) return
 
-    if (active.id !== over.id) {
-      const oldIndex = questions.findIndex((q) => q._id === active.id)
-      const newIndex = questions.findIndex((q) => q._id === over.id)
-      const updated = arrayMove(questions, oldIndex, newIndex)
+    if (!over || active.id === over.id) {
+      return
+    }
 
-      setQuestions(updated)
+    const oldIndex = questions.findIndex(
+      (question) => question._id === active.id
+    )
 
-      try {
-        await reorderQuestions({
-          questionBankId,
-          items: updated.map((item, index) => ({
-            id: item._id,
-            order: index + 1,
-          })),
-        }).unwrap()
-      } catch {
-        setQuestions(questions)
-      }
+    const newIndex = questions.findIndex((question) => question._id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return
+    }
+
+    const previousQuestions = questions
+
+    const updatedQuestions = arrayMove(questions, oldIndex, newIndex)
+
+    setOptimisticQuestions(updatedQuestions)
+
+    try {
+      await reorderQuestions({
+        questionBankId,
+        items: updatedQuestions.map((question, index) => ({
+          id: question._id,
+          order: index + 1,
+        })),
+      }).unwrap()
+      setOptimisticQuestions(null)
+    } catch (error) {
+      console.error("Failed to reorder questions:", error)
+
+      // Rollback if API fails
+      setOptimisticQuestions(previousQuestions)
     }
   }
 
   return (
-    <DndContext
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext
-        items={questions.map((q) => q._id)}
+        items={questions.map((question) => question._id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-2">
-          {questions.map((item) => (
-            <div
-              key={item._id}
-              className="rounded border p-3"
-            >
-              {item.question}
-            </div>
+          {questions.map((question) => (
+            <SortableQuestion key={question._id} question={question} />
           ))}
         </div>
       </SortableContext>

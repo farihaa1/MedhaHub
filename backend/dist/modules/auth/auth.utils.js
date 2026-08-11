@@ -11,18 +11,6 @@ const config_1 = __importDefault(require("../../config"));
 const AppError_1 = __importDefault(require("../../error/AppError"));
 const http_status_1 = __importDefault(require("http-status"));
 const isProduction = process.env.NODE_ENV === "production";
-/**
- * Cookie configuration
- *
- * Production:
- * - httpOnly: prevents JS access
- * - secure: cookie only sent over HTTPS
- * - sameSite: none allows cross-origin frontend/backend requests
- *
- * Development:
- * - secure false because localhost is HTTP
- * - sameSite lax
- */
 const cookieOptions = {
     httpOnly: true,
     secure: isProduction,
@@ -45,9 +33,6 @@ const clearAuthCookies = (res) => {
     res.clearCookie("refreshToken", cookieOptions);
 };
 exports.clearAuthCookies = clearAuthCookies;
-/**
- * Generate access + refresh token
- */
 const generateAuthTokens = (user) => {
     const payload = {
         id: user._id.toString(),
@@ -62,33 +47,21 @@ const generateAuthTokens = (user) => {
     };
 };
 exports.generateAuthTokens = generateAuthTokens;
-/**
- * Hash password
- */
 const hashPassword = async (password) => {
     const saltRounds = Number(config_1.default.bcryptSaltRounds) || 10;
     return bcrypt_1.default.hash(password, saltRounds);
 };
 exports.hashPassword = hashPassword;
-/**
- * Compare password
- */
 const comparePassword = async (plainPassword, hashedPassword) => {
     return bcrypt_1.default.compare(plainPassword, hashedPassword);
 };
 exports.comparePassword = comparePassword;
-/**
- * Create JWT
- */
 const createToken = (payload, secret, expiresIn) => {
     return jsonwebtoken_1.default.sign(payload, secret, {
         expiresIn,
     });
 };
 exports.createToken = createToken;
-/**
- * Verify JWT
- */
 const verifyToken = (token, secret) => {
     try {
         return jsonwebtoken_1.default.verify(token, secret);
@@ -98,9 +71,6 @@ const verifyToken = (token, secret) => {
     }
 };
 exports.verifyToken = verifyToken;
-/**
- * Generate random token
- */
 const generateRandomToken = (length = 32) => {
     return crypto_1.default.randomBytes(length).toString("hex");
 };

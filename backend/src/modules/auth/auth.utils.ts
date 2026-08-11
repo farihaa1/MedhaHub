@@ -1,8 +1,12 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
+
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+
 import { Response } from "express";
+
 import { UserRole } from "../users/user.constants";
+
 import config from "../../config";
 import AppError from "../../error/AppError";
 import httpStatus from "http-status";
@@ -15,18 +19,6 @@ interface TokenPayloadUser {
 
 const isProduction = process.env.NODE_ENV === "production";
 
-/**
- * Cookie configuration
- *
- * Production:
- * - httpOnly: prevents JS access
- * - secure: cookie only sent over HTTPS
- * - sameSite: none allows cross-origin frontend/backend requests
- *
- * Development:
- * - secure false because localhost is HTTP
- * - sameSite lax
- */
 const cookieOptions = {
   httpOnly: true,
   secure: isProduction,
@@ -52,12 +44,10 @@ export const setAuthCookies = (
 
 export const clearAuthCookies = (res: Response): void => {
   res.clearCookie("accessToken", cookieOptions);
+
   res.clearCookie("refreshToken", cookieOptions);
 };
 
-/**
- * Generate access + refresh token
- */
 export const generateAuthTokens = (user: TokenPayloadUser) => {
   const payload = {
     id: user._id.toString(),
@@ -83,18 +73,12 @@ export const generateAuthTokens = (user: TokenPayloadUser) => {
   };
 };
 
-/**
- * Hash password
- */
 export const hashPassword = async (password: string): Promise<string> => {
   const saltRounds = Number(config.bcryptSaltRounds) || 10;
 
   return bcrypt.hash(password, saltRounds);
 };
 
-/**
- * Compare password
- */
 export const comparePassword = async (
   plainPassword: string,
   hashedPassword: string,
@@ -102,9 +86,6 @@ export const comparePassword = async (
   return bcrypt.compare(plainPassword, hashedPassword);
 };
 
-/**
- * Create JWT
- */
 export const createToken = (
   payload: JwtPayload | Record<string, unknown>,
   secret: string,
@@ -115,9 +96,6 @@ export const createToken = (
   });
 };
 
-/**
- * Verify JWT
- */
 export const verifyToken = (token: string, secret: string): JwtPayload => {
   try {
     return jwt.verify(token, secret) as JwtPayload;
@@ -126,9 +104,6 @@ export const verifyToken = (token: string, secret: string): JwtPayload => {
   }
 };
 
-/**
- * Generate random token
- */
 export const generateRandomToken = (length = 32): string => {
   return crypto.randomBytes(length).toString("hex");
 };

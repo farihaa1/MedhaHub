@@ -4,43 +4,41 @@ exports.ExamEngineService = void 0;
 const examStrategy_factory_1 = require("./factory/examStrategy.factory");
 const examSession_service_1 = require("../examSession/examSession.service");
 const examSession_utils_1 = require("../examSession/examSession.utils");
-const examSession_constant_1 = require("../examSession/examSession.constant");
 const session_query_service_1 = require("../examSession/services/session-query.service");
 // ============================================================
 // START EXAM
 // ============================================================
 const startExam = async (payload) => {
     // ==========================================================
-    // STEP 1: Check for an existing running session
+    // STEP 1: CHECK EXISTING ACTIVE SESSION
     // ==========================================================
-    const runningSession = await session_query_service_1.SessionQueryService.getRunningSession(payload.userId, payload.examType);
-    if (runningSession) {
-        // ========================================================
-        // Existing session has expired
-        // ========================================================
-        if ((0, examSession_utils_1.hasSessionExpired)(runningSession.startTime, runningSession.duration)) {
-            runningSession.status = examSession_constant_1.ExamSessionStatus.EXPIRED;
-            runningSession.endTime = new Date();
-            await runningSession.save();
+    const activeSession = await session_query_service_1.SessionQueryService.getActiveSession(payload.userId, payload.examType);
+    if (activeSession) {
+        // --------------------------------------------------------
+        // Existing session expired
+        // --------------------------------------------------------
+        if ((0, examSession_utils_1.hasSessionExpired)(activeSession.startTime, activeSession.duration)) {
+            activeSession.endTime = new Date();
+            await activeSession.save();
         }
         else {
-            // ======================================================
-            // Existing session is still running
-            // Resume it instead of creating another session
-            // ======================================================
-            return runningSession;
+            // ------------------------------------------------------
+            // Existing session is still active
+            // Resume it
+            // ------------------------------------------------------
+            return activeSession;
         }
     }
     // ==========================================================
-    // STEP 2: Get exam strategy
+    // STEP 2: GET EXAM STRATEGY
     // ==========================================================
     const strategy = (0, examStrategy_factory_1.getExamStrategy)(payload.examType);
     // ==========================================================
-    // STEP 3: Generate exam configuration
+    // STEP 3: GENERATE EXAM CONFIG
     // ==========================================================
     const examConfig = await strategy(payload);
     // ==========================================================
-    // STEP 4: Create exam session
+    // STEP 4: CREATE SESSION
     // ==========================================================
     const session = await examSession_service_1.ExamSessionService.createSession({
         userId: payload.userId,
@@ -55,7 +53,7 @@ const startExam = async (payload) => {
         },
     });
     // ==========================================================
-    // STEP 5: Return created session
+    // STEP 5: RETURN SESSION
     // ==========================================================
     return session;
 };

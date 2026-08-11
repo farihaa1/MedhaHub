@@ -18,7 +18,18 @@ const register = catchAsync(async (req, res) => {
     data: result.user,
   });
 });
+const setPassword = catchAsync(async (req: Request, res: Response) => {
+  const { newPassword } = req.body;
 
+  await AuthService.setPassword(req.user!.email, newPassword);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Password set successfully",
+    data: null,
+  });
+});
 const login = catchAsync(async (req, res) => {
   const result = await AuthService.login(req.body);
 
@@ -54,7 +65,7 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
   }
 
   const result = await AuthService.getMe(req.user.email);
-console.log(result)
+  console.log(result);
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -107,11 +118,27 @@ const logout = catchAsync(async (_req, res) => {
     data: null,
   });
 });
+const googleLogin = catchAsync(async (req: Request, res: Response) => {
+  const { idToken } = req.body;
+
+  const result = await AuthService.googleLogin(idToken);
+
+  setAuthCookies(res, result.accessToken, result.refreshToken);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Google login successful",
+    data: result.user,
+  });
+});
 
 export const AuthController = {
   register,
   login,
+  googleLogin,
   changePassword,
+  setPassword,
   getMe,
   updateProfile,
   refreshToken,

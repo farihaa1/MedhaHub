@@ -1,11 +1,10 @@
-import { IApiResponse } from "@/app/features/auth/auth.type"
+import { IApiResponse } from "@/app/redux/types/auth.type"
 import { baseApi } from "./baseApi"
 
 export enum TopicStatus {
   DRAFT = "draft",
   APPROVED = "approved",
 }
-
 
 import { ISubject } from "@/app/(dashboard)/subjects/subjects.type"
 
@@ -34,9 +33,7 @@ export interface ITopic {
 export interface ITopic {
   _id: string
 
-  subjectId:
-    | string
-    | Pick<ISubject, "_id" | "title" | "slug">
+  subjectId: string | Pick<ISubject, "_id" | "title" | "slug">
 
   chapterId:
     | string
