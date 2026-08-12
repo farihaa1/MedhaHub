@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+
 import { QuestionService } from "./question.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
@@ -13,14 +14,10 @@ const createQuestion = catchAsync(async (req: Request, res: Response) => {
   const payload = {
     ...req.body,
 
+    // Backend decides who created the question
     createdBy: req.user!.id,
 
-    /*
-     * Backend decides status.
-     *
-     * ADMIN -> APPROVED
-     * USER  -> PENDING
-     */
+    // Backend decides initial status
     status:
       req.user!.role === UserRole.ADMIN
         ? QuestionStatus.APPROVED
@@ -37,6 +34,10 @@ const createQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+/* =========================================================
+   BULK CREATE QUESTIONS
+========================================================= */
+
 const bulkCreateQuestions = catchAsync(async (req: Request, res: Response) => {
   const status =
     req.user!.role === UserRole.ADMIN
@@ -45,7 +46,9 @@ const bulkCreateQuestions = catchAsync(async (req: Request, res: Response) => {
 
   const payload = req.body.map((question: Record<string, any>) => ({
     ...question,
+
     createdBy: req.user!.id,
+
     status,
   }));
 
@@ -89,7 +92,7 @@ const getQuestionsByTopic = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: "Topic questions retrieved",
+    message: "Topic questions retrieved successfully",
     data: result,
   });
 });
@@ -106,7 +109,7 @@ const getSingleQuestion = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: "Question retrieved",
+    message: "Question retrieved successfully",
     data: result,
   });
 });
@@ -119,12 +122,13 @@ const updateQuestion = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.updateQuestion(
     req.params.id as string,
     req.body,
+    req.user!.id,
   );
 
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: "Question updated",
+    message: "Question updated successfully",
     data: result,
   });
 });
@@ -139,7 +143,7 @@ const deleteQuestion = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: "Question deleted",
+    message: "Question deleted successfully",
     data: result,
   });
 });
@@ -159,19 +163,17 @@ const getQuestionStats = catchAsync(async (_req: Request, res: Response) => {
   });
 });
 
-
 /* =========================================================
    EXPORT
 ========================================================= */
 
 export const QuestionController = {
   createQuestion,
+  bulkCreateQuestions,
   getAllQuestions,
   getQuestionsByTopic,
   getSingleQuestion,
   updateQuestion,
   deleteQuestion,
-  bulkCreateQuestions,
   getQuestionStats,
- 
 };

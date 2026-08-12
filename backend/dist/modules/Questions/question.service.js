@@ -143,22 +143,102 @@ const getAllQuestions = async (query) => {
         };
     }
     // ============================================================
-    // SORT
+    // FIXED CATEGORY ORDER
     // ============================================================
-    const sortField = query.sortBy || "createdAt";
-    const sortOrder = query.sortOrder === "asc" ? 1 : -1;
-    const [questions, total] = await Promise.all([
-        question_model_1.Question.find(filter)
-            .populate("subjectId", "title name")
-            .populate("chapterId", "title name")
-            .populate("topicId", "title name")
-            .sort({
-            [sortField]: sortOrder,
-        })
-            .skip(skip)
-            .limit(limit),
-        question_model_1.Question.countDocuments(filter),
+    const categoryOrder = [
+        "bcs",
+        "ntrca",
+        "psc-non-cadre",
+        "bank",
+        "government",
+        "defence",
+        "health",
+        "admission",
+        "teacher",
+        "others",
+        "custom",
+    ];
+    // ============================================================
+    // GET QUESTIONS
+    // ============================================================
+    const questions = await question_model_1.Question.aggregate([
+        {
+            $match: filter,
+        },
+        // Determine category priority
+        {
+            $addFields: {
+                categoryRank: {
+                    $let: {
+                        vars: {
+                            sourceRanks: {
+                                $map: {
+                                    input: {
+                                        $ifNull: ["$sources", []],
+                                    },
+                                    as: "source",
+                                    in: {
+                                        $indexOfArray: [categoryOrder, "$$source.type"],
+                                    },
+                                },
+                            },
+                        },
+                        in: {
+                            $cond: [
+                                {
+                                    $gt: [
+                                        {
+                                            $size: "$$sourceRanks",
+                                        },
+                                        0,
+                                    ],
+                                },
+                                {
+                                    $min: "$$sourceRanks",
+                                },
+                                999,
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+        // Category → Question → newest
+        {
+            $sort: {
+                categoryRank: 1,
+                questionText: 1,
+                createdAt: -1,
+            },
+        },
+        {
+            $skip: skip,
+        },
+        {
+            $limit: limit,
+        },
     ]);
+    // ============================================================
+    // POPULATE
+    // ============================================================
+    await question_model_1.Question.populate(questions, [
+        {
+            path: "subjectId",
+            select: "title name",
+        },
+        {
+            path: "chapterId",
+            select: "title name",
+        },
+        {
+            path: "topicId",
+            select: "title name",
+        },
+    ]);
+    // ============================================================
+    // TOTAL
+    // ============================================================
+    const total = await question_model_1.Question.countDocuments(filter);
     return {
         meta: {
             page,
@@ -169,23 +249,78 @@ const getAllQuestions = async (query) => {
         data: questions,
     };
 };
-/* =========================================================
-   GET QUESTIONS BY TOPIC
-========================================================= */
 const getQuestionsByTopic = async (topicId) => {
     if (!mongoose_1.default.Types.ObjectId.isValid(topicId)) {
         throw new AppError_1.default(400, "Invalid topic ID");
     }
-    return await question_model_1.Question.find({
-        topicId,
-        status: question_constant_1.QuestionStatus.APPROVED,
-    })
-        .populate("subjectId", "title")
-        .populate("chapterId", "title")
-        .populate("topicId", "title")
-        .sort({
-        createdAt: -1,
-    });
+    const categoryOrder = [
+        "bcs",
+        "ntrca",
+        "psc-non-cadre",
+        "bank",
+        "government",
+        "defence",
+        "health",
+        "admission",
+        "teacher",
+        "others",
+        "custom",
+    ];
+    const questions = await question_model_1.Question.aggregate([
+        /* ====================================================== FILTER Only questions from this topic Only APPROVED questions ====================================================== */ {
+            $match: {
+                topicId: new mongoose_1.default.Types.ObjectId(topicId),
+                status: question_constant_1.QuestionStatus.APPROVED,
+            },
+        },
+        /* ====================================================== GET CATEGORY RANKS ====================================================== */ {
+            $addFields: {
+                categoryRanks: {
+                    $map: {
+                        input: { $ifNull: ["$sources", []] },
+                        as: "source",
+                        in: { $indexOfArray: [categoryOrder, "$$source.type"] },
+                    },
+                },
+            },
+        },
+        /* ====================================================== SELECT HIGHEST PRIORITY CATEGORY Example: BCS + Bank → BCS wins ====================================================== */ {
+            $addFields: {
+                categoryRank: {
+                    $let: {
+                        vars: {
+                            validRanks: {
+                                $filter: {
+                                    input: "$categoryRanks",
+                                    as: "rank",
+                                    cond: { $gte: ["$$rank", 0] },
+                                },
+                            },
+                        },
+                        in: {
+                            $cond: [
+                                { $gt: [{ $size: "$$validRanks" }, 0] },
+                                { $min: "$$validRanks" },
+                                999,
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+        /* ====================================================== SORT Category first Then question text Then newest ====================================================== */ {
+            $sort: { categoryRank: 1, questionText: 1, createdAt: -1 },
+        },
+        /* ====================================================== REMOVE INTERNAL FIELDS ====================================================== */ {
+            $project: { categoryRanks: 0, categoryRank: 0 },
+        },
+    ]);
+    /* ======================================================== POPULATE ======================================================== */ await question_model_1.Question.populate(questions, [
+        { path: "subjectId", select: "title name" },
+        { path: "chapterId", select: "title name" },
+        { path: "topicId", select: "title name" },
+    ]);
+    return questions;
 };
 /* =========================================================
    GET SINGLE QUESTION

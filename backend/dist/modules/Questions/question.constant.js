@@ -26,6 +26,5 @@ exports.QuestionSourceType = {
     TEACHER: "teacher",
     OTHERS: "others",
     CUSTOM: "custom",
-    PDF_IMPORT: "pdf-import",
 };
 //# sourceMappingURL=question.constant.js.map

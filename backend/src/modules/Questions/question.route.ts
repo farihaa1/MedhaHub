@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { QuestionController } from "./question.controller";
 import { QuestionValidation } from "./question.validation";
+
 import validateRequest from "../../utils/validateRequest";
 import auth from "../../middlewares/auth";
 import { UserRole } from "../users/user.constants";
@@ -32,12 +33,14 @@ QuestionRoutes.post(
 
 /* =========================================================
    GET ALL QUESTIONS
+   Public
 ========================================================= */
 
 QuestionRoutes.get("/", QuestionController.getAllQuestions);
 
 /* =========================================================
    QUESTION STATISTICS
+   ADMIN ONLY
 ========================================================= */
 
 QuestionRoutes.get(
@@ -46,21 +49,23 @@ QuestionRoutes.get(
   QuestionController.getQuestionStats,
 );
 
-
 /* =========================================================
    GET QUESTIONS BY TOPIC
+   Public
 ========================================================= */
 
 QuestionRoutes.get("/topic/:topicId", QuestionController.getQuestionsByTopic);
 
 /* =========================================================
    GET SINGLE QUESTION
+   Public
 ========================================================= */
 
 QuestionRoutes.get("/:id", QuestionController.getSingleQuestion);
 
 /* =========================================================
    UPDATE QUESTION
+   ADMIN + USER
 ========================================================= */
 
 QuestionRoutes.patch(
@@ -72,6 +77,7 @@ QuestionRoutes.patch(
 
 /* =========================================================
    DELETE QUESTION
+   ADMIN ONLY
 ========================================================= */
 
 QuestionRoutes.delete(

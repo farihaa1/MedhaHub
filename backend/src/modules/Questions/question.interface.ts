@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+
 import {
   TQuestionDifficulty,
   TQuestionSourceType,
@@ -7,9 +8,9 @@ import {
 } from "./question.constant";
 
 export interface IQuestionOption {
-  _id: Types.ObjectId;
+  _id?: Types.ObjectId;
   text: string;
-  image?: string;
+  image?: string | null;
   isCorrect: boolean;
 }
 
@@ -20,37 +21,61 @@ export interface IQuestionSource {
 }
 
 export interface IQuestion {
-  _id: Types.ObjectId;
+  _id?: Types.ObjectId;
 
-  // Classification
+  // =========================================================
+  // CLASSIFICATION
+  // =========================================================
+
   subjectId: Types.ObjectId;
   chapterId: Types.ObjectId;
   topicId: Types.ObjectId;
 
-  // Question
+  // =========================================================
+  // QUESTION
+  // =========================================================
+
   type: TQuestionType;
   questionText: string;
-  normalizedQuestion?: string
-  questionImage?: string;
+  normalizedQuestion?: string;
+
+  questionImage?: string | null;
+
   options: IQuestionOption[];
 
-  // Learning
-  explanation?: string;
-  explanationImage?: string;
+  // =========================================================
+  // LEARNING
+  // =========================================================
 
-  // Previous exams / Model tests
+  explanation?: string;
+  explanationImage?: string | null;
+
+  // =========================================================
+  // SOURCES
+  // =========================================================
+
   sources?: IQuestionSource[];
 
-  // Search
+  // =========================================================
+  // SEARCH / METADATA
+  // =========================================================
+
   tags?: string[];
   difficulty?: TQuestionDifficulty;
 
-  // Workflow
+  // =========================================================
+  // WORKFLOW
+  // =========================================================
+
   status: TQuestionStatus;
+
   isCategorized: boolean;
+
   approvedBy?: Types.ObjectId;
   approvedAt?: Date;
+
   createdBy: Types.ObjectId;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

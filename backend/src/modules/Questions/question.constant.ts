@@ -1,6 +1,5 @@
 export const QuestionStatus = {
   PENDING: "PENDING",
-
   APPROVED: "APPROVED",
   REJECTED: "REJECTED",
 } as const;
@@ -35,8 +34,6 @@ export const QuestionSourceType = {
   TEACHER: "teacher",
   OTHERS: "others",
   CUSTOM: "custom",
-
-  PDF_IMPORT: "pdf-import",
 } as const;
 
 export type TQuestionSourceType =

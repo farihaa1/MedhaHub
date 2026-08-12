@@ -1,12 +1,17 @@
 import { Schema, model } from "mongoose";
 
 import { IQuestion } from "./question.interface";
+
 import {
   QuestionDifficulty,
   QuestionSourceType,
   QuestionStatus,
   QuestionType,
 } from "./question.constant";
+
+// =========================================================
+// OPTION SCHEMA
+// =========================================================
 
 const optionSchema = new Schema(
   {
@@ -31,6 +36,10 @@ const optionSchema = new Schema(
   },
 );
 
+// =========================================================
+// SOURCE SCHEMA
+// =========================================================
+
 const sourceSchema = new Schema(
   {
     type: {
@@ -54,25 +63,37 @@ const sourceSchema = new Schema(
   },
 );
 
+// =========================================================
+// QUESTION SCHEMA
+// =========================================================
+
 const questionSchema = new Schema<IQuestion>(
   {
+    // =======================================================
+    // CLASSIFICATION
+    // =======================================================
+
     subjectId: {
       type: Schema.Types.ObjectId,
       ref: "Subject",
-      default: null,
+      required: [true, "Subject নির্বাচন করা আবশ্যক।"],
     },
 
     chapterId: {
       type: Schema.Types.ObjectId,
       ref: "Chapter",
-      default: null,
+      required: [true, "Chapter নির্বাচন করা আবশ্যক।"],
     },
 
     topicId: {
       type: Schema.Types.ObjectId,
       ref: "Topic",
-      default: null,
+      required: [true, "Topic নির্বাচন করা আবশ্যক।"],
     },
+
+    // =======================================================
+    // QUESTION TYPE
+    // =======================================================
 
     type: {
       type: String,
@@ -80,11 +101,16 @@ const questionSchema = new Schema<IQuestion>(
       default: QuestionType.MCQ,
     },
 
+    // =======================================================
+    // QUESTION TEXT
+    // =======================================================
+
     questionText: {
       type: String,
       required: [true, "প্রশ্ন লিখতে হবে।"],
       trim: true,
     },
+
     normalizedQuestion: {
       type: String,
       trim: true,
@@ -95,21 +121,34 @@ const questionSchema = new Schema<IQuestion>(
       default: null,
     },
 
+    // =======================================================
+    // OPTIONS
+    // =======================================================
+
     options: {
       type: [optionSchema],
+
       required: [true, "প্রশ্নের অপশন যুক্ত করতে হবে।"],
+
       validate: [
         {
           validator: (value: any[]) => value.length === 4,
-          message: "একটি এমসিকিউ প্রশ্নে অবশ্যই ৪টি অপশন থাকতে হবে।",
+
+          message: "একটি MCQ প্রশ্নে অবশ্যই ৪টি অপশন থাকতে হবে।",
         },
+
         {
           validator: (value: any[]) =>
             value.filter((option) => option.isCorrect).length === 1,
-          message: "অবশ্যই একটি মাত্র সঠিক উত্তর নির্বাচন করতে হবে।",
+
+          message: "অবশ্যই একটি মাত্র সঠিক উত্তর নির্বাচন করতে হবে.",
         },
       ],
     },
+
+    // =======================================================
+    // EXPLANATION
+    // =======================================================
 
     explanation: {
       type: String,
@@ -122,35 +161,65 @@ const questionSchema = new Schema<IQuestion>(
       default: null,
     },
 
+    // =======================================================
+    // SOURCES
+    // =======================================================
+
     sources: {
       type: [sourceSchema],
       default: [],
     },
+
+    // =======================================================
+    // DIFFICULTY
+    // =======================================================
 
     difficulty: {
       type: String,
       enum: Object.values(QuestionDifficulty),
     },
 
+    // =======================================================
+    // TAGS
+    // =======================================================
+
     tags: {
       type: [String],
       default: [],
     },
+
+    // =======================================================
+    // CATEGORY STATUS
+    // =======================================================
+
     isCategorized: {
       type: Boolean,
       default: false,
     },
 
+    // =======================================================
+    // WORKFLOW STATUS
+    // =======================================================
+
     status: {
       type: String,
       enum: Object.values(QuestionStatus),
+      default: QuestionStatus.PENDING,
     },
+
+    // =======================================================
+    // CREATOR
+    // =======================================================
 
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "প্রশ্নটি কে তৈরি করেছেন তা উল্লেখ করা আবশ্যক।"],
     },
+
+    // =======================================================
+    // APPROVAL
+    // =======================================================
 
     approvedBy: {
       type: Schema.Types.ObjectId,
@@ -166,21 +235,24 @@ const questionSchema = new Schema<IQuestion>(
   },
 );
 
-/* ===========================
-   Indexes
-=========================== */
+// =========================================================
+// INDEXES
+// =========================================================
 
 questionSchema.index({
   questionText: "text",
 });
+
 questionSchema.index({
   normalizedQuestion: 1,
 });
+
 questionSchema.index({
   subjectId: 1,
   chapterId: 1,
   topicId: 1,
 });
+
 questionSchema.index({
   "sources.type": 1,
   "sources.year": 1,
@@ -198,14 +270,20 @@ questionSchema.index({
   tags: 1,
 });
 
-/* ===========================
-   Model
-=========================== */
-questionSchema.pre("save", async function () {
+// =========================================================
+// NORMALIZE QUESTION
+// =========================================================
+
+questionSchema.pre("save", function () {
   this.normalizedQuestion = this.questionText
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, "")
     .replace(/\s+/g, "")
     .trim();
 });
+
+// =========================================================
+// MODEL
+// =========================================================
+
 export const Question = model<IQuestion>("Question", questionSchema);
