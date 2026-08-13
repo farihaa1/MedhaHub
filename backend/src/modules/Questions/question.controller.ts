@@ -34,9 +34,6 @@ const createQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-/* =========================================================
-   BULK CREATE QUESTIONS
-========================================================= */
 
 const bulkCreateQuestions = catchAsync(async (req: Request, res: Response) => {
   const status =
