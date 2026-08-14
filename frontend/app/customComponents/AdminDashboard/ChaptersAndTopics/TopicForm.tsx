@@ -4,9 +4,11 @@ import { useEffect, useState, ChangeEvent } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+
 import {
   Select,
   SelectContent,
@@ -14,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
 import { IChapter, useGetChaptersQuery } from "@/app/redux/api/chaptersApi"
+
 import {
   ITopic,
   TopicStatus,
@@ -23,18 +27,27 @@ import {
   useCreateBulkTopicMutation,
   useUpdateTopicMutation,
 } from "@/app/redux/api/topicsApi"
+
 import { useGetSubjectsQuery } from "@/app/redux/api/subjectsApi"
 
+// =========================================================
+// VALIDATION
+// =========================================================
+
 const topicSchema = z.object({
-  subjectId: z.string().min(1, "Subject required"),
-  chapterId: z.string().min(1, "Chapter required"),
-  title: z.string().min(2, "Topic title required"),
-  slug: z.string().min(2, "Slug required"),
-  order: z.number().min(0, "Order must be 0 or greater"),
+  subjectId: z.string().min(1, "বিষয় নির্বাচন করুন"),
+  chapterId: z.string().min(1, "অধ্যায় নির্বাচন করুন"),
+  title: z.string().min(2, "বিষয়ের নাম কমপক্ষে ২ অক্ষরের হতে হবে"),
+  slug: z.string().min(2, "Slug আবশ্যক"),
+  order: z.number().min(0, "ক্রম ০ বা তার বেশি হতে হবে"),
   status: z.nativeEnum(TopicStatus),
 })
 
 type TopicFormValues = z.infer<typeof topicSchema>
+
+// =========================================================
+// PROPS
+// =========================================================
 
 interface Props {
   mode: "create" | "edit"
@@ -42,6 +55,10 @@ interface Props {
   chapter?: IChapter
   onSuccess?: () => void
 }
+
+// =========================================================
+// SLUG GENERATOR
+// =========================================================
 
 const generateSlug = (value: string) =>
   value
@@ -52,6 +69,10 @@ const generateSlug = (value: string) =>
     .replace(/[^\p{L}\p{M}\p{N}-]/gu, "")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
+
+// =========================================================
+// BULK PARSER
+// =========================================================
 
 const parseBulk = (
   text: string,
@@ -72,10 +93,18 @@ const parseBulk = (
       status,
     }))
 
+// =========================================================
+// COMPONENT
+// =========================================================
+
 export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
-  const { data: chapters } = useGetChaptersQuery()
-  const [bulkMode, setBulkMode] = useState(false)
-  const [bulkText, setBulkText] = useState("")
+  // =======================================================
+  // API
+  // =======================================================
+
+  const { data: subjects, isLoading: subjectsLoading } = useGetSubjectsQuery()
+
+  const { data: chapters, isLoading: chaptersLoading } = useGetChaptersQuery()
 
   const [createTopic, { isLoading: createLoading }] = useCreateTopicMutation()
 
@@ -83,6 +112,17 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
     useCreateBulkTopicMutation()
 
   const [updateTopic, { isLoading: updateLoading }] = useUpdateTopicMutation()
+
+  // =======================================================
+  // BULK STATE
+  // =======================================================
+
+  const [bulkMode, setBulkMode] = useState(false)
+  const [bulkText, setBulkText] = useState("")
+
+  // =======================================================
+  // FORM
+  // =======================================================
 
   const {
     register,
@@ -96,11 +136,8 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
     resolver: zodResolver(topicSchema),
 
     defaultValues: {
-      subjectId:
-        typeof chapter?.subjectId === "string"
-          ? chapter.subjectId
-          : (chapter?.subjectId?._id ?? ""),
-      chapterId: chapter?._id ?? "",
+      subjectId: "",
+      chapterId: "",
       title: "",
       slug: "",
       order: 0,
@@ -108,41 +145,94 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
     },
   })
 
-  const { data: subjects } = useGetSubjectsQuery()
+  // =======================================================
+  // WATCH
+  // =======================================================
+
   const subjectId = watch("subjectId")
   const chapterId = watch("chapterId")
   const status = watch("status")
 
+  // =======================================================
+  // EDIT MODE
+  // =======================================================
+
   useEffect(() => {
-    if (mode === "edit" && topic) {
-      reset({
-        subjectId:
-          typeof topic.subjectId === "string"
-            ? topic.subjectId
-            : topic.subjectId._id,
+    if (mode !== "edit" || !topic) return
 
-        chapterId:
-          typeof topic.chapterId === "string"
-            ? topic.chapterId
-            : topic.chapterId._id,
+    const existingSubjectId =
+      typeof topic.subjectId === "string"
+        ? topic.subjectId
+        : (topic.subjectId?._id ?? "")
 
-        title: topic.title,
-        slug: topic.slug,
-        order: topic.order,
-        status: topic.status,
-      })
-    }
+    const existingChapterId =
+      typeof topic.chapterId === "string"
+        ? topic.chapterId
+        : (topic.chapterId?._id ?? "")
 
-    if (mode === "create" && chapter) {
-      const subject =
-        typeof chapter.subjectId === "string"
-          ? chapter.subjectId
-          : chapter.subjectId._id
+    reset({
+      subjectId: existingSubjectId,
+      chapterId: existingChapterId,
+      title: topic.title ?? "",
+      slug: topic.slug ?? "",
+      order: topic.order ?? 0,
+      status: topic.status ?? TopicStatus.DRAFT,
+    })
+  }, [mode, topic, reset])
 
-      setValue("subjectId", subject)
-      setValue("chapterId", chapter._id)
-    }
-  }, [mode, topic, chapter, reset, setValue])
+  // =======================================================
+  // CREATE MODE WITH CHAPTER
+  // =======================================================
+
+  useEffect(() => {
+    if (mode !== "create" || !chapter) return
+
+    const existingSubjectId =
+      typeof chapter.subjectId === "string"
+        ? chapter.subjectId
+        : (chapter.subjectId?._id ?? "")
+
+    reset({
+      subjectId: existingSubjectId,
+      chapterId: chapter._id,
+      title: "",
+      slug: "",
+      order: 0,
+      status: TopicStatus.DRAFT,
+    })
+  }, [mode, chapter, reset])
+
+  // =======================================================
+  // FIND CURRENT SUBJECT
+  // =======================================================
+
+  const currentSubject = subjects?.data?.find(
+    (subject) => subject._id === subjectId
+  )
+
+  // =======================================================
+  // FILTER CHAPTERS
+  // =======================================================
+
+  const filteredChapters =
+    chapters?.data?.filter((item) => {
+      const itemSubjectId =
+        typeof item.subjectId === "string"
+          ? item.subjectId
+          : (item.subjectId?._id ?? "")
+
+      return itemSubjectId === subjectId
+    }) ?? []
+
+  // =======================================================
+  // FIND CURRENT CHAPTER
+  // =======================================================
+
+  const currentChapter = filteredChapters.find((item) => item._id === chapterId)
+
+  // =======================================================
+  // TITLE → SLUG
+  // =======================================================
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value
@@ -158,21 +248,29 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
     })
   }
 
+  // =======================================================
+  // LOADING
+  // =======================================================
+
   const isSaving = createLoading || updateLoading || bulkLoading
+
+  // =======================================================
+  // BULK SUBMIT
+  // =======================================================
 
   const submitBulk = async () => {
     if (!subjectId) {
-      alert("Please select a subject.")
+      alert("দয়া করে বিষয় নির্বাচন করুন।")
       return
     }
 
     if (!chapterId) {
-      alert("Please select a chapter.")
+      alert("দয়া করে অধ্যায় নির্বাচন করুন।")
       return
     }
 
     if (!bulkText.trim()) {
-      alert("Please enter at least one topic.")
+      alert("কমপক্ষে একটি বিষয় লিখুন।")
       return
     }
 
@@ -184,7 +282,7 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
 
     if (invalidItems.length > 0) {
       alert(
-        `Invalid slug generated for:\n\n${invalidItems
+        `নিচের বিষয়গুলোর Slug তৈরি করা যায়নি:\n\n${invalidItems
           .map((item) => item.title)
           .join("\n")}`
       )
@@ -225,9 +323,13 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
 
       onSuccess?.()
     } catch (error) {
-      console.error(error)
+      console.error("Bulk topic creation failed:", error)
     }
   }
+
+  // =======================================================
+  // SINGLE SUBMIT
+  // =======================================================
 
   const submitSingle: SubmitHandler<TopicFormValues> = async (values) => {
     try {
@@ -250,15 +352,9 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
     }
   }
 
-  const filteredChapters =
-    chapters?.data?.filter((chapter) => {
-      const id =
-        typeof chapter.subjectId === "string"
-          ? chapter.subjectId
-          : chapter.subjectId._id
-
-      return id === subjectId
-    }) ?? []
+  // =======================================================
+  // RENDER
+  // =======================================================
 
   return (
     <form
@@ -272,6 +368,10 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
           : handleSubmit(submitSingle)
       }
     >
+      {/* ===================================================
+          CREATE / BULK SWITCH
+      =================================================== */}
+
       {mode === "create" && (
         <div className="flex gap-2">
           <Button
@@ -283,7 +383,7 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
               reset()
             }}
           >
-            Single Topic
+            একক বিষয়
           </Button>
 
           <Button
@@ -295,29 +395,40 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
               reset()
             }}
           >
-            Bulk Topics
+            একাধিক বিষয়
           </Button>
         </div>
       )}
-      <div className="flex items-center gap-3 space-y-2">
-        <label className="text-sm font-medium">Subject </label>
+
+      {/* ===================================================
+          SUBJECT
+      =================================================== */}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">বিষয়</label>
 
         <Controller
           name="subjectId"
           control={control}
           render={({ field }) => (
             <Select
-              value={field.value}
+              value={field.value || undefined}
               onValueChange={(value) => {
                 field.onChange(value)
 
-                // Reset chapter when subject changes
-                setValue("chapterId", "")
+                // শুধুমাত্র create mode-এ chapter reset হবে
+                if (mode === "create") {
+                  setValue("chapterId", "")
+                }
               }}
-              disabled={mode === "edit"}
+              disabled={mode === "edit" || subjectsLoading}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Subject" />
+                <SelectValue placeholder="বিষয় নির্বাচন করুন">
+                  {mode === "edit" && currentSubject
+                    ? currentSubject.title
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
 
               <SelectContent>
@@ -336,77 +447,90 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
         )}
       </div>
 
-      <div className="flex w-full gap-8">
-        <div className="flex items-center gap-3 space-y-2 w-7/12">
-          <label className="text-sm font-medium">Chapter</label>
+      {/* ===================================================
+          CHAPTER
+      =================================================== */}
 
-          <Controller
-            name="chapterId"
+      <div className="space-y-2">
+        <label className="text-sm font-medium">অধ্যায়</label>
 
-            control={control}
-            render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-                disabled={!subjectId || mode === "edit"}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Chapter" />
-                </SelectTrigger>
+        <Controller
+          name="chapterId"
+          control={control}
+          render={({ field }) => (
+            <Select
+              value={field.value || undefined}
+              onValueChange={field.onChange}
+              disabled={!subjectId || mode === "edit" || chaptersLoading}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="অধ্যায় নির্বাচন করুন">
+                  {mode === "edit" && currentChapter
+                    ? currentChapter.title
+                    : undefined}
+                </SelectValue>
+              </SelectTrigger>
 
-                <SelectContent>
-                  {filteredChapters.map((chapter) => (
-                    <SelectItem key={chapter._id} value={chapter._id}>
-                      {chapter.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-
-          {errors.chapterId && (
-            <p className="text-sm text-red-500">{errors.chapterId.message}</p>
+              <SelectContent>
+                {filteredChapters.map((item) => (
+                  <SelectItem key={item._id} value={item._id}>
+                    {item.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
-        </div>
-        <div className="flex items-center gap-3 space-y-2 w-5/12">
-          <label className="text-sm font-medium">Status</label>
+        />
 
-          <Controller
-            name="status"
-            control={control}
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-
-                <SelectContent className="w-full">
-                  <SelectItem value={TopicStatus.DRAFT}>Draft</SelectItem>
-
-                  <SelectItem value={TopicStatus.APPROVED}>Approved</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-
-          {errors.status && (
-            <p className="text-sm text-red-500">{errors.status.message}</p>
-          )}
-        </div>
+        {errors.chapterId && (
+          <p className="text-sm text-red-500">{errors.chapterId.message}</p>
+        )}
       </div>
-      {/* Chapter */}
+
+      {/* ===================================================
+          STATUS
+      =================================================== */}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">স্ট্যাটাস</label>
+
+        <Controller
+          name="status"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value={TopicStatus.DRAFT}>খসড়া</SelectItem>
+
+                <SelectItem value={TopicStatus.APPROVED}>অনুমোদিত</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
+
+        {errors.status && (
+          <p className="text-sm text-red-500">{errors.status.message}</p>
+        )}
+      </div>
+
+      {/* ===================================================
+          SINGLE TOPIC
+      =================================================== */}
 
       {!bulkMode && (
         <div className="space-y-5">
-          {/* Title */}
+          {/* TITLE */}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Topic Title</label>
+            <label className="text-sm font-medium">বিষয়ের নাম</label>
 
             <Input
               {...register("title")}
-              placeholder="Linear Equation"
+              placeholder="যেমন: সরল সমীকরণ"
               onChange={handleTitleChange}
             />
 
@@ -415,7 +539,7 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
             )}
           </div>
 
-          {/* Slug */}
+          {/* SLUG */}
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Slug</label>
@@ -427,10 +551,10 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
             )}
           </div>
 
-          {/* Order */}
+          {/* ORDER */}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Order</label>
+            <label className="text-sm font-medium">ক্রম</label>
 
             <Input
               type="number"
@@ -446,19 +570,23 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
         </div>
       )}
 
+      {/* ===================================================
+          BULK TOPICS
+      =================================================== */}
+
       {bulkMode && (
         <div className="space-y-3">
-          <label className="text-sm font-medium">Topics</label>
+          <label className="text-sm font-medium">বিষয়সমূহ</label>
 
           <Textarea
             rows={10}
             value={bulkText}
             onChange={(e) => setBulkText(e.target.value)}
-            placeholder="Linear Equation|Quadratic Equation|Simultaneous Equation|Algebraic Expression"
+            placeholder="সরল সমীকরণ|দ্বিঘাত সমীকরণ|যুগপৎ সমীকরণ|বীজগাণিতিক রাশি"
           />
 
           <p className="text-xs text-muted-foreground">
-            Separate topics using <strong>|</strong>.
+            প্রতিটি বিষয় <strong>|</strong> চিহ্ন দিয়ে আলাদা করুন।
           </p>
 
           {bulkText.trim() && (
@@ -471,10 +599,10 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
                     .map((item) => item.trim())
                     .filter(Boolean).length
                 }{" "}
-                topics)
+                টি বিষয়)
               </p>
 
-              <ul className="flex flex-wrap space-y-2">
+              <ul className="flex flex-wrap gap-2">
                 {bulkText
                   .split("|")
                   .map((item) => item.trim())
@@ -485,14 +613,14 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
                     return (
                       <li
                         key={`${item}-${index}`}
-                        className="flex flex-col rounded border p-2"
+                        className="rounded border p-2"
                       >
                         <span>
                           {index + 1}. {item}
                         </span>
 
-                        <span className="text-xs text-muted-foreground">
-                          slug: {slug || "INVALID SLUG"}
+                        <span className="block text-xs text-muted-foreground">
+                          slug: {slug || "অকার্যকর Slug"}
                         </span>
                       </li>
                     )
@@ -503,14 +631,18 @@ export default function TopicForm({ mode, topic, chapter, onSuccess }: Props) {
         </div>
       )}
 
+      {/* ===================================================
+          SUBMIT
+      =================================================== */}
+
       <Button type="submit" disabled={isSaving} className="w-full">
         {isSaving
-          ? "Saving..."
+          ? "সংরক্ষণ করা হচ্ছে..."
           : bulkMode
-            ? "Create Topics"
+            ? "বিষয়সমূহ তৈরি করুন"
             : mode === "create"
-              ? "Create Topic"
-              : "Update Topic"}
+              ? "বিষয় তৈরি করুন"
+              : "পরিবর্তন সংরক্ষণ করুন"}
       </Button>
     </form>
   )

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-
 import { Pencil } from "lucide-react"
 
 import {
@@ -19,15 +18,18 @@ import TopicForm from "./TopicForm"
 
 import { ITopic } from "@/app/redux/api/topicsApi"
 
-interface Props {
+interface EditTopicDialogProps {
   topic: ITopic
   children?: React.ReactNode
 }
 
-export default function EditTopicDialog({ topic, children }: Props) {
+export default function EditTopicDialog({
+  topic,
+  children,
+}: EditTopicDialogProps) {
   const [open, setOpen] = useState(false)
 
-  function handleSuccess() {
+  const handleSuccess = () => {
     setOpen(false)
   }
 
@@ -35,20 +37,20 @@ export default function EditTopicDialog({ topic, children }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children ?? (
-          <Button variant="ghost" size="sm">
+          <Button type="button" variant="ghost" size="sm">
             <Pencil className="mr-2 h-4 w-4" />
-            Edit Topic
+            বিষয় সম্পাদনা
           </Button>
         )}
       </DialogTrigger>
 
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit Topic</DialogTitle>
+          <DialogTitle>বিষয় সম্পাদনা করুন</DialogTitle>
 
           <DialogDescription>
-            Update the topic information. Changes will be reflected immediately
-            throughout the academic hierarchy.
+            বিষয়টির তথ্য পরিবর্তন করুন। পরিবর্তনগুলো একাডেমিক কাঠামোর সর্বত্র
+            স্বয়ংক্রিয়ভাবে আপডেট হবে।
           </DialogDescription>
         </DialogHeader>
 

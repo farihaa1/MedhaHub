@@ -1,6 +1,5 @@
 "use client"
 
-import type { ComponentType, ReactNode } from "react"
 import { BookOpen, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react"
 
 import {
@@ -52,8 +51,10 @@ export default function SubjectAccordion({ subject }: Props) {
       className="mx-auto w-full border bg-card p-0 lg:max-w-6xl lg:min-w-5xl lg:px-8"
     >
       {/* ================= HEADER ================= */}
+
       <div className="flex items-center justify-between gap-3 px-6 py-2">
-        {/* Left */}
+        {/* বাম পাশ */}
+
         <AccordionTrigger className="flex-1 py-0 hover:no-underline">
           <div className="flex items-center gap-4 text-left">
             <BookOpen className="h-6 w-6 text-primary" />
@@ -64,40 +65,53 @@ export default function SubjectAccordion({ subject }: Props) {
           </div>
         </AccordionTrigger>
 
-        {/* Right */}
+        {/* ডান পাশ */}
+
         <div
           className="flex flex-wrap items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          <Badge variant="secondary" className="text-[8px] lg:text-[10px]">
-            {chapters.length} Chapters
-          </Badge>
+          {/* অধ্যায় সংখ্যা */}
 
           <Badge variant="secondary" className="text-[8px] lg:text-[10px]">
-            {totalTopics} Topics
+            {chapters.length}টি অধ্যায়
           </Badge>
 
+          {/* বিষয় সংখ্যা */}
+
           <Badge variant="secondary" className="text-[8px] lg:text-[10px]">
-            {totalQuestions} Questions
+            {totalTopics}টি বিষয়
           </Badge>
+
+          {/* প্রশ্ন সংখ্যা */}
+
+          <Badge variant="secondary" className="text-[8px] lg:text-[10px]">
+            {totalQuestions}টি প্রশ্ন
+          </Badge>
+
+          {/* অপশন মেনু */}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="ghost">
+              <Button size="icon" variant="ghost" aria-label="বিষয়ের অপশন">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="max-w-20" align="end">
+            <DropdownMenuContent className="max-w-32" align="end">
+              {/* বিষয় সম্পাদনা */}
+
               <EditSubjectDialog subject={subject}>
                 <DropdownMenuItem
                   className="flex items-center justify-center text-[10px]"
                   onSelect={(e) => e.preventDefault()}
                 >
                   <Pencil className="h-4 w-4" />
-                  Edit Subject
+                  বিষয় সম্পাদনা
                 </DropdownMenuItem>
               </EditSubjectDialog>
+
+              {/* অধ্যায় যোগ করা */}
 
               <CreateChapterDialog mode="create" subject={subject}>
                 <DropdownMenuItem
@@ -105,12 +119,13 @@ export default function SubjectAccordion({ subject }: Props) {
                   onSelect={(e) => e.preventDefault()}
                 >
                   <Plus className="h-4 w-4" />
-                  Add Chapter
+                  অধ্যায় যোগ করুন
                 </DropdownMenuItem>
               </CreateChapterDialog>
-              <DropdownMenuSeparator />
 
               <DropdownMenuSeparator />
+
+              {/* বিষয় মুছে ফেলা */}
 
               <DeleteSubjectDialog subject={subject}>
                 <DropdownMenuItem
@@ -118,7 +133,7 @@ export default function SubjectAccordion({ subject }: Props) {
                   onSelect={(e) => e.preventDefault()}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Subject
+                  বিষয় মুছে ফেলুন
                 </DropdownMenuItem>
               </DeleteSubjectDialog>
             </DropdownMenuContent>
@@ -127,10 +142,11 @@ export default function SubjectAccordion({ subject }: Props) {
       </div>
 
       {/* ================= CHAPTERS ================= */}
+
       <AccordionContent className="px-6 pb-6">
         {chapters.length === 0 ? (
           <div className="rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground">
-            No chapters found for this subject.
+            এই বিষয়ের কোনো অধ্যায় পাওয়া যায়নি।
           </div>
         ) : (
           <Accordion type="multiple" className="space-y-1">

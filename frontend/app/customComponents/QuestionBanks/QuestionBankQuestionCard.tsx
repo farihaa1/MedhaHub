@@ -11,7 +11,7 @@ export default function QuestionBankQuestionCard({ item, index }: Props) {
   return (
     <div className="space-y-4 rounded-xl border bg-card p-5">
       <div className="flex gap-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground">
           {index + 1}
         </div>
 
@@ -20,15 +20,15 @@ export default function QuestionBankQuestionCard({ item, index }: Props) {
 
       <div className="grid gap-2 text-sm md:grid-cols-3">
         <div>
-          <strong>Subject:</strong> {question?.subjectId?.title}
+          <strong>বিষয়:</strong> {question?.subjectId?.title || "—"}
         </div>
 
         <div>
-          <strong>Chapter:</strong> {question?.chapterId?.title}
+          <strong>অধ্যায়:</strong> {question?.chapterId?.title || "—"}
         </div>
 
         <div>
-          <strong>Topic:</strong> {question?.topicId?.title}
+          <strong>টপিক:</strong> {question?.topicId?.title || "—"}
         </div>
       </div>
     </div>

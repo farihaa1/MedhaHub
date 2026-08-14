@@ -12,27 +12,19 @@ interface TopicCardProps {
 }
 
 export default function TopicCard({ topic, subjectSlug }: TopicCardProps) {
-  console.log("TOPIC CARD:", {
-    topic,
-    subjectSlug,
-  })
-
   return (
-    <Link
-      href={`/questions/topic/${topic._id}`}
-      className="group block"
-    >
+    <Link href={`/questions/topic/${topic._id}`} className="group block">
       <article className="rounded-sm border bg-card p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <h2 className="text-[15px] leading-tight font-semibold">
               {topic.title}
             </h2>
 
             <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-              <FileQuestion className="h-3 w-3" />
+              <FileQuestion className="h-3 w-3 shrink-0" />
 
-              <span>{topic.totalQuestions ?? 0} Questions</span>
+              <span>{topic.totalQuestions ?? 0} টি প্রশ্ন</span>
             </div>
           </div>
 

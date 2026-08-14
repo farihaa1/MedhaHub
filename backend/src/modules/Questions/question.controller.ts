@@ -1,23 +1,24 @@
 import { Request, Response } from "express";
 
 import { QuestionService } from "./question.service";
+
 import { sendResponse } from "../../utils/sendResponse";
 import { catchAsync } from "../../utils/catchAsync";
+
 import { UserRole } from "../users/user.constants";
+
 import { QuestionStatus } from "./question.constant";
 
-/* =========================================================
-   CREATE QUESTION
-========================================================= */
+// =========================================================
+// CREATE QUESTION
+// =========================================================
 
 const createQuestion = catchAsync(async (req: Request, res: Response) => {
   const payload = {
     ...req.body,
 
-    // Backend decides who created the question
     createdBy: req.user!.id,
 
-    // Backend decides initial status
     status:
       req.user!.role === UserRole.ADMIN
         ? QuestionStatus.APPROVED
@@ -34,6 +35,9 @@ const createQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// =========================================================
+// BULK CREATE QUESTIONS
+// =========================================================
 
 const bulkCreateQuestions = catchAsync(async (req: Request, res: Response) => {
   const status =
@@ -57,14 +61,14 @@ const bulkCreateQuestions = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: 201,
-    message: "Questions created successfully",
+    message: "Questions processed successfully",
     data: result,
   });
 });
 
-/* =========================================================
-   GET ALL QUESTIONS
-========================================================= */
+// =========================================================
+// GET ALL QUESTIONS
+// =========================================================
 
 const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.getAllQuestions(req.query);
@@ -77,9 +81,9 @@ const getAllQuestions = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-/* =========================================================
-   GET QUESTIONS BY TOPIC
-========================================================= */
+// =========================================================
+// GET QUESTIONS BY TOPIC
+// =========================================================
 
 const getQuestionsByTopic = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.getQuestionsByTopic(
@@ -94,9 +98,9 @@ const getQuestionsByTopic = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-/* =========================================================
-   GET SINGLE QUESTION
-========================================================= */
+// =========================================================
+// GET SINGLE QUESTION
+// =========================================================
 
 const getSingleQuestion = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.getSingleQuestion(
@@ -111,15 +115,18 @@ const getSingleQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-/* =========================================================
-   UPDATE QUESTION
-========================================================= */
+// =========================================================
+// UPDATE QUESTION
+// =========================================================
 
 const updateQuestion = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.updateQuestion(
     req.params.id as string,
     req.body,
-    req.user!.id,
+    {
+      id: req.user!.id,
+      role: req.user!.role,
+    },
   );
 
   sendResponse(res, {
@@ -130,9 +137,9 @@ const updateQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-/* =========================================================
-   DELETE QUESTION
-========================================================= */
+// =========================================================
+// DELETE QUESTION
+// =========================================================
 
 const deleteQuestion = catchAsync(async (req: Request, res: Response) => {
   const result = await QuestionService.deleteQuestion(req.params.id as string);
@@ -145,9 +152,9 @@ const deleteQuestion = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-/* =========================================================
-   QUESTION STATISTICS
-========================================================= */
+// =========================================================
+// QUESTION STATISTICS
+// =========================================================
 
 const getQuestionStats = catchAsync(async (_req: Request, res: Response) => {
   const result = await QuestionService.getQuestionStats();
@@ -160,9 +167,9 @@ const getQuestionStats = catchAsync(async (_req: Request, res: Response) => {
   });
 });
 
-/* =========================================================
-   EXPORT
-========================================================= */
+// =========================================================
+// EXPORT
+// =========================================================
 
 export const QuestionController = {
   createQuestion,

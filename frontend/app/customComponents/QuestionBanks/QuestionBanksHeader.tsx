@@ -8,10 +8,10 @@ interface Props {
 
 export default function QuestionBanksHeader({ category }: Props) {
   return (
-    <section className=" bg-card p-8">
-      <h1 className="text-4xl font-bold">{category.title}</h1>
+    <section className="bg-card p-8">
+      <h1 className="text-3xl font-bold sm:text-4xl">{category.title}</h1>
 
-      <p className="mt-3 max-w-3xl text-muted-foreground">
+      <p className="mt-3 max-w-3xl leading-7 text-muted-foreground">
         {category.description}
       </p>
 

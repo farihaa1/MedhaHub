@@ -13,33 +13,12 @@ export function SubjectsCards() {
   return (
     <section className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
       <SectionHeading
-        eyebrow="Practice"
-        title="বিষয় অনুযায়ী অনুশীলন করুন"
-        description="আপনার পছন্দের বিষয় নির্বাচন করে সরাসরি MCQ অনুশীলন শুরু করুন।"
+        eyebrow="প্র্যাকটিস"
+        title="বিষয় অনুযায়ী প্র্যাকটিস করুন"
+        description="পছন্দের বিষয় বেছে নিয়ে সরাসরি MCQ প্র্যাকটিস শুরু করুন।"
         href="/practice/subjects"
         linkText="সব বিষয় দেখুন"
       />
-
-      {/* Loading */}
-      {isLoading && (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-44 animate-pulse rounded-xl border bg-muted"
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Error */}
-      {isError && (
-        <div className="mt-8 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-          <p className="text-sm text-destructive">
-            বিষয়গুলো লোড করা সম্ভব হয়নি।
-          </p>
-        </div>
-      )}
 
       {/* Subjects */}
       {!isLoading && !isError && subjects.length > 0 && (
@@ -57,7 +36,7 @@ export function SubjectsCards() {
               <h3 className="font-semibold">{subject.title}</h3>
 
               <div className="mt-5 flex items-center text-sm font-medium text-primary">
-                অনুশীলন করুন
+                প্র্যাকটিস করুন
                 <ChevronRight className="ml-1 size-4 transition-transform group-hover:translate-x-1" />
               </div>
             </Link>
@@ -72,6 +51,15 @@ export function SubjectsCards() {
 
           <p className="mt-3 text-sm text-muted-foreground">
             এখনো কোনো বিষয় পাওয়া যায়নি।
+          </p>
+        </div>
+      )}
+
+      {/* Error */}
+      {isError && (
+        <div className="mt-8 rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+          <p className="text-sm text-destructive">
+            বিষয়গুলো লোড করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।
           </p>
         </div>
       )}

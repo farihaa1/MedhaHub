@@ -121,10 +121,6 @@ const questionBanksSchema = new Schema<IQuestionBanks, QuestionBanksModel>(
       default: null,
     },
 
-    /* ==========================================================
-       Soft Delete
-    ========================================================== */
-
     isDeleted: {
       type: Boolean,
       default: false,
@@ -237,6 +233,7 @@ questionBanksSchema.index(
       slug: {
         $type: "string",
       },
+      isDeleted: false,
     },
   },
 );

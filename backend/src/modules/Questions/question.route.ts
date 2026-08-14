@@ -5,13 +5,14 @@ import { QuestionValidation } from "./question.validation";
 
 import validateRequest from "../../utils/validateRequest";
 import auth from "../../middlewares/auth";
+
 import { UserRole } from "../users/user.constants";
 
 const QuestionRoutes = Router();
 
-/* =========================================================
-   CREATE QUESTION
-========================================================= */
+// =========================================================
+// CREATE QUESTION
+// =========================================================
 
 QuestionRoutes.post(
   "/",
@@ -20,9 +21,9 @@ QuestionRoutes.post(
   QuestionController.createQuestion,
 );
 
-/* =========================================================
-   BULK CREATE QUESTIONS
-========================================================= */
+// =========================================================
+// BULK CREATE QUESTIONS
+// =========================================================
 
 QuestionRoutes.post(
   "/bulk",
@@ -31,17 +32,15 @@ QuestionRoutes.post(
   QuestionController.bulkCreateQuestions,
 );
 
-/* =========================================================
-   GET ALL QUESTIONS
-   Public
-========================================================= */
+// =========================================================
+// GET ALL QUESTIONS
+// =========================================================
 
 QuestionRoutes.get("/", QuestionController.getAllQuestions);
 
-/* =========================================================
-   QUESTION STATISTICS
-   ADMIN ONLY
-========================================================= */
+// =========================================================
+// QUESTION STATISTICS
+// =========================================================
 
 QuestionRoutes.get(
   "/stats",
@@ -49,24 +48,21 @@ QuestionRoutes.get(
   QuestionController.getQuestionStats,
 );
 
-/* =========================================================
-   GET QUESTIONS BY TOPIC
-   Public
-========================================================= */
+// =========================================================
+// GET QUESTIONS BY TOPIC
+// =========================================================
 
 QuestionRoutes.get("/topic/:topicId", QuestionController.getQuestionsByTopic);
 
-/* =========================================================
-   GET SINGLE QUESTION
-   Public
-========================================================= */
+// =========================================================
+// GET SINGLE QUESTION
+// =========================================================
 
 QuestionRoutes.get("/:id", QuestionController.getSingleQuestion);
 
-/* =========================================================
-   UPDATE QUESTION
-   ADMIN + USER
-========================================================= */
+// =========================================================
+// UPDATE QUESTION
+// =========================================================
 
 QuestionRoutes.patch(
   "/:id",
@@ -75,10 +71,9 @@ QuestionRoutes.patch(
   QuestionController.updateQuestion,
 );
 
-/* =========================================================
-   DELETE QUESTION
-   ADMIN ONLY
-========================================================= */
+// =========================================================
+// DELETE QUESTION
+// =========================================================
 
 QuestionRoutes.delete(
   "/:id",

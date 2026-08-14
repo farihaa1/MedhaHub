@@ -5,7 +5,6 @@ import { useGetQuestionsByBankQuery } from "@/app/redux/api/questionBankItemApi"
 
 import QuestionBankInfo from "./QuestionBankInfo"
 import QuestionBankQuestions from "./QuestionBankQuestions"
-import { useMeQuery } from "@/app/redux/api/authApi"
 
 interface Props {
   slug: string
@@ -13,8 +12,9 @@ interface Props {
 
 export default function QuestionBankDetails({ slug }: Props) {
   // ===============================
-  // Get Question Bank
+  // প্রশ্ন ব্যাংক
   // ===============================
+
   const {
     data: bankResponse,
     isLoading: bankLoading,
@@ -23,11 +23,10 @@ export default function QuestionBankDetails({ slug }: Props) {
 
   const bank = bankResponse?.data
 
- const { data, isLoading, isFetching, isError } = useMeQuery(undefined)
+  // ===============================
+  // প্রশ্নগুলো
+  // ===============================
 
-  // ===============================
-  // Get Questions
-  // ===============================
   const { data: questionResponse, isLoading: questionsLoading } =
     useGetQuestionsByBankQuery(
       {
@@ -43,10 +42,13 @@ export default function QuestionBankDetails({ slug }: Props) {
   // ===============================
   // Loading
   // ===============================
+
   if (bankLoading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        Loading Question Bank...
+      <div className="flex min-h-96 items-center justify-center">
+        <p className="text-sm text-muted-foreground">
+          প্রশ্ন ব্যাংক লোড হচ্ছে...
+        </p>
       </div>
     )
   }
@@ -54,10 +56,17 @@ export default function QuestionBankDetails({ slug }: Props) {
   // ===============================
   // Error
   // ===============================
+
   if (bankError) {
     return (
-      <div className="py-20 text-center text-red-500">
-        Failed to load Question Bank.
+      <div className="flex min-h-96 items-center justify-center px-4">
+        <div className="text-center">
+          <h2 className="font-semibold">প্রশ্ন ব্যাংকটি লোড করা যায়নি</h2>
+
+          <p className="mt-2 text-sm text-muted-foreground">
+            একটু পরে আবার চেষ্টা করুন।
+          </p>
+        </div>
       </div>
     )
   }
@@ -65,13 +74,25 @@ export default function QuestionBankDetails({ slug }: Props) {
   // ===============================
   // Not Found
   // ===============================
+
   if (!bank) {
-    return <div className="py-20 text-center">Question Bank Not Found</div>
+    return (
+      <div className="flex min-h-96 items-center justify-center px-4">
+        <div className="text-center">
+          <h2 className="font-semibold">প্রশ্ন ব্যাংকটি পাওয়া যায়নি</h2>
+
+          <p className="mt-2 text-sm text-muted-foreground">
+            আপনি যে প্রশ্ন ব্যাংকটি খুঁজছেন, সেটি আর পাওয়া যাচ্ছে না।
+          </p>
+        </div>
+      </div>
+    )
   }
 
   // ===============================
   // Render
   // ===============================
+
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-4 py-10">
       <QuestionBankInfo bank={bank} totalQuestions={questions.length} />

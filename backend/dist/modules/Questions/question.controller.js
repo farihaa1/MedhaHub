@@ -6,19 +6,13 @@ const sendResponse_1 = require("../../utils/sendResponse");
 const catchAsync_1 = require("../../utils/catchAsync");
 const user_constants_1 = require("../users/user.constants");
 const question_constant_1 = require("./question.constant");
-/* =========================================================
-   CREATE QUESTION
-========================================================= */
+// =========================================================
+// CREATE QUESTION
+// =========================================================
 const createQuestion = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const payload = {
         ...req.body,
         createdBy: req.user.id,
-        /*
-         * Backend decides status.
-         *
-         * ADMIN -> APPROVED
-         * USER  -> PENDING
-         */
         status: req.user.role === user_constants_1.UserRole.ADMIN
             ? question_constant_1.QuestionStatus.APPROVED
             : question_constant_1.QuestionStatus.PENDING,
@@ -31,6 +25,9 @@ const createQuestion = (0, catchAsync_1.catchAsync)(async (req, res) => {
         data: result,
     });
 });
+// =========================================================
+// BULK CREATE QUESTIONS
+// =========================================================
 const bulkCreateQuestions = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const status = req.user.role === user_constants_1.UserRole.ADMIN
         ? question_constant_1.QuestionStatus.APPROVED
@@ -44,13 +41,13 @@ const bulkCreateQuestions = (0, catchAsync_1.catchAsync)(async (req, res) => {
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: 201,
-        message: "Questions created successfully",
+        message: "Questions processed successfully",
         data: result,
     });
 });
-/* =========================================================
-   GET ALL QUESTIONS
-========================================================= */
+// =========================================================
+// GET ALL QUESTIONS
+// =========================================================
 const getAllQuestions = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const result = await question_service_1.QuestionService.getAllQuestions(req.query);
     (0, sendResponse_1.sendResponse)(res, {
@@ -60,57 +57,60 @@ const getAllQuestions = (0, catchAsync_1.catchAsync)(async (req, res) => {
         data: result,
     });
 });
-/* =========================================================
-   GET QUESTIONS BY TOPIC
-========================================================= */
+// =========================================================
+// GET QUESTIONS BY TOPIC
+// =========================================================
 const getQuestionsByTopic = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const result = await question_service_1.QuestionService.getQuestionsByTopic(req.params.topicId);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: 200,
-        message: "Topic questions retrieved",
+        message: "Topic questions retrieved successfully",
         data: result,
     });
 });
-/* =========================================================
-   GET SINGLE QUESTION
-========================================================= */
+// =========================================================
+// GET SINGLE QUESTION
+// =========================================================
 const getSingleQuestion = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const result = await question_service_1.QuestionService.getSingleQuestion(req.params.id);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: 200,
-        message: "Question retrieved",
+        message: "Question retrieved successfully",
         data: result,
     });
 });
-/* =========================================================
-   UPDATE QUESTION
-========================================================= */
+// =========================================================
+// UPDATE QUESTION
+// =========================================================
 const updateQuestion = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const result = await question_service_1.QuestionService.updateQuestion(req.params.id, req.body);
+    const result = await question_service_1.QuestionService.updateQuestion(req.params.id, req.body, {
+        id: req.user.id,
+        role: req.user.role,
+    });
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: 200,
-        message: "Question updated",
+        message: "Question updated successfully",
         data: result,
     });
 });
-/* =========================================================
-   DELETE QUESTION
-========================================================= */
+// =========================================================
+// DELETE QUESTION
+// =========================================================
 const deleteQuestion = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const result = await question_service_1.QuestionService.deleteQuestion(req.params.id);
     (0, sendResponse_1.sendResponse)(res, {
         success: true,
         statusCode: 200,
-        message: "Question deleted",
+        message: "Question deleted successfully",
         data: result,
     });
 });
-/* =========================================================
-   QUESTION STATISTICS
-========================================================= */
+// =========================================================
+// QUESTION STATISTICS
+// =========================================================
 const getQuestionStats = (0, catchAsync_1.catchAsync)(async (_req, res) => {
     const result = await question_service_1.QuestionService.getQuestionStats();
     (0, sendResponse_1.sendResponse)(res, {
@@ -120,17 +120,17 @@ const getQuestionStats = (0, catchAsync_1.catchAsync)(async (_req, res) => {
         data: result,
     });
 });
-/* =========================================================
-   EXPORT
-========================================================= */
+// =========================================================
+// EXPORT
+// =========================================================
 exports.QuestionController = {
     createQuestion,
+    bulkCreateQuestions,
     getAllQuestions,
     getQuestionsByTopic,
     getSingleQuestion,
     updateQuestion,
     deleteQuestion,
-    bulkCreateQuestions,
     getQuestionStats,
 };
 //# sourceMappingURL=question.controller.js.map

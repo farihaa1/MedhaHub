@@ -555,9 +555,7 @@ export default function JsonQuestionsCreateForm({
         </div>
 
         <div>
-          <h2 className="text-xs font-semibold">
-            JSON দিয়ে প্রশ্ন যোগ করুন
-          </h2>
+          <h2 className="text-xs font-semibold">JSON দিয়ে প্রশ্ন যোগ করুন</h2>
 
           <p className="mt-1 text-xs text-muted-foreground">
             AI থেকে তৈরি প্রশ্নের JSON এখানে পেস্ট করুন।
@@ -572,8 +570,7 @@ export default function JsonQuestionsCreateForm({
       <div className="rounded-lg border bg-muted/40 p-3">
         {isAdmin ? (
           <p className="text-xs text-green-600 dark:text-green-400">
-            আপনি Admin হিসেবে লগইন করেছেন। JSON থেকে
-            যোগ করা সব প্রশ্ন সরাসরি
+            আপনি Admin হিসেবে লগইন করেছেন। JSON থেকে যোগ করা সব প্রশ্ন সরাসরি
             <strong> Approved </strong>
             হবে।
           </p>
@@ -594,13 +591,11 @@ export default function JsonQuestionsCreateForm({
         <Info className="mt-0.5 size-4 shrink-0 text-primary" />
 
         <div className="text-xs">
-          <p className="font-medium">
-            গুরুত্বপূর্ণ
-          </p>
+          <p className="font-medium">গুরুত্বপূর্ণ</p>
 
           <p className="mt-1 text-xs text-muted-foreground">
-            নির্বাচিত বিষয়, অধ্যায় এবং টপিক সব প্রশ্নে
-            স্বয়ংক্রিয়ভাবে প্রয়োগ হবে।
+            নির্বাচিত বিষয়, অধ্যায় এবং টপিক সব প্রশ্নে স্বয়ংক্রিয়ভাবে
+            প্রয়োগ হবে।
           </p>
         </div>
       </div>
@@ -613,16 +608,12 @@ export default function JsonQuestionsCreateForm({
         <div className="flex items-center gap-2">
           <ClipboardPaste className="size-3.5 text-muted-foreground" />
 
-          <label className="text-xs font-medium">
-            JSON
-          </label>
+          <label className="text-xs font-medium">JSON</label>
         </div>
 
         <Textarea
           value={json}
-          onChange={(e) =>
-            setJson(e.target.value)
-          }
+          onChange={(e) => setJson(e.target.value)}
           disabled={isSubmitting}
           className="min-h-105 resize-y rounded-lg bg-muted/20 font-mono text-xs leading-5"
           placeholder={`[
@@ -652,9 +643,9 @@ export default function JsonQuestionsCreateForm({
     "tags": ["BCS", "বাংলা"],
     "sources": [
       {
-        "type": "BCS",
-        "name": "BCS Preliminary",
-        "year": 46
+        "type": "bcs",
+        "name": "৫০তম বিসিএস",
+        "year": 2026
       }
     ]
   }
@@ -665,12 +656,9 @@ export default function JsonQuestionsCreateForm({
           <CircleHelp className="mt-0.5 size-3.5 shrink-0" />
 
           <p className="text-xs">
-            একটি Array দিন। প্রতিটি প্রশ্নে ৪টি option
-            এবং ঠিক একটি option-এ{" "}
-            <code className="rounded bg-muted px-1">
-              isCorrect: true
-            </code>{" "}
-            থাকতে হবে।
+            একটি Array দিন। প্রতিটি প্রশ্নে ৪টি option এবং ঠিক একটি option-এ{" "}
+            <code className="rounded bg-muted px-1">isCorrect: true</code> থাকতে
+            হবে।
           </p>
         </div>
       </div>
@@ -683,18 +671,13 @@ export default function JsonQuestionsCreateForm({
         <Button
           type="button"
           onClick={submit}
-          disabled={
-            isSubmitting ||
-            !json.trim()
-          }
+          disabled={isSubmitting || !json.trim()}
           size="sm"
           className="h-8 gap-2 text-xs"
         >
           <Send className="size-3.5" />
 
-          {isSubmitting
-            ? "প্রশ্নগুলো যোগ হচ্ছে..."
-            : "প্রশ্নগুলো যোগ করুন"}
+          {isSubmitting ? "প্রশ্নগুলো যোগ হচ্ছে..." : "প্রশ্নগুলো যোগ করুন"}
         </Button>
       </div>
     </div>

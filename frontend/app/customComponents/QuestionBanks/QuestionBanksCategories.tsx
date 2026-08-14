@@ -7,8 +7,8 @@ export default function QuestionBanksCategories() {
   return (
     <section className="space-y-8">
       <SectionHeader
-        title="সকল ক্যাটাগরি"
-        description="আপনার পছন্দের পরীক্ষার প্রশ্ন ব্যাংক নির্বাচন করুন।"
+        title="পরীক্ষার ধরন বেছে নিন"
+        description="আপনি যে পরীক্ষার প্রশ্ন প্র্যাকটিস করতে চান, সেটি বেছে নিন।"
       />
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -32,17 +31,12 @@ interface Props {
 
 const OPTION_LABELS = ["ক", "খ", "গ", "ঘ"]
 
-export default function QuestionCard({
-  question,
-  index,
-}: Props) {
+export default function QuestionCard({ question, index }: Props) {
   const [showAnswer, setShowAnswer] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
-  const user = useSelector(
-    (state: RootState) => state.auth.user
-  )
+  const user = useSelector((state: RootState) => state.auth.user)
 
   const isAdmin = user?.role === "admin"
 
@@ -83,7 +77,7 @@ export default function QuestionCard({
                 onClick={() => setEditOpen(true)}
               >
                 <Pencil className="mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                সম্পাদনা
+                এডিট
               </Button>
 
               <Button
@@ -93,33 +87,30 @@ export default function QuestionCard({
                 onClick={() => setDeleteOpen(true)}
               >
                 <Trash2 className="mr-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                মুছুন
+                ডিলিট
               </Button>
             </div>
           )}
         </div>
 
         {/* Sources */}
-        {question.sources &&
-          question.sources.length > 0 && (
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
-              {question.sources.map((source, i) => (
-                <Badge
-                  key={i}
-                  variant="outline"
-                  className="h-6 gap-1 px-2 text-[10px] font-normal"
-                >
-                  <BookOpen className="h-3 w-3" />
+        {question.sources && question.sources.length > 0 && (
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {question.sources.map((source, i) => (
+              <Badge
+                key={i}
+                variant="outline"
+                className="h-6 gap-1 px-2 text-[10px] font-normal"
+              >
+                <BookOpen className="h-3 w-3" />
 
-                  <span className="max-w-[180px] truncate">
-                    {source.name}
-                  </span>
+                <span className="max-w-45 truncate">{source.name}</span>
 
-                  {source.year && ` • ${source.year}`}
-                </Badge>
-              ))}
-            </div>
-          )}
+                {source.year && ` • ${source.year}`}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Body */}
@@ -136,7 +127,7 @@ export default function QuestionCard({
               alt="প্রশ্নের ছবি"
               width={700}
               height={400}
-              className="mt-3 max-h-[350px] w-full rounded-lg border bg-background object-contain"
+              className="mt-3 max-h-87.5 w-full rounded-lg border bg-background object-contain"
             />
           )}
         </div>
@@ -174,7 +165,7 @@ export default function QuestionCard({
                 </div>
 
                 {showAnswer && option.isCorrect && (
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-400 sm:h-5 sm:w-5" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 sm:h-5 sm:w-5 dark:text-green-400" />
                 )}
               </div>
             </div>
@@ -182,29 +173,26 @@ export default function QuestionCard({
         </div>
 
         {/* Tags */}
-        {question.tags &&
-          question.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {question.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="secondary"
-                  className="px-2 py-0.5 text-[10px] font-normal"
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+        {question.tags && question.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {question.tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="px-2 py-0.5 text-[10px] font-normal"
+              >
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
 
         {/* Answer Button */}
         <Button
           variant="outline"
           size="sm"
           className="h-8 px-3 text-[10px] sm:text-xs"
-          onClick={() =>
-            setShowAnswer((prev) => !prev)
-          }
+          onClick={() => setShowAnswer((prev) => !prev)}
         >
           {showAnswer ? (
             <>
@@ -228,8 +216,7 @@ export default function QuestionCard({
             </h4>
 
             <p className="mt-2.5 text-xs leading-5 whitespace-pre-line text-muted-foreground sm:text-sm sm:leading-6">
-              {question.explanation ||
-                "কোনো ব্যাখ্যা নেই।"}
+              {question.explanation || "কোনো ব্যাখ্যা দেওয়া হয়নি।"}
             </p>
 
             {question.explanationImage && (

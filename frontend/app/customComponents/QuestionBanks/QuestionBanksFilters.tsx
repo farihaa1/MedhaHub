@@ -1,6 +1,7 @@
 "use client"
 
 import { Search, RotateCcw } from "lucide-react"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -32,48 +33,44 @@ export default function QuestionBanksFilters({
     <section className="mb-10 rounded-xl border bg-card p-5">
       <div className="grid gap-4 lg:grid-cols-5">
         {/* Search */}
-
         <div className="relative lg:col-span-2">
           <Search className="absolute top-3.5 left-3 h-4 w-4 text-muted-foreground" />
 
           <Input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search question banks..."
+            placeholder="প্রশ্নব্যাংক খুঁজুন..."
             className="pl-10"
           />
         </div>
 
         {/* Organization */}
-
         <select
           value={organization}
           onChange={(e) => onOrganizationChange(e.target.value)}
           className="rounded-md border bg-background px-3"
         >
-          <option value="">All Organizations</option>
+          <option value="">সকল প্রতিষ্ঠান</option>
 
           <option value="PSC">PSC</option>
 
-          <option value="Bangladesh Bank">Bangladesh Bank</option>
+          <option value="Bangladesh Bank">বাংলাদেশ ব্যাংক</option>
 
           <option value="NTRCA">NTRCA</option>
 
-          <option value="DU">University</option>
+          <option value="DU">বিশ্ববিদ্যালয়</option>
         </select>
 
         {/* Year */}
-
         <select
           value={year}
           onChange={(e) => onYearChange(e.target.value)}
           className="rounded-md border bg-background px-3"
         >
-          <option value="">All Years</option>
+          <option value="">সকল বছর</option>
 
           {Array.from({ length: 15 }).map((_, index) => {
             const currentYear = new Date().getFullYear()
-
             const value = String(currentYear - index)
 
             return (
@@ -85,25 +82,30 @@ export default function QuestionBanksFilters({
         </select>
 
         {/* Sort */}
-
         <div className="flex gap-3">
           <select
             value={sort}
             onChange={(e) => onSortChange(e.target.value)}
             className="flex-1 rounded-md border bg-background px-3"
           >
-            <option value="-createdAt">Newest</option>
+            <option value="-createdAt">নতুন আগে</option>
 
-            <option value="createdAt">Oldest</option>
+            <option value="createdAt">পুরোনো আগে</option>
 
-            <option value="title">Title (A-Z)</option>
+            <option value="title">নাম অনুযায়ী (ক-হ)</option>
 
-            <option value="-title">Title (Z-A)</option>
+            <option value="-title">নাম অনুযায়ী (হ-ক)</option>
 
-            <option value="-year">Latest Year</option>
+            <option value="-year">সাম্প্রতিক বছর আগে</option>
           </select>
 
-          <Button variant="outline" size="icon" onClick={onReset}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onReset}
+            title="ফিল্টার রিসেট করুন"
+            aria-label="ফিল্টার রিসেট করুন"
+          >
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>

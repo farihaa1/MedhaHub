@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 import { QuestionBankCategory } from "@/lib/questionBankCategories"
+
 import CategoryBadge from "./CategoryBadge"
 
 interface Props {
@@ -16,7 +17,7 @@ export default function CategoryCard({ category }: Props) {
       href={`/question-banks/${category.slug}`}
       className="group rounded-2xl border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary hover:shadow-lg"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold">{category.title}</h3>
 
         <CategoryBadge count={category.questionCount} />
@@ -27,7 +28,7 @@ export default function CategoryCard({ category }: Props) {
       </p>
 
       <div className="mt-6 flex items-center gap-2 font-medium text-primary">
-        প্রশ্ন দেখুন
+        প্রশ্নগুলো দেখুন
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </div>
     </Link>

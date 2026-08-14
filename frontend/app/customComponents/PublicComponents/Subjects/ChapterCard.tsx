@@ -15,12 +15,6 @@ export default function ChapterCard({ chapter }: ChapterCardProps) {
 
   const chapterUrl = `/subject/${subjectSlug}/chapter/${chapter._id}`
 
-  console.log("CHAPTER CARD:", {
-    subjectSlug,
-    chapterId: chapter._id,
-    chapterUrl,
-  })
-
   return (
     <Link href={chapterUrl} className="group block">
       <article className="rounded-sm border bg-card p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
@@ -33,11 +27,11 @@ export default function ChapterCard({ chapter }: ChapterCardProps) {
             <div className="flex items-center text-[12px] text-muted-foreground">
               <FileQuestion className="mr-1 h-3 w-3" />
 
-              <span>{chapter.totalQuestions ?? 0} Questions</span>
+              <span>{chapter.totalQuestions ?? 0}টি প্রশ্ন</span>
 
               <span className="px-1">•</span>
 
-              <span>{chapter.totalTopics ?? 0} Topics</span>
+              <span>{chapter.totalTopics ?? 0}টি টপিক</span>
             </div>
           </div>
 

@@ -24,32 +24,54 @@ const optionSchema = zod_1.z.object({
 const sourceSchema = zod_1.z.object({
     type: QuestionSourceTypeEnum,
     name: zod_1.z.string().min(1, "Source name is required"),
-    year: zod_1.z.number().optional(),
+    year: zod_1.z.number().int().optional(),
 });
 /* ==========================================================
-   CREATE
+   CREATE QUESTION
 ========================================================== */
 const createQuestionValidationSchema = zod_1.z.object({
     body: zod_1.z.object({
-        subjectId: zod_1.z.string().min(1),
-        chapterId: zod_1.z.string().min(1),
-        topicId: zod_1.z.string().min(1),
+        /* -----------------------------------------
+           Academic classification
+        ----------------------------------------- */
+        subjectId: zod_1.z.string().min(1, "Subject is required"),
+        chapterId: zod_1.z.string().min(1, "Chapter is required"),
+        topicId: zod_1.z.string().min(1, "Topic is required"),
+        /* -----------------------------------------
+           Question
+        ----------------------------------------- */
         type: QuestionTypeEnum.optional(),
-        questionText: zod_1.z.string().min(5, "Question must be at least 5 characters"),
+        questionText: zod_1.z
+            .string()
+            .min(5, "Question must be at least 5 characters")
+            .trim(),
         questionImage: zod_1.z.string().nullable().optional(),
+        /* -----------------------------------------
+           Options
+        ----------------------------------------- */
         options: zod_1.z
             .array(optionSchema)
             .length(4, "MCQ must contain exactly four options")
-            .refine((options) => options.filter((o) => o.isCorrect).length === 1, {
+            .refine((options) => options.filter((option) => option.isCorrect).length === 1, {
             message: "Exactly one option must be correct",
         }),
+        /* -----------------------------------------
+           Explanation
+        ----------------------------------------- */
         explanation: zod_1.z.string().optional(),
         explanationImage: zod_1.z.string().nullable().optional(),
+        /* -----------------------------------------
+           Metadata
+        ----------------------------------------- */
         difficulty: QuestionDifficultyEnum,
-        marks: zod_1.z.number().min(1).optional(),
-        negativeMarks: zod_1.z.number().min(0).optional(),
         tags: zod_1.z.array(zod_1.z.string()).optional(),
         sources: zod_1.z.array(sourceSchema).optional(),
+        /* -----------------------------------------
+           Workflow fields
+    
+           These are accepted by validation,
+           but controller/service decides status.
+        ----------------------------------------- */
         status: QuestionStatusEnum.optional(),
         createdBy: zod_1.z.string().optional(),
         approvedBy: zod_1.z.string().optional(),
@@ -57,31 +79,47 @@ const createQuestionValidationSchema = zod_1.z.object({
     }),
 });
 /* ==========================================================
-   UPDATE
+   UPDATE QUESTION
 ========================================================== */
 const updateQuestionValidationSchema = zod_1.z.object({
     body: zod_1.z
         .object({
+        /* -----------------------------------------
+           Academic classification
+        ----------------------------------------- */
         subjectId: zod_1.z.string().min(1).optional(),
         chapterId: zod_1.z.string().min(1).optional(),
         topicId: zod_1.z.string().min(1).optional(),
+        /* -----------------------------------------
+           Question
+        ----------------------------------------- */
         type: QuestionTypeEnum.optional(),
-        questionText: zod_1.z.string().min(5).optional(),
+        questionText: zod_1.z.string().min(5).trim().optional(),
         questionImage: zod_1.z.string().nullable().optional(),
+        /* -----------------------------------------
+           Options
+        ----------------------------------------- */
         options: zod_1.z
             .array(optionSchema)
-            .length(4)
-            .refine((options) => options.filter((o) => o.isCorrect).length === 1, {
+            .length(4, "MCQ must contain exactly four options")
+            .refine((options) => options.filter((option) => option.isCorrect).length === 1, {
             message: "Exactly one option must be correct",
         })
             .optional(),
+        /* -----------------------------------------
+           Explanation
+        ----------------------------------------- */
         explanation: zod_1.z.string().optional(),
         explanationImage: zod_1.z.string().nullable().optional(),
+        /* -----------------------------------------
+           Metadata
+        ----------------------------------------- */
         difficulty: QuestionDifficultyEnum.optional(),
-        marks: zod_1.z.number().min(1).optional(),
-        negativeMarks: zod_1.z.number().min(0).optional(),
         tags: zod_1.z.array(zod_1.z.string()).optional(),
         sources: zod_1.z.array(sourceSchema).optional(),
+        /* -----------------------------------------
+           Workflow
+        ----------------------------------------- */
         status: QuestionStatusEnum.optional(),
         approvedBy: zod_1.z.string().optional(),
         approvedAt: zod_1.z.coerce.date().optional(),
@@ -89,10 +127,12 @@ const updateQuestionValidationSchema = zod_1.z.object({
         .partial(),
 });
 /* ==========================================================
-   BULK CREATE
+   BULK CREATE QUESTIONS
 ========================================================== */
 const bulkCreateQuestionValidationSchema = zod_1.z.object({
-    body: zod_1.z.array(createQuestionValidationSchema.shape.body).min(1),
+    body: zod_1.z
+        .array(createQuestionValidationSchema.shape.body)
+        .min(1, "At least one question is required"),
 });
 /* ==========================================================
    EXPORT
