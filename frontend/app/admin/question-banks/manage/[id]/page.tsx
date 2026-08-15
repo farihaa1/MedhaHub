@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
@@ -11,8 +10,11 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
 import PageHeader from "@/app/customComponents/shared/PageHeader"
+
 import QuestionSelectorTable from "@/app/customComponents/AdminDashboard/QuestionBanks/QuestionSelectorTable"
 import SelectedQuestionsTable from "@/app/customComponents/AdminDashboard/QuestionBanks/SelectedQuestionsTable"
+
+import AcademicFilters from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/AcademicFilters"
 
 import {
   useBulkAddQuestionsMutation,
@@ -26,27 +28,50 @@ export default function ManageQuestionBankPage() {
 
   const { id } = useParams<{ id: string }>()
 
-  const [selectedQuestionIds, setSelectedQuestionIds] =
-    useState<string[]>([])
+  /* ==========================================================
+     FILTER STATE
+  ========================================================== */
+
+  const [search, setSearch] = useState("")
+
+  const [subjectId, setSubjectId] = useState("all")
+
+  const [chapterId, setChapterId] = useState("all")
+
+  const [status, setStatus] = useState("all")
+
+  const [sort, setSort] = useState("newest")
+
+  /* ==========================================================
+     SELECTED QUESTIONS
+  ========================================================== */
+
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([])
+
+  /* ==========================================================
+     CLEAR FILTERS
+  ========================================================== */
+
+  function clearFilters() {
+    setSearch("")
+    setSubjectId("all")
+    setChapterId("all")
+    setStatus("all")
+    setSort("newest")
+  }
 
   /* ==========================================================
      QUESTION BANK
   ========================================================== */
 
-  const {
-    data: bankData,
-    isLoading: loadingBank,
-  } = useGetSingleQuestionBankQuery(id)
+  const { data: bankData, isLoading: loadingBank } =
+    useGetSingleQuestionBankQuery(id)
 
   /* ==========================================================
      QUESTIONS ALREADY IN BANK
   ========================================================== */
 
-  const {
-    data,
-    isLoading,
-    refetch,
-  } = useGetQuestionsByBankQuery({
+  const { data, isLoading, refetch } = useGetQuestionsByBankQuery({
     questionBankId: id,
     page: 1,
     limit: 100,
@@ -56,10 +81,8 @@ export default function ManageQuestionBankPage() {
      BULK ADD
   ========================================================== */
 
-  const [
-    bulkAddQuestions,
-    { isLoading: adding },
-  ] = useBulkAddQuestionsMutation()
+  const [bulkAddQuestions, { isLoading: adding }] =
+    useBulkAddQuestionsMutation()
 
   /* ==========================================================
      ADD SELECTED QUESTIONS
@@ -68,6 +91,7 @@ export default function ManageQuestionBankPage() {
   const handleAdd = async () => {
     if (selectedQuestionIds.length === 0) {
       toast.error("Select at least one question.")
+
       return
     }
 
@@ -80,9 +104,7 @@ export default function ManageQuestionBankPage() {
         },
       }).unwrap()
 
-      toast.success(
-        "Questions added successfully",
-      )
+      toast.success("Questions added successfully")
 
       setSelectedQuestionIds([])
 
@@ -94,10 +116,7 @@ export default function ManageQuestionBankPage() {
         }
       }
 
-      toast.error(
-        err.data?.message ||
-          "Failed to add questions",
-      )
+      toast.error(err.data?.message || "Failed to add questions")
     }
   }
 
@@ -110,6 +129,7 @@ export default function ManageQuestionBankPage() {
       <main className="flex min-h-[60vh] items-center justify-center">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
+
           <span>Loading question bank...</span>
         </div>
       </main>
@@ -122,90 +142,107 @@ export default function ManageQuestionBankPage() {
 
   return (
     <main className="space-y-6 p-6">
-      {/* Back */}
+      {/* ======================================================
+          BACK
+      ====================================================== */}
 
-      <Button
-        variant="outline"
-        onClick={() => router.back()}
-      >
+      <Button variant="outline" onClick={() => router.back()}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back
       </Button>
 
-      {/* Header */}
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
 
       <PageHeader
         title="Manage Question Bank"
-        description={
-          bankData?.data?.title ||
-          "Manage questions"
-        }
+        description={bankData?.data?.title || "Manage questions"}
       />
 
       <Separator />
 
-      {/* Selected / Add */}
+      {/* ======================================================
+          SELECTED / ADD
+      ====================================================== */}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="font-semibold">
-            Selected:{" "}
-            {selectedQuestionIds.length}
+            Selected: {selectedQuestionIds.length}
           </h3>
 
           <p className="text-sm text-muted-foreground">
-            Select questions from the available
-            questions list.
+            Select questions from the available questions list.
           </p>
         </div>
 
         <Button
           onClick={handleAdd}
-          disabled={
-            adding ||
-            selectedQuestionIds.length === 0
-          }
+          disabled={adding || selectedQuestionIds.length === 0}
         >
-          {adding
-            ? "Adding..."
-            : "Add Selected"}
+          {adding ? "Adding..." : "Add Selected"}
         </Button>
       </div>
 
-      {/* Two-column layout */}
+      {/* ======================================================
+          TWO COLUMN LAYOUT
+      ====================================================== */}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {/* Available Questions */}
+        {/* ====================================================
+            AVAILABLE QUESTIONS
+        ==================================================== */}
 
         <div className="rounded-lg border bg-card">
           <div className="border-b p-4">
-            <h2 className="font-semibold">
-              Available Questions
-            </h2>
+            <h2 className="font-semibold">Available Questions</h2>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              Select questions to add to this bank.
+              Filter and select questions to add to this bank.
             </p>
           </div>
 
-          <div className="p-4">
+          <div className="space-y-4 p-4">
+            {/* Filters */}
+
+            <AcademicFilters
+              search={search}
+              subjectId={subjectId}
+              chapterId={chapterId}
+              status={status}
+              sort={sort}
+              onSearchChange={setSearch}
+              onSubjectChange={setSubjectId}
+              onChapterChange={setChapterId}
+              onStatusChange={setStatus}
+              onSortChange={setSort}
+              onClear={clearFilters}
+            />
+
+            {/* Question selector */}
+
             <QuestionSelectorTable
+              search={search}
+              subjectId={subjectId}
+              chapterId={chapterId}
+              status={status}
+              sort={sort}
               onSelect={setSelectedQuestionIds}
             />
           </div>
         </div>
 
-        {/* Questions Already In Bank */}
+        {/* ====================================================
+            QUESTIONS ALREADY IN BANK
+        ==================================================== */}
 
         <div className="rounded-lg border bg-card">
           <div className="border-b p-4">
-            <h2 className="font-semibold">
-              Questions in Bank
-            </h2>
+            <h2 className="font-semibold">Questions in Bank</h2>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              Questions currently belonging to
-              this question bank.
+              Questions currently belonging to this question bank.
             </p>
           </div>
 
