@@ -1,9 +1,13 @@
 "use client"
 
 import { useParams, useRouter } from "next/navigation"
+
 import { ArrowLeft, Loader2 } from "lucide-react"
+
 import { useState } from "react"
+
 import { toast } from "sonner"
+
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query"
 
 import { Button } from "@/components/ui/button"
@@ -12,6 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import PageHeader from "@/app/customComponents/shared/PageHeader"
 
 import QuestionSelectorTable from "@/app/customComponents/AdminDashboard/QuestionBanks/QuestionSelectorTable"
+
 import SelectedQuestionsTable from "@/app/customComponents/AdminDashboard/QuestionBanks/SelectedQuestionsTable"
 
 import AcademicFilters from "@/app/customComponents/AdminDashboard/ChaptersAndTopics/AcademicFilters"
@@ -29,7 +34,7 @@ export default function ManageQuestionBankPage() {
   const { id } = useParams<{ id: string }>()
 
   /* ==========================================================
-     FILTER STATE
+     FILTERS
   ========================================================== */
 
   const [search, setSearch] = useState("")
@@ -43,22 +48,10 @@ export default function ManageQuestionBankPage() {
   const [sort, setSort] = useState("newest")
 
   /* ==========================================================
-     SELECTED QUESTIONS
+     SELECTION
   ========================================================== */
 
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([])
-
-  /* ==========================================================
-     CLEAR FILTERS
-  ========================================================== */
-
-  function clearFilters() {
-    setSearch("")
-    setSubjectId("all")
-    setChapterId("all")
-    setStatus("all")
-    setSort("newest")
-  }
 
   /* ==========================================================
      QUESTION BANK
@@ -85,7 +78,19 @@ export default function ManageQuestionBankPage() {
     useBulkAddQuestionsMutation()
 
   /* ==========================================================
-     ADD SELECTED QUESTIONS
+     CLEAR FILTERS
+  ========================================================== */
+
+  const clearFilters = () => {
+    setSearch("")
+    setSubjectId("all")
+    setChapterId("all")
+    setStatus("all")
+    setSort("newest")
+  }
+
+  /* ==========================================================
+     ADD QUESTIONS
   ========================================================== */
 
   const handleAdd = async () => {
@@ -104,7 +109,7 @@ export default function ManageQuestionBankPage() {
         },
       }).unwrap()
 
-      toast.success("Questions added successfully")
+      toast.success("Questions added successfully.")
 
       setSelectedQuestionIds([])
 
@@ -116,7 +121,7 @@ export default function ManageQuestionBankPage() {
         }
       }
 
-      toast.error(err.data?.message || "Failed to add questions")
+      toast.error(err.data?.message || "Failed to add questions.")
     }
   }
 
@@ -162,10 +167,6 @@ export default function ManageQuestionBankPage() {
 
       <Separator />
 
-      {/* ======================================================
-          SELECTED / ADD
-      ====================================================== */}
-
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="font-semibold">
@@ -186,7 +187,7 @@ export default function ManageQuestionBankPage() {
       </div>
 
       {/* ======================================================
-          TWO COLUMN LAYOUT
+          TWO COLUMN
       ====================================================== */}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -220,7 +221,7 @@ export default function ManageQuestionBankPage() {
               onClear={clearFilters}
             />
 
-            {/* Question selector */}
+            {/* Questions */}
 
             <QuestionSelectorTable
               search={search}
@@ -234,7 +235,7 @@ export default function ManageQuestionBankPage() {
         </div>
 
         {/* ====================================================
-            QUESTIONS ALREADY IN BANK
+            QUESTIONS IN BANK
         ==================================================== */}
 
         <div className="rounded-lg border bg-card">
