@@ -186,15 +186,7 @@ export default function ManageQuestionBankPage() {
         </Button>
       </div>
 
-      {/* ======================================================
-          TWO COLUMN
-      ====================================================== */}
-
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {/* ====================================================
-            AVAILABLE QUESTIONS
-        ==================================================== */}
-
         <div className="rounded-lg border bg-card">
           <div className="border-b p-4">
             <h2 className="font-semibold">Available Questions</h2>
