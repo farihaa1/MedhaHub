@@ -32,7 +32,7 @@ export default function QuestionBanksFilters({
   return (
     <section className="mb-10 rounded-xl border bg-card p-5">
       <div className="grid gap-4 lg:grid-cols-5">
-        {/* Search */}
+       
         <div className="relative lg:col-span-2">
           <Search className="absolute top-3.5 left-3 h-4 w-4 text-muted-foreground" />
 
@@ -44,7 +44,7 @@ export default function QuestionBanksFilters({
           />
         </div>
 
-        {/* Organization */}
+     
         <select
           value={organization}
           onChange={(e) => onOrganizationChange(e.target.value)}
@@ -61,7 +61,7 @@ export default function QuestionBanksFilters({
           <option value="DU">বিশ্ববিদ্যালয়</option>
         </select>
 
-        {/* Year */}
+     
         <select
           value={year}
           onChange={(e) => onYearChange(e.target.value)}
@@ -81,7 +81,6 @@ export default function QuestionBanksFilters({
           })}
         </select>
 
-        {/* Sort */}
         <div className="flex gap-3">
           <select
             value={sort}
