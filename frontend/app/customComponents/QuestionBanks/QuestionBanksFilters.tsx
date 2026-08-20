@@ -88,13 +88,9 @@ export default function QuestionBanksFilters({
             className="flex-1 rounded-md border bg-background px-3"
           >
             <option value="-createdAt">নতুন আগে</option>
-
             <option value="createdAt">পুরোনো আগে</option>
-
             <option value="title">নাম অনুযায়ী (ক-হ)</option>
-
             <option value="-title">নাম অনুযায়ী (হ-ক)</option>
-
             <option value="-year">সাম্প্রতিক বছর আগে</option>
           </select>
 
