@@ -163,6 +163,7 @@ export const baseApi = createApi({
     "QuestionBankItem",
     "PdfImport",
     "DuplicateDetector",
+    "TopicContent",
   ],
 
   endpoints: () => ({}),

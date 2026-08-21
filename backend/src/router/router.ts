@@ -14,6 +14,7 @@ import QuestionBankItemRoutes from "../modules/questionBankItems/questionBankIte
 import QuestionBanksRoutes from "../modules/questionBanks/questionBanks.routes";
 import UploadRoutes from "../modules/Upload/upload.route";
 import duplicateRoutes from "../modules/duplicateDetector/duplicateDetector.route";
+import TopicContentRoutes from "../modules/TopicContent/topicContent.route";
 
 const router = Router();
 
@@ -33,5 +34,6 @@ router.use("/question-banks", QuestionBanksRoutes);
 
 router.use("/upload", UploadRoutes);
 router.use("/duplicate-detector", duplicateRoutes);
+router.use("/topic-content", TopicContentRoutes);
 
 export default router;
