@@ -394,10 +394,7 @@ export default function TopicQuestionsPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* =====================================================
-          ADMIN CONTENT DIALOG
-      ===================================================== */}
-
+   
       {isAdmin && (
         <TopicContentDialog
           key={content?._id ?? "new"}
